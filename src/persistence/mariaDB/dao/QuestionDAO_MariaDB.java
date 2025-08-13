@@ -14,10 +14,10 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
     
     private static final long serialVersionUID = 1L;
     
-    // Final SQL constants from class diagram
-    private final String SQL_INSERT = "";
-    private final String SQL_UPDATE = "";
-    private final String SQL_SELECT = "";
+    private final String SQL_INSERT = "INSERT INTO Question (title, text, theme_id) VALUES (?, ?, ?)";
+    private final String SQL_UPDATE = "UPDATE Question SET title = ?, text = ?, theme_id = ? WHERE id = ?";
+    private final String SQL_SELECT = "SELECT id, title, text, theme_id FROM Question";
+    private final String SQL_DELETE = "DELETE FROM Question WHERE id = ?";
     
     private String text;
     private int themeId;
@@ -83,6 +83,10 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
         return SQL_UPDATE;
     }
     
+    public String getDeleteStatement() {
+        return SQL_DELETE;
+    }
+    
     @Override
     public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
         if (isNew()) {
@@ -107,7 +111,7 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
     }
     
     @Override
-    protected void performValidation() {
+	public boolean performValidation() {
         if (text == null || text.isEmpty()) {
             throw new IllegalArgumentException("Question text cannot be null or empty");
         }
@@ -117,6 +121,7 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
         if (themeId <= 0) {
             throw new IllegalArgumentException("Theme ID must be positive");
         }
+		return false;
     }
     
     @Override

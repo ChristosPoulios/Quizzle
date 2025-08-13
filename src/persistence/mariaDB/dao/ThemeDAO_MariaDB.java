@@ -14,9 +14,10 @@ public class ThemeDAO_MariaDB extends MariaAccessObject {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String SQL_INSERT = "";
-	private final String SQL_UPDATE = "";
-	private final String SQL_SELECT = "";
+	private final String SQL_INSERT = "INSERT INTO Theme (title, description) VALUES (?, ?)";
+	private final String SQL_UPDATE = "UPDATE Theme SET title = ?, description = ? WHERE id = ?";
+	private final String SQL_SELECT = "SELECT id, title, description FROM Theme";
+	private final String SQL_DELETE = "DELETE FROM Theme WHERE id = ?";
 	private String title;
 	private String description;
 
@@ -74,6 +75,10 @@ public class ThemeDAO_MariaDB extends MariaAccessObject {
 		return SQL_UPDATE;
 	}
 
+	public String getDeleteStatement() {
+		return SQL_DELETE;
+	}
+
 	@Override
 	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
 		if (isNew()) {
@@ -98,7 +103,7 @@ public class ThemeDAO_MariaDB extends MariaAccessObject {
 	}
 
 	@Override
-	protected void performValidation() {
+	public boolean performValidation() {
 		if (title == null || title.isEmpty()) {
 			throw new IllegalArgumentException("Title cannot be null or empty");
 		}
@@ -108,6 +113,7 @@ public class ThemeDAO_MariaDB extends MariaAccessObject {
 		if (description.length() > 500) {
 			throw new IllegalArgumentException("Description cannot exceed 500 characters");
 		}
+		return false;
 	}
 
 	@Override

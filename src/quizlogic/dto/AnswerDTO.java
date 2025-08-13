@@ -2,161 +2,142 @@ package quizlogic.dto;
 
 import java.util.Objects;
 
-import quizlogic.QObject;
+import quizlogic.DataTransportObject;
 
 /**
- * Data Transfer Object representing an answer option for a quiz question. Each
- * answer belongs to a specific question and indicates whether it is correct or
- * not.
- * 
- * @author Your Name
- * @version 1.0
+ * Data Transfer Object for quiz answers. Extends DataTransportObject for
+ * consistent DTO behavior.
  */
-public class AnswerDTO extends QObject {
+public class AnswerDTO extends DataTransportObject {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
-	/** The ID of the question this answer belongs to */
-	private int questionId;
-
-	/** The text content of the answer */
 	private String answerText;
-
-	/** Flag indicating whether this answer is correct */
-	private boolean isCorrect;
+	private boolean correct;
 
 	/**
-	 * Default constructor creating an empty answer.
+	 * Default constructor
 	 */
 	public AnswerDTO() {
-		super(-1); // Default ID set to -1 indicating no ID assigned yet
-		this.questionId = -1;
-		this.answerText = "";
-		this.isCorrect = false;
+		super();
+		this.correct = false;
 	}
 
 	/**
-	 * Constructor creating an answer with all properties including ID.
-	 * 
-	 * @param id         the unique identifier for this answer
-	 * @param questionId the ID of the question this answer belongs to
-	 * @param answerText the text content of the answer
-	 * @param isCorrect  whether this answer is correct
+	 * Constructor with ID
 	 */
-	public AnswerDTO(int id, int questionId, String answerText, boolean isCorrect) {
+	public AnswerDTO(int id) {
 		super(id);
-		this.questionId = questionId;
+		this.correct = false;
+	}
+
+	/**
+	 * Full constructor
+	 */
+	public AnswerDTO(String answerText, boolean correct) {
+		super();
 		this.answerText = answerText;
-		this.isCorrect = isCorrect;
+		this.correct = correct;
 	}
 
 	/**
-	 * Constructor creating an answer without ID (for new answers).
-	 * 
-	 * @param questionId the ID of the question this answer belongs to
-	 * @param answerText the text content of the answer
-	 * @param isCorrect  whether this answer is correct
+	 * Constructor with ID and values
 	 */
-	public AnswerDTO(int questionId, String answerText, boolean isCorrect) {
-		super(-1);
-		this.questionId = questionId;
+	public AnswerDTO(int id, String answerText, boolean correct) {
+		super(id);
 		this.answerText = answerText;
-		this.isCorrect = isCorrect;
+		this.correct = correct;
 	}
 
-	/**
-	 * Gets the ID of the question this answer belongs to.
-	 * 
-	 * @return the question ID
-	 */
-	public int getQuestionId() {
-		return questionId;
-	}
+	// ==================== Getters/Setters ====================
 
-	/**
-	 * Sets the ID of the question this answer belongs to.
-	 * 
-	 * @param questionId the question ID to set
-	 */
-	public void setQuestionId(int questionId) {
-		this.questionId = questionId;
-	}
-
-	/**
-	 * Gets the text content of the answer.
-	 * 
-	 * @return the answer text
-	 */
 	public String getAnswerText() {
 		return answerText;
 	}
 
-	/**
-	 * Sets the text content of the answer.
-	 * 
-	 * @param answerText the answer text to set
-	 */
 	public void setAnswerText(String answerText) {
 		this.answerText = answerText;
 	}
 
-	/**
-	 * Checks if this answer is correct.
-	 * 
-	 * @return true if this answer is correct, false otherwise
-	 */
 	public boolean isCorrect() {
-		return isCorrect;
+		return correct;
 	}
 
-	/**
-	 * Sets whether this answer is correct.
-	 * 
-	 * @param correct true if this answer is correct, false otherwise
-	 */
 	public void setCorrect(boolean correct) {
-		isCorrect = correct;
+		this.correct = correct;
+	}
+
+	// ==================== Legacy-Kompatibilität ====================
+
+	/**
+	 * Legacy method - delegates to getAnswerText()
+	 */
+	public String getText() {
+		return getAnswerText();
 	}
 
 	/**
-	 * Returns a string representation of this answer.
-	 * 
-	 * @return a string containing the answer's details
+	 * Legacy method - delegates to setAnswerText()
 	 */
-	@Override
-	public String toString() {
-		return "AnswerDTO{" + "id=" + getId() + ", questionId=" + questionId + ", answerText='" + answerText + '\''
-				+ ", isCorrect=" + isCorrect + '}';
+	public void setText(String text) {
+		setAnswerText(text);
+	}
+
+	// ==================== Convenience Methods ====================
+
+	/**
+	 * Checks if this answer is wrong
+	 * 
+	 * @return true if answer is not correct
+	 */
+	public boolean isWrong() {
+		return !correct;
 	}
 
 	/**
-	 * Compares this answer with another object for equality. Two answers are equal
-	 * if they have the same ID, question ID, text, and correctness flag.
-	 * 
-	 * @param o the object to compare with
-	 * @return true if the objects are equal, false otherwise
+	 * Toggles the correct status
 	 */
+	public void toggleCorrect() {
+		this.correct = !this.correct;
+	}
+
+	/**
+	 * Gets explanation (for now same as answer text)
+	 * 
+	 * @return explanation text
+	 */
+	public String getExplanation() {
+		return answerText;
+	}
+
+	// ==================== Template Method Implementations ====================
+
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
+	protected boolean contentEquals(DataTransportObject other) {
+		if (!(other instanceof AnswerDTO))
 			return false;
-		AnswerDTO answerDTO = (AnswerDTO) o;
-		return isCorrect == answerDTO.isCorrect && questionId == answerDTO.questionId
-				&& Objects.equals(getId(), answerDTO.getId()) && Objects.equals(answerText, answerDTO.answerText);
+
+		AnswerDTO that = (AnswerDTO) other;
+		return Objects.equals(this.answerText, that.answerText) && this.correct == that.correct;
 	}
 
-	/**
-	 * Returns a hash code value for this answer.
-	 * 
-	 * @return a hash code value for this object
-	 */
 	@Override
-	public int hashCode() {
-		return Objects.hash(getId(), questionId, answerText, isCorrect);
+	protected int contentHashCode() {
+		return Objects.hash(answerText, correct);
+	}
+
+	@Override
+	protected String getContentString() {
+		return "text='" + answerText + "', correct=" + correct;
+	}
+
+	@Override
+	protected void validate() {
+		if (answerText == null || answerText.trim().isEmpty()) {
+			throw new IllegalArgumentException("Answer text cannot be null or empty");
+		}
+		if (answerText.length() > 500) {
+			throw new IllegalArgumentException("Answer text cannot exceed 500 characters");
+		}
 	}
 }

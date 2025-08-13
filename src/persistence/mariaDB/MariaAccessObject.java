@@ -84,8 +84,9 @@ public abstract class MariaAccessObject extends DataAccessObject {
 
 	/**
 	 * Template method for entity validation logic
+	 * @return 
 	 */
-	protected abstract void performValidation();
+	protected abstract boolean performValidation();
 
 	/**
 	 * Template method for entity-specific information
