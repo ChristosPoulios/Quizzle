@@ -17,30 +17,38 @@ public class QuestionButtonPanel extends MyButtonPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private QuizQuestionDelegator delegate;
+	private QuestionPanel questionPanel;
+	private QuestionListPanel questionListPanel;
 
 	public QuestionButtonPanel(String btnName1, String btnName2, String btnName3) {
 		super(btnName1, btnName2, btnName3);
 
 		getButton1().addActionListener(_ -> {
-
-			delegate.onQuestionDeleted(getCurrentQuestionTitle());
+			if (delegate != null) {
+				delegate.onQuestionDeleted(getCurrentQuestionTitle());
+			}
 		});
 
 		getButton2().addActionListener(_ -> {
-			String questionText = getCurrentQuestionTitle();
-			String themeTitle = getCurrentThemeTitle();
-			String questionType = getCurrentQuestionType();
-			String answerText = getCurrentAnswerText();
-			boolean isCorrect = getCurrentAnswerIsCorrect();
+			if (delegate != null) {
+				@SuppressWarnings("unused")
+				String questionText = getCurrentQuestionText();
+				String questionTitle = getCurrentQuestionTitle();
+				String themeTitle = getCurrentThemeTitle();
+				String questionType = getCurrentQuestionType();
+				String answerText = getCurrentAnswerText();
+				boolean isCorrect = getCurrentAnswerIsCorrect();
 
-			delegate.onQuestionSaved(questionText, themeTitle, questionType, answerText, isCorrect);
+				delegate.onQuestionSaved(questionTitle, themeTitle, questionType, answerText, isCorrect);
+			}
 		});
 
 		getButton3().addActionListener(_ -> {
-
-			String themeTitle = getCurrentThemeTitle();
-			String questionType = getCurrentQuestionType();
-			delegate.onNewQuestion(themeTitle, questionType);
+			if (delegate != null) {
+				String themeTitle = getCurrentThemeTitle();
+				String questionType = getCurrentQuestionType();
+				delegate.onNewQuestion(themeTitle, questionType);
+			}
 		});
 	}
 
@@ -48,28 +56,52 @@ public class QuestionButtonPanel extends MyButtonPanel {
 		this.delegate = delegate;
 	}
 
+	public void setPanelReferences(QuestionPanel questionPanel, QuestionListPanel questionListPanel) {
+		this.questionPanel = questionPanel;
+		this.questionListPanel = questionListPanel;
+	}
+
 	private String getCurrentQuestionTitle() {
-		// TODO: Frage-Titel aus dem zugehörigen Frage-Panel holen
-		return ""; // Platzhalter
+		if (questionPanel != null && questionPanel.getMetaPanel() != null) {
+			return questionPanel.getMetaPanel().getTitleField().getText();
+		}
+		return "";
+	}
+
+	private String getCurrentQuestionText() {
+		if (questionPanel != null && questionPanel.getMetaPanel() != null) {
+			return questionPanel.getMetaPanel().getQuestionTextArea().getText();
+		}
+		return "";
 	}
 
 	private String getCurrentThemeTitle() {
-		// TODO: Theme-Titel aus dem UI holen
-		return ""; // Platzhalter
+		if (questionListPanel != null) {
+			String selected = questionListPanel.getSelectedThemeTitle();
+			return selected != null && !selected.equals("Alle Themen") ? selected : "";
+		}
+		return "";
 	}
 
 	private String getCurrentQuestionType() {
-		// TODO: Fragetyp aus dem UI (Dropdown o.ä.) holen
-		return ""; // Platzhalter
+		return "Multiple Choice";
 	}
 
 	private String getCurrentAnswerText() {
-		// TODO: Antworttext aus dem UI holen
-		return ""; // Platzhalter
+		if (questionPanel != null && questionPanel.getAnswersPanel() != null) {
+			return questionPanel.getAnswersPanel().getCorrectAnswerText();
+		}
+		return "";
 	}
 
 	private boolean getCurrentAnswerIsCorrect() {
-		// TODO: Korrekt-Status aus UI (z.B. Checkbox) holen
-		return false; // Platzhalter
+		if (questionPanel != null && questionPanel.getAnswersPanel() != null) {
+			for (AnswerRowPanel row : questionPanel.getAnswersPanel().getAnswerRows()) {
+				if (row.isCorrect()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

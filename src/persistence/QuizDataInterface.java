@@ -53,7 +53,7 @@ public interface QuizDataInterface {
      * @param theme the theme to get questions for
      * @return list of questions for the theme
      */
-    ArrayList<QuestionDTO> getQuestions(ThemeDTO theme);
+    ArrayList<QuestionDTO> getQuestionsFor(ThemeDTO theme);
     
     /**
      * Saves a question to the data store

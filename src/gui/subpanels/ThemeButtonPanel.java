@@ -18,7 +18,7 @@ public class ThemeButtonPanel extends MyButtonPanel {
 
 		getButton1().addActionListener(_ -> {
 
-			delegate.onNewTheme("");
+			delegate.onThemeDeleted("");
 		});
 
 		getButton2().addActionListener(_ -> {
@@ -28,7 +28,7 @@ public class ThemeButtonPanel extends MyButtonPanel {
 
 		getButton3().addActionListener(_ -> {
 
-			delegate.onThemeDeleted("");
+			delegate.onNewTheme("");
 		});
 	}
 

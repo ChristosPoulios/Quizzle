@@ -14,6 +14,7 @@ public class AnswerDTO extends DataTransportObject {
 
 	private String answerText;
 	private boolean correct;
+	private int questionId;
 
 	/**
 	 * Default constructor
@@ -49,7 +50,15 @@ public class AnswerDTO extends DataTransportObject {
 		this.correct = correct;
 	}
 
-	// ==================== Getters/Setters ====================
+	/**
+	 * Constructor with question ID for database compatibility
+	 */
+	public AnswerDTO(int id, String answerText, boolean correct, int questionId) {
+		super(id);
+		this.answerText = answerText;
+		this.correct = correct;
+		this.questionId = questionId;
+	}
 
 	public String getAnswerText() {
 		return answerText;
@@ -67,7 +76,23 @@ public class AnswerDTO extends DataTransportObject {
 		this.correct = correct;
 	}
 
-	// ==================== Legacy-Kompatibilität ====================
+	/**
+	 * Gets the question ID this answer belongs to
+	 * 
+	 * @return question ID
+	 */
+	public int getQuestionId() {
+		return questionId;
+	}
+
+	/**
+	 * Sets the question ID this answer belongs to
+	 * 
+	 * @param questionId the question ID
+	 */
+	public void setQuestionId(int questionId) {
+		this.questionId = questionId;
+	}
 
 	/**
 	 * Legacy method - delegates to getAnswerText()
@@ -82,8 +107,6 @@ public class AnswerDTO extends DataTransportObject {
 	public void setText(String text) {
 		setAnswerText(text);
 	}
-
-	// ==================== Convenience Methods ====================
 
 	/**
 	 * Checks if this answer is wrong
@@ -109,8 +132,6 @@ public class AnswerDTO extends DataTransportObject {
 	public String getExplanation() {
 		return answerText;
 	}
-
-	// ==================== Template Method Implementations ====================
 
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {

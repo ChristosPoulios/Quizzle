@@ -87,7 +87,7 @@ public class QuizDataManager implements QuizDataInterface {
 	 * 
 	 * @param themeTitle The title of the selected theme, or null/"Alle Themen" for
 	 *                   all themes
-	 * @return ArrayList of question display strings like "Frage 1", "Frage 2", ...
+	 * @return ArrayList of question display strings with title and question text
 	 */
 	public ArrayList<String> getQuestionListEntries(String themeTitle) {
 		ArrayList<String> entries = new ArrayList<>();
@@ -97,11 +97,10 @@ public class QuizDataManager implements QuizDataInterface {
 			int questionCounter = 1;
 
 			for (ThemeDTO theme : themes) {
-
 				if (theme.getQuestions() != null) {
-
-					for (@SuppressWarnings("unused") QuestionDTO q : theme.getQuestions()) {
-						entries.add("Frage " + questionCounter);
+					for (QuestionDTO q : theme.getQuestions()) {
+						String displayText = formatQuestionDisplay(q, questionCounter);
+						entries.add(displayText);
 						questionCounter++;
 					}
 				}
@@ -110,13 +109,41 @@ public class QuizDataManager implements QuizDataInterface {
 			for (ThemeDTO theme : themes) {
 				if (theme.getThemeTitle().equals(themeTitle) && theme.getQuestions() != null) {
 					for (int i = 0; i < theme.getQuestions().size(); i++) {
-						entries.add("Frage " + (i + 1));
+						QuestionDTO q = theme.getQuestions().get(i);
+						String displayText = formatQuestionDisplay(q, i + 1);
+						entries.add(displayText);
 					}
 					break;
 				}
 			}
 		}
 		return entries;
+	}
+
+	/**
+	 * Formats a question for display in the question list. Shows both title and
+	 * question text in a readable format.
+	 * 
+	 * @param question The question to format
+	 * @param number   The question number for display
+	 * @return Formatted string for the question list
+	 */
+	private String formatQuestionDisplay(QuestionDTO question, int number) {
+		if (question == null) {
+			return "Frage " + number + ": [Keine Daten]";
+		}
+
+		String title = question.getQuestionTitle();
+		String text = question.getQuestionText();
+
+		String displayTitle = (title != null && !title.trim().isEmpty()) ? title : "Frage " + number;
+
+		if (text != null && !text.trim().isEmpty()) {
+			String preview = text.length() > 50 ? text.substring(0, 47) + "..." : text;
+			return displayTitle + ": " + preview;
+		} else {
+			return displayTitle + ": [Kein Fragetext]";
+		}
 	}
 
 	/**
@@ -199,7 +226,8 @@ public class QuizDataManager implements QuizDataInterface {
 					ThemeDTO theme = (ThemeDTO) ois.readObject();
 					themes.add(theme);
 
-					System.out.println("DEBUG: Theme geladen: " + theme.getThemeTitle() + " (ID: " + theme.getId() + ")");
+					System.out
+							.println("DEBUG: Theme geladen: " + theme.getThemeTitle() + " (ID: " + theme.getId() + ")");
 				} catch (IOException | ClassNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -321,14 +349,20 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	@Override
-	public String saveQuestion(QuestionDTO q) {
-		// TODO: Implementation needed
+	public QuestionDTO getRandomQuestionFor(ThemeDTO theme) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String deleteQuestion(QuestionDTO q) {
-		// TODO: Implementation needed
+	public String saveQuestion(QuestionDTO question) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String deleteQuestion(QuestionDTO question) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

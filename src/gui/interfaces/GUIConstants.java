@@ -13,7 +13,7 @@ import java.awt.*;
  * @since 1.0
  */
 public interface GUIConstants {
-	// --- Frame & Layout ---
+
 	int FRAME_X = 300;
 	int FRAME_Y = 100;
 	int FRAME_WIDTH = 1024;
@@ -23,7 +23,6 @@ public interface GUIConstants {
 	int GAP_BETWEEN_INPUTS = 8;
 	int BUTTON_PANEL_GAP = 100;
 
-	// --- Colors ---
 	Color BACKGROUND_COLOR = Color.WHITE;
 	Color THEME_PANEL_COLOR = new Color(245, 245, 245);
 	Color BUTTON_COLOR = new Color(240, 240, 240);
@@ -33,14 +32,12 @@ public interface GUIConstants {
 	Color CHECKBOX_COLOR = Color.BLACK;
 	Color QUESTION_TEXT_AREA = new Color(240, 240, 240);
 
-	// --- Fonts ---
 	Font DEFAULT_FONT = new Font("Helvetica", Font.PLAIN, 15);
 	Font TITLE_FONT = new Font("Helvetica", Font.BOLD, 17);
 	Font BUTTON_FONT = new Font("Helvetica", Font.BOLD, 15);
 	Font TAB_FONT = new Font("Helvetica", Font.BOLD, 15);
 	Font CORRECT_LABEL_FONT = new Font("Helvetica", Font.ITALIC, 13);
 
-	// --- Insets & sizes ---
 	Insets DEFAULT_INSETS = new Insets(2, 5, 2, 5);
 	int TEXTFIELD_COLUMNS = 25;
 	int MSG_TEXTFIELD_COLUMNS = 40;
@@ -48,7 +45,6 @@ public interface GUIConstants {
 	int QUESTIONAREA_COLUMNS = 25;
 	int CHECKBOX_LABEL_OFFSET = 105;
 
-	// --- Strings / Labels ---
 	String WINDOW_TITLE = "Quizzle";
 	String THEME_LABEL = "Thema:";
 	String POSSIBLE_ANSWERS_LABEL = "Mögliche Antworten";
@@ -56,7 +52,6 @@ public interface GUIConstants {
 	String ANSWER_PREFIX = "Antwort ";
 	String MESSAGE_DEFAULT = "Meldungen";
 
-	// --- Button texts ---
 	String BTN_SHOW_ANSWER = "Antwort zeigen";
 	String BTN_SAVE_ANSWER = "Antwort speichern";
 	String BTN_NEXT_QUESTION = "Nächste Frage";
@@ -66,7 +61,6 @@ public interface GUIConstants {
 	String BTN_DELETE_QUESTION = "Frage löschen";
 	String BTN_SAVE_QUESTION = "Frage speichern";
 	String BTN_ADD_QUESTION = "Neue Frage";
-	
-	// --- Others ---
+
 	int ANSWERS_COUNT = 4;
 }

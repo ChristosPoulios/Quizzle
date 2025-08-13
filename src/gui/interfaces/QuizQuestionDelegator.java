@@ -11,7 +11,7 @@ package gui.interfaces;
 public interface QuizQuestionDelegator {
 	void onQuestionDeleted(String questionText);
 
-	void onQuestionSaved(String questionText, String themeTitle, String questionType, String answerText,
+	void onQuestionSaved(String questionTitle, String themeTitle, String questionType, String answerText,
 			boolean isCorrect);
 
 	void onQuestionSelected(String entry, int index);

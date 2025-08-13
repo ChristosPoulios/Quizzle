@@ -73,6 +73,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 
 		themeComboBox = new JComboBox<>();
 		themeComboBox.setPreferredSize(new Dimension(300, 30));
+		themeComboBox.setEditable(false);
 		themeComboBox.addItem("Alle Themen");
 
 		ArrayList<String> themeTitles = dataManager.getThemeTitles();
@@ -81,9 +82,9 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		}
 
 		themeComboBox.setBackground(TEXTFIELD_BACKGROUND);
-		themeComboBox.addActionListener(_ -> {
-			String selectedTheme = getSelectedThemeTitle();
-			if (delegate != null) {
+		themeComboBox.addActionListener(e -> {
+			String selectedTheme = (String) themeComboBox.getSelectedItem();
+			if (selectedTheme != null && delegate != null) {
 				delegate.onThemeSelected(selectedTheme);
 			}
 		});
@@ -132,12 +133,32 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 			listModel.addElement(entry);
 		}
 
-		// Update combo box as well
-		themeComboBox.removeAllItems();
-		themeComboBox.addItem("Alle Themen");
+
+		String currentSelection = (String) themeComboBox.getSelectedItem();
 		ArrayList<String> themeTitles = dataManager.getThemeTitles();
-		for (String themeTitle : themeTitles) {
-			themeComboBox.addItem(themeTitle);
+		
+		boolean needsUpdate = themeComboBox.getItemCount() != themeTitles.size() + 1;
+		if (!needsUpdate) {
+			for (int i = 1; i < themeComboBox.getItemCount(); i++) {
+				String item = themeComboBox.getItemAt(i);
+				if (!themeTitles.contains(item)) {
+					needsUpdate = true;
+					break;
+				}
+			}
+		}
+		
+		if (needsUpdate) {
+
+			themeComboBox.removeAllItems();
+			themeComboBox.addItem("Alle Themen");
+			for (String themeTitle : themeTitles) {
+				themeComboBox.addItem(themeTitle);
+			}
+			
+			if (currentSelection != null) {
+				themeComboBox.setSelectedItem(currentSelection);
+			}
 		}
 	}
 

@@ -257,7 +257,7 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	@Override
-	public ArrayList<QuestionDTO> getQuestions(ThemeDTO theme) {
+	public ArrayList<QuestionDTO> getQuestionsFor(ThemeDTO theme) {
 		connect();
 		ThemeDAO_MariaDB themeDao = themeDaoMap.get(theme);
 		if (themeDao == null) {
@@ -543,8 +543,7 @@ public class DBManager implements QuizDataInterface {
 		connect();
 		ArrayList<String> titles = new ArrayList<>();
 		String sql = new ThemeDAO_MariaDB().getSelectStatement();
-		try (PreparedStatement ps = connection.prepareStatement(sql);
-				ResultSet rs = ps.executeQuery()) {
+		try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
 				titles.add(rs.getString("title"));
 			}
@@ -562,8 +561,7 @@ public class DBManager implements QuizDataInterface {
 		ArrayList<String> entries = new ArrayList<>();
 		if (selectedThemeTitle == null || selectedThemeTitle.equals("Alle Themen")) {
 			String sql = new QuestionDAO_MariaDB().getSelectStatement();
-			try (PreparedStatement ps = connection.prepareStatement(sql);
-					ResultSet rs = ps.executeQuery()) {
+			try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
 					entries.add(rs.getString("text"));
 				}
