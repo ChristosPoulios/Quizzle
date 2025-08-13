@@ -3,6 +3,7 @@ package gui.subpanels;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -12,8 +13,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+
 import gui.interfaces.GUIConstants;
-import gui.interfaces.QuizPanelDelegator;
+import gui.interfaces.QuizQuestionDelegator;
 import persistence.serialization.QuizDataManager;
 
 /**
@@ -33,7 +35,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	private JList<String> questionList;
 	private JScrollPane scrollPane;
 	private QuizDataManager dataManager;
-	private QuizPanelDelegator delegate;
+	private QuizQuestionDelegator delegate;
 
 	/**
 	 * Constructs the question list panel with data manager integration.
@@ -56,7 +58,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	 * 
 	 * @param delegate The delegate to notify about selections
 	 */
-	public void setDelegate(QuizPanelDelegator delegate) {
+	public void setDelegate(QuizQuestionDelegator delegate) {
 		this.delegate = delegate;
 	}
 
@@ -82,7 +84,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		}
 
 		themeComboBox.setBackground(TEXTFIELD_BACKGROUND);
-		themeComboBox.addActionListener(e -> {
+		themeComboBox.addActionListener(_ -> {
 			String selectedTheme = (String) themeComboBox.getSelectedItem();
 			if (selectedTheme != null && delegate != null) {
 				delegate.onThemeSelected(selectedTheme);
@@ -133,10 +135,9 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 			listModel.addElement(entry);
 		}
 
-
 		String currentSelection = (String) themeComboBox.getSelectedItem();
 		ArrayList<String> themeTitles = dataManager.getThemeTitles();
-		
+
 		boolean needsUpdate = themeComboBox.getItemCount() != themeTitles.size() + 1;
 		if (!needsUpdate) {
 			for (int i = 1; i < themeComboBox.getItemCount(); i++) {
@@ -147,7 +148,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 				}
 			}
 		}
-		
+
 		if (needsUpdate) {
 
 			themeComboBox.removeAllItems();
@@ -155,7 +156,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 			for (String themeTitle : themeTitles) {
 				themeComboBox.addItem(themeTitle);
 			}
-			
+
 			if (currentSelection != null) {
 				themeComboBox.setSelectedItem(currentSelection);
 			}
@@ -188,4 +189,5 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	public String getSelectedThemeTitle() {
 		return (String) themeComboBox.getSelectedItem();
 	}
+
 }

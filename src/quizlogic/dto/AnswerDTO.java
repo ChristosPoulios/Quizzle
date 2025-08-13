@@ -5,8 +5,8 @@ import java.util.Objects;
 import quizlogic.DataTransportObject;
 
 /**
- * Data Transfer Object for quiz answers. Extends DataTransportObject for
- * consistent DTO behavior.
+ * Data Transfer Object for quiz answers.
+ * Supports both serialization and database persistence.
  */
 public class AnswerDTO extends DataTransportObject {
 
@@ -16,12 +16,15 @@ public class AnswerDTO extends DataTransportObject {
 	private boolean correct;
 	private int questionId;
 
+	// ==================== Constructors ====================
+	
 	/**
 	 * Default constructor
 	 */
 	public AnswerDTO() {
 		super();
 		this.correct = false;
+		this.questionId = -1;
 	}
 
 	/**
@@ -30,28 +33,21 @@ public class AnswerDTO extends DataTransportObject {
 	public AnswerDTO(int id) {
 		super(id);
 		this.correct = false;
+		this.questionId = -1;
 	}
 
 	/**
-	 * Full constructor
+	 * Full constructor for creating answers
 	 */
 	public AnswerDTO(String answerText, boolean correct) {
 		super();
 		this.answerText = answerText;
 		this.correct = correct;
+		this.questionId = -1;
 	}
 
 	/**
-	 * Constructor with ID and values
-	 */
-	public AnswerDTO(int id, String answerText, boolean correct) {
-		super(id);
-		this.answerText = answerText;
-		this.correct = correct;
-	}
-
-	/**
-	 * Constructor with question ID for database compatibility
+	 * Complete constructor with all fields
 	 */
 	public AnswerDTO(int id, String answerText, boolean correct, int questionId) {
 		super(id);
@@ -59,6 +55,8 @@ public class AnswerDTO extends DataTransportObject {
 		this.correct = correct;
 		this.questionId = questionId;
 	}
+
+	// ==================== Core Getters/Setters ====================
 
 	public String getAnswerText() {
 		return answerText;
@@ -76,62 +74,43 @@ public class AnswerDTO extends DataTransportObject {
 		this.correct = correct;
 	}
 
-	/**
-	 * Gets the question ID this answer belongs to
-	 * 
-	 * @return question ID
-	 */
 	public int getQuestionId() {
 		return questionId;
 	}
 
-	/**
-	 * Sets the question ID this answer belongs to
-	 * 
-	 * @param questionId the question ID
-	 */
 	public void setQuestionId(int questionId) {
 		this.questionId = questionId;
 	}
 
+	// ==================== Legacy Support Methods ====================
+
 	/**
-	 * Legacy method - delegates to getAnswerText()
+	 * @deprecated Use getAnswerText() instead
 	 */
+	@Deprecated
 	public String getText() {
 		return getAnswerText();
 	}
 
 	/**
-	 * Legacy method - delegates to setAnswerText()
+	 * @deprecated Use setAnswerText() instead
 	 */
+	@Deprecated
 	public void setText(String text) {
 		setAnswerText(text);
 	}
 
-	/**
-	 * Checks if this answer is wrong
-	 * 
-	 * @return true if answer is not correct
-	 */
+	// ==================== Utility Methods ====================
+
 	public boolean isWrong() {
 		return !correct;
 	}
 
-	/**
-	 * Toggles the correct status
-	 */
 	public void toggleCorrect() {
 		this.correct = !this.correct;
 	}
 
-	/**
-	 * Gets explanation (for now same as answer text)
-	 * 
-	 * @return explanation text
-	 */
-	public String getExplanation() {
-		return answerText;
-	}
+	// ==================== DataTransportObject Implementation ====================
 
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {
@@ -139,17 +118,20 @@ public class AnswerDTO extends DataTransportObject {
 			return false;
 
 		AnswerDTO that = (AnswerDTO) other;
-		return Objects.equals(this.answerText, that.answerText) && this.correct == that.correct;
+		return Objects.equals(this.answerText, that.answerText) && 
+		       this.correct == that.correct &&
+		       this.questionId == that.questionId;
 	}
 
 	@Override
 	protected int contentHashCode() {
-		return Objects.hash(answerText, correct);
+		return Objects.hash(answerText, correct, questionId);
 	}
 
 	@Override
 	protected String getContentString() {
-		return "text='" + answerText + "', correct=" + correct;
+		return String.format("answerText='%s', correct=%s, questionId=%d", 
+		                     answerText, correct, questionId);
 	}
 
 	@Override

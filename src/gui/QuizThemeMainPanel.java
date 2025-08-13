@@ -33,10 +33,10 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 	/**
 	 * Constructs the quiz theme main panel with selection functionality.
 	 * 
-	 * @param dataManager2
+	 * @param dataManager
 	 */
-	public QuizThemeMainPanel(QuizDataManager dataManager2) {
-		this.dataManager = new QuizDataManager();
+	public QuizThemeMainPanel(QuizDataManager dataManager) {
+		this.dataManager = dataManager; 
 		setLayout(new BorderLayout());
 		setBackground(BACKGROUND_COLOR);
 

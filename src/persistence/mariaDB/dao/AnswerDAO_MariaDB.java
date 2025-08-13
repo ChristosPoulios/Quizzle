@@ -37,6 +37,7 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 		super();
 		this.text = dto.getAnswerText();
 		this.correct = dto.isCorrect();
+		this.questionId = dto.getQuestionId();
 	}
 
 	/**
