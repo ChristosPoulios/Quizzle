@@ -1,6 +1,8 @@
 package persistence;
 
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DataAccessObject  implements Serializable{
 	
@@ -14,6 +16,15 @@ public class DataAccessObject  implements Serializable{
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public void fromResultSet(ResultSet rs) throws SQLException {
+		if (rs != null) {
+			this.id = rs.getInt("id");
+		} else {
+			throw new SQLException("ResultSet is null");
+		}
+		
 	}
 	
 	

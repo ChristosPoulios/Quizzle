@@ -1,6 +1,8 @@
 package persistence.mariaDB;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import persistence.DataAccessObject;
 
 /**
@@ -69,14 +71,16 @@ public abstract class MariaAccessObject extends DataAccessObject {
 	 * @return SQL UPDATE statement
 	 */
 	public abstract String getUpdateStatement();
-
+	
+	public abstract boolean isNew();
+	
 	/**
 	 * Sets parameters for prepared statement
 	 * 
 	 * @param preparedStatement the prepared statement to configure
 	 * @return configured statement as string representation
 	 */
-	public abstract String getPreparedStatement(PreparedStatement preparedStatement);
+	public abstract void setPreparedStatementParameters(PreparedStatement ps) throws SQLException;
 
 	/**
 	 * Template method for entity validation logic
@@ -89,4 +93,6 @@ public abstract class MariaAccessObject extends DataAccessObject {
 	 * @return entity-specific info string
 	 */
 	protected abstract String getEntityInfo();
+	
+	
 }

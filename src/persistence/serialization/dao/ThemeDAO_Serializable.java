@@ -61,11 +61,11 @@ public class ThemeDAO_Serializable extends DataAccessObject {
 	}
 
 
-	public String getTitle() {
+	public String getThemeTitle() {
 		return Title;
 	}
 
-	public void setTitle(String title) {
+	public void setThemeTitle(String title) {
 		Title = title;
 	}
 
