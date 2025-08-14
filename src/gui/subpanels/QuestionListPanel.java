@@ -4,10 +4,12 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -48,8 +50,12 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		setBackground(BACKGROUND_COLOR);
 
 		createHeaderPanel();
-		add(Box.createRigidArea(new Dimension(0, 5)));
+
+		add(Box.createRigidArea(new Dimension(0, 8)));
 		createQuestionList();
+
+		add(Box.createVerticalGlue());
+
 		updateQuestionList("Alle Themen");
 	}
 
@@ -73,6 +79,9 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		JPanel comboPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, PANEL_MARGIN_H, 0));
 		comboPanel.setBackground(BACKGROUND_COLOR);
 
+		JLabel themeLabel = new JLabel(QUESTIONLIST_LABEL);
+		themeLabel.setFont(TITLE_FONT);
+		themeLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 10, 0));
 		themeComboBox = new JComboBox<>();
 		themeComboBox.setPreferredSize(new Dimension(300, 30));
 		themeComboBox.setEditable(false);
@@ -91,9 +100,9 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 			}
 		});
 
+		comboPanel.add(themeLabel);
 		comboPanel.add(themeComboBox);
 		headerContainer.add(comboPanel);
-		headerContainer.setMaximumSize(new Dimension(Integer.MAX_VALUE, headerContainer.getPreferredSize().height));
 		add(headerContainer);
 	}
 
@@ -117,10 +126,13 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		scrollPane = new JScrollPane(questionList);
 		scrollPane.setBackground(BACKGROUND_COLOR);
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setPreferredSize(new Dimension(300, 400));
+
+		Dimension listSize = new Dimension(400, 350);
+		scrollPane.setPreferredSize(listSize);
+		scrollPane.setMaximumSize(listSize);
+		scrollPane.setMinimumSize(new Dimension(300, 350));
 
 		add(scrollPane);
-		add(Box.createVerticalGlue());
 	}
 
 	/**

@@ -16,8 +16,8 @@ public interface GUIConstants {
 
 	int FRAME_X = 300;
 	int FRAME_Y = 100;
-	int FRAME_WIDTH = 1024;
-	int FRAME_HEIGHT = 768;
+	int FRAME_WIDTH = 850;
+	int FRAME_HEIGHT = 600;
 	int PANEL_MARGIN_H = 10;
 	int PANEL_MARGIN_V = 10;
 	int GAP_BETWEEN_INPUTS = 8;
@@ -51,6 +51,7 @@ public interface GUIConstants {
 	String ANSWER_LABEL = "Richtig";
 	String ANSWER_PREFIX = "Antwort ";
 	String MESSAGE_DEFAULT = "Meldungen";
+	String QUESTIONLIST_LABEL = "Fragen zum Thema";
 
 	String BTN_SHOW_ANSWER = "Antwort zeigen";
 	String BTN_SAVE_ANSWER = "Antwort speichern";

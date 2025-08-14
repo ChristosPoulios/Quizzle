@@ -49,8 +49,9 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 		this.dataManager = dataManager;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(BACKGROUND_COLOR);
+		add(Box.createRigidArea(new Dimension(0, 10)));
 		createHeader();
-		add(Box.createRigidArea(new Dimension(0, 5)));
+		add(Box.createRigidArea(new Dimension(0, 35)));
 		createThemeList();
 		updateThemeList();
 	}
@@ -62,7 +63,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 		JPanel headerPanel = new JPanel();
 		headerPanel.setBackground(BACKGROUND_COLOR);
 		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
-		JLabel headerLabel = new JLabel("Themes");
+		JLabel headerLabel = new JLabel("Themen");
 		headerLabel.setFont(TITLE_FONT);
 		headerPanel.add(headerLabel);
 		add(headerPanel);
@@ -94,7 +95,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 		scrollPane = new JScrollPane(themeList);
 		scrollPane.setBackground(BACKGROUND_COLOR);
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setPreferredSize(new Dimension(300, 400));
+		scrollPane.setPreferredSize(new Dimension(300, 383));
 
 		add(scrollPane);
 		add(Box.createVerticalGlue());
