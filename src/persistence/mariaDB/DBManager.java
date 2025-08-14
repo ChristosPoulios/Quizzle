@@ -9,7 +9,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import persistence.QuizDataInterface;
 import persistence.mariaDB.dao.AnswerDAO_MariaDB;
@@ -36,13 +35,10 @@ public class DBManager implements QuizDataInterface {
 	private Map<QuestionDTO, QuestionDAO_MariaDB> questionDaoMap = new HashMap<>();
 	private Map<AnswerDTO, AnswerDAO_MariaDB> answerDaoMap = new HashMap<>();
 
-	private Random random = new Random();
-
 	/**
 	 * Private constructor for singleton pattern
 	 */
 	private DBManager() {
-		// Constructor is private
 	}
 
 	/**
@@ -103,7 +99,7 @@ public class DBManager implements QuizDataInterface {
 	public QuestionDTO getRandomQuestion() {
 		connect();
 
-		String sql = "SELECT id, theme_id, question_text FROM questions ORDER BY RAND() LIMIT 1";
+		String sql = "SELECT id, title, text, theme_id FROM Questions ORDER BY RAND() LIMIT 1";
 
 		try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
@@ -133,7 +129,7 @@ public class DBManager implements QuizDataInterface {
 			return null;
 		}
 
-		String sql = "SELECT id, theme_id, question_text FROM questions WHERE theme_id = ? ORDER BY RAND() LIMIT 1";
+		String sql = "SELECT id, title, text, theme_id FROM Questions WHERE theme_id = ? ORDER BY RAND() LIMIT 1";
 
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
 			ps.setInt(1, themeDao.getId());
@@ -183,12 +179,10 @@ public class DBManager implements QuizDataInterface {
 		try {
 			ThemeDAO_MariaDB dao = themeDaoMap.get(theme);
 			if (dao == null) {
-
 				dao = ThemeDAO_MariaDB.fromTransport(theme);
 			} else {
-
-				dao.setThemeTitle(theme.getTitle());
-				dao.setThemeDescription(theme.getDescription());
+				dao.setThemeTitle(theme.getThemeTitle());
+				dao.setThemeDescription(theme.getThemeDescription());
 			}
 
 			try {
@@ -207,7 +201,9 @@ public class DBManager implements QuizDataInterface {
 					if (rowsAffected > 0) {
 						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
 							if (generatedKeys.next()) {
-								dao.setId(generatedKeys.getInt(1));
+								int newId = generatedKeys.getInt(1);
+								dao.setId(newId);
+								theme.setId(newId);
 								themeDaoMap.put(theme, dao);
 								return "Theme successfully created";
 							}
@@ -356,15 +352,54 @@ public class DBManager implements QuizDataInterface {
 				questionDaoMap.put(question, dao);
 			} else {
 
+				dao.setTitle(question.getQuestionTitle());
 				dao.setQuestionText(question.getQuestionText());
 				dao.setThemeId(themeDao.getId());
 			}
 
-			return saveQuestion(question);
+			try {
+				dao.performValidation();
+			} catch (IllegalArgumentException ex) {
+				return "Validation failed: " + ex.getMessage();
+			}
 
+			if (dao.isNew()) {
+
+				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
+						Statement.RETURN_GENERATED_KEYS)) {
+					dao.setPreparedStatementParameters(ps);
+
+					int rowsAffected = ps.executeUpdate();
+					if (rowsAffected > 0) {
+						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+							if (generatedKeys.next()) {
+								int newId = generatedKeys.getInt(1);
+								dao.setId(newId);
+								question.setId(newId); // IMPORTANT: Update the DTO with new ID
+								return "Question successfully created";
+							}
+						}
+					}
+				}
+			} else {
+
+				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
+					dao.setPreparedStatementParameters(ps);
+
+					int rowsAffected = ps.executeUpdate();
+					if (rowsAffected > 0) {
+						return "Question successfully updated";
+					}
+				}
+			}
+
+		} catch (SQLException e) {
+			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
 			return "Error: " + e.getMessage();
 		}
+
+		return "Failed to save question";
 	}
 
 	@Override
@@ -412,94 +447,6 @@ public class DBManager implements QuizDataInterface {
 			throw new RuntimeException("Failed to get answers for question", e);
 		}
 		return answers;
-	}
-
-	/**
-	 * Additional method to save answer with question
-	 */
-	public String saveAnswer(AnswerDTO answer, QuestionDTO question) {
-		connect();
-
-		QuestionDAO_MariaDB questionDao = questionDaoMap.get(question);
-		if (questionDao == null) {
-			return "Question not found in database";
-		}
-
-		try {
-			AnswerDAO_MariaDB dao = answerDaoMap.get(answer);
-			if (dao == null) {
-
-				dao = AnswerDAO_MariaDB.fromTransport(answer, questionDao.getId());
-				answerDaoMap.put(answer, dao);
-			} else {
-
-				dao.setText(answer.getAnswerText());
-				dao.setCorrect(answer.isCorrect());
-				dao.setQuestionId(questionDao.getId());
-			}
-
-			// Validate before saving
-			if (dao.performValidation()) {
-				return "Validation failed: " + String.join(", ", dao.getValidationErrors());
-			}
-
-			if (dao.isNew()) {
-				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
-						Statement.RETURN_GENERATED_KEYS)) {
-					dao.setPreparedStatementParameters(ps);
-
-					int rowsAffected = ps.executeUpdate();
-					if (rowsAffected > 0) {
-						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-							if (generatedKeys.next()) {
-								dao.setId(generatedKeys.getInt(1));
-								return "Answer successfully created";
-							}
-						}
-					}
-				}
-			} else {
-
-				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
-					dao.setPreparedStatementParameters(ps);
-
-					int rowsAffected = ps.executeUpdate();
-					if (rowsAffected > 0) {
-						return "Answer successfully updated";
-					}
-				}
-			}
-
-		} catch (SQLException e) {
-			return "Database error: " + e.getMessage();
-		} catch (Exception e) {
-			return "Error: " + e.getMessage();
-		}
-
-		return "Failed to save answer";
-	}
-
-	/**
-	 * Additional method to delete answer
-	 */
-	public String deleteAnswer(AnswerDTO answer) {
-		connect();
-		AnswerDAO_MariaDB dao = answerDaoMap.get(answer);
-		if (dao == null || dao.isNew()) {
-			return "Answer not found in database";
-		}
-		try (PreparedStatement ps = connection.prepareStatement(dao.getDeleteStatement())) {
-			ps.setInt(1, dao.getId());
-			int rowsAffected = ps.executeUpdate();
-			if (rowsAffected > 0) {
-				answerDaoMap.remove(answer);
-				return "Answer successfully deleted";
-			} else {
-				return "Answer not found";
-			}
-		} catch (SQLException e) {
-			return "Database error: " + e.getMessage();
-		}
 	}
 
 	/**
@@ -606,5 +553,69 @@ public class DBManager implements QuizDataInterface {
 			throw new RuntimeException("Failed to get question by index", e);
 		}
 		return null;
+	}
+
+	public String saveAnswer(AnswerDTO answer, QuestionDTO question) {
+		connect();
+
+		QuestionDAO_MariaDB questionDao = questionDaoMap.get(question);
+		if (questionDao == null) {
+			return "Question not found in database";
+		}
+
+		try {
+			AnswerDAO_MariaDB dao = answerDaoMap.get(answer);
+			if (dao == null) {
+				dao = AnswerDAO_MariaDB.fromTransport(answer, questionDao.getId());
+				answerDaoMap.put(answer, dao);
+			} else {
+				dao.setText(answer.getAnswerText());
+				dao.setCorrect(answer.isCorrect());
+				dao.setQuestionId(questionDao.getId());
+			}
+
+			try {
+				dao.performValidation();
+			} catch (IllegalArgumentException ex) {
+				return "Validation failed: " + ex.getMessage();
+			}
+
+			if (dao.isNew()) {
+
+				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
+						Statement.RETURN_GENERATED_KEYS)) {
+					dao.setPreparedStatementParameters(ps);
+
+					int rowsAffected = ps.executeUpdate();
+					if (rowsAffected > 0) {
+						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+							if (generatedKeys.next()) {
+								int newId = generatedKeys.getInt(1);
+								dao.setId(newId);
+								answer.setId(newId); 
+								return "Answer successfully created";
+							}
+						}
+					}
+				}
+			} else {
+
+				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
+					dao.setPreparedStatementParameters(ps);
+
+					int rowsAffected = ps.executeUpdate();
+					if (rowsAffected > 0) {
+						return "Answer successfully updated";
+					}
+				}
+			}
+
+		} catch (SQLException e) {
+			return "Database error: " + e.getMessage();
+		} catch (Exception e) {
+			return "Error: " + e.getMessage();
+		}
+
+		return "Failed to save answer";
 	}
 }

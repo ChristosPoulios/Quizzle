@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * The class generalizes all objects of the logic layer.
- * Provides common functionality for all Data Transfer Objects.
+ * The class generalizes all objects of the logic layer. Provides common
+ * functionality for all Data Transfer Objects.
  */
 public abstract class DataTransportObject implements Serializable {
 
@@ -22,14 +22,13 @@ public abstract class DataTransportObject implements Serializable {
 
 	/**
 	 * Constructor with ID for existing entities
+	 * 
 	 * @param id the entity ID
 	 */
 	public DataTransportObject(int id) {
 		super();
 		this.id = id;
 	}
-
-	// ==================== ID Management ====================
 
 	public int getId() {
 		return id;
@@ -41,6 +40,7 @@ public abstract class DataTransportObject implements Serializable {
 
 	/**
 	 * Checks if this is a new (unsaved) entity
+	 * 
 	 * @return true if entity is new
 	 */
 	public boolean isNew() {
@@ -49,27 +49,26 @@ public abstract class DataTransportObject implements Serializable {
 
 	/**
 	 * Checks if this entity has been persisted
+	 * 
 	 * @return true if entity has been saved
 	 */
 	public boolean isPersisted() {
 		return id > 0;
 	}
 
-	// ==================== Object Methods ====================
-
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null || getClass() != obj.getClass()) return false;
-		
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+
 		DataTransportObject that = (DataTransportObject) obj;
-		
-		// If both are new entities, compare by content
+
 		if (this.isNew() && that.isNew()) {
 			return this.contentEquals(that);
 		}
-		
-		// Otherwise compare by ID
+
 		return this.id == that.id;
 	}
 
@@ -83,43 +82,43 @@ public abstract class DataTransportObject implements Serializable {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getClass().getSimpleName());
 		sb.append("{id=").append(id);
-		
+
 		String content = getContentString();
 		if (content != null && !content.trim().isEmpty()) {
 			sb.append(", ").append(content);
 		}
-		
+
 		sb.append("}");
 		return sb.toString();
 	}
 
-	// ==================== Template Methods ====================
-
 	/**
-	 * Template method for content-based equality comparison.
-	 * Used when both objects are new entities.
+	 * Template method for content-based equality comparison. Used when both objects
+	 * are new entities.
+	 * 
 	 * @param other the other DataTransportObject to compare with
 	 * @return true if content is equal
 	 */
 	protected abstract boolean contentEquals(DataTransportObject other);
 
 	/**
-	 * Template method for content-based hash code.
-	 * Used when object is a new entity.
+	 * Template method for content-based hash code. Used when object is a new
+	 * entity.
+	 * 
 	 * @return hash code based on content
 	 */
 	protected abstract int contentHashCode();
 
 	/**
 	 * Template method for content description in toString.
+	 * 
 	 * @return string representation of main content
 	 */
 	protected abstract String getContentString();
 
-	// ==================== Validation Framework ====================
-
 	/**
 	 * Validates the DTO content
+	 * 
 	 * @return true if valid, false otherwise
 	 */
 	public boolean isValid() {
@@ -132,8 +131,8 @@ public abstract class DataTransportObject implements Serializable {
 	}
 
 	/**
-	 * Template method for validation logic.
-	 * Should throw IllegalArgumentException for validation errors.
+	 * Template method for validation logic. Should throw IllegalArgumentException
+	 * for validation errors.
 	 */
 	protected abstract void validate();
 }

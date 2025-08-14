@@ -5,8 +5,8 @@ import java.util.Objects;
 import quizlogic.DataTransportObject;
 
 /**
- * Data Transfer Object for quiz answers.
- * Supports both serialization and database persistence.
+ * Data Transfer Object for quiz answers. Supports both serialization and
+ * database persistence.
  */
 public class AnswerDTO extends DataTransportObject {
 
@@ -16,8 +16,6 @@ public class AnswerDTO extends DataTransportObject {
 	private boolean correct;
 	private int questionId;
 
-	// ==================== Constructors ====================
-	
 	/**
 	 * Default constructor
 	 */
@@ -56,8 +54,6 @@ public class AnswerDTO extends DataTransportObject {
 		this.questionId = questionId;
 	}
 
-	// ==================== Core Getters/Setters ====================
-
 	public String getAnswerText() {
 		return answerText;
 	}
@@ -82,45 +78,14 @@ public class AnswerDTO extends DataTransportObject {
 		this.questionId = questionId;
 	}
 
-	// ==================== Legacy Support Methods ====================
-
-	/**
-	 * @deprecated Use getAnswerText() instead
-	 */
-	@Deprecated
-	public String getText() {
-		return getAnswerText();
-	}
-
-	/**
-	 * @deprecated Use setAnswerText() instead
-	 */
-	@Deprecated
-	public void setText(String text) {
-		setAnswerText(text);
-	}
-
-	// ==================== Utility Methods ====================
-
-	public boolean isWrong() {
-		return !correct;
-	}
-
-	public void toggleCorrect() {
-		this.correct = !this.correct;
-	}
-
-	// ==================== DataTransportObject Implementation ====================
-
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {
 		if (!(other instanceof AnswerDTO))
 			return false;
 
 		AnswerDTO that = (AnswerDTO) other;
-		return Objects.equals(this.answerText, that.answerText) && 
-		       this.correct == that.correct &&
-		       this.questionId == that.questionId;
+		return Objects.equals(this.answerText, that.answerText) && this.correct == that.correct
+				&& this.questionId == that.questionId;
 	}
 
 	@Override
@@ -130,8 +95,7 @@ public class AnswerDTO extends DataTransportObject {
 
 	@Override
 	protected String getContentString() {
-		return String.format("answerText='%s', correct=%s, questionId=%d", 
-		                     answerText, correct, questionId);
+		return String.format("answerText='%s', correct=%s, questionId=%d", answerText, correct, questionId);
 	}
 
 	@Override

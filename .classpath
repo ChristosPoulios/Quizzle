@@ -6,5 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspace/Quizzle/src/persistence/mariadb-java-client-3.5.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

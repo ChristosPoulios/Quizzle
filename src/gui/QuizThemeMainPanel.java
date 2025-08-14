@@ -11,13 +11,14 @@ import gui.interfaces.QuizThemeDelegator;
 import gui.subpanels.ThemeButtonPanel;
 import gui.subpanels.ThemeListPanel;
 import gui.subpanels.ThemePanel;
-import persistence.serialization.QuizDataManager;
+import persistence.mariaDB.DBManager;
 import quizlogic.dto.ThemeDTO;
 
 /**
  * Main panel for theme management with theme selection functionality.
  * 
  * Provides theme creation, editing, and listing with automatic field filling.
+ * Uses MariaDB for data persistence.
  * 
  * @author Christos Poulios
  * @version 2.0
@@ -28,20 +29,28 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 	private ThemeListPanel themeListPanel;
 	private ThemePanel themePanel;
 	private ThemeButtonPanel buttonPanel;
-	private QuizDataManager dataManager;
+	private DBManager dbManager;
+	private ThemeChangeListener themeChangeListener;
+
+	/**
+	 * Interface for listening to theme changes
+	 */
+	public interface ThemeChangeListener {
+		void onThemeChanged();
+	}
 
 	/**
 	 * Constructs the quiz theme main panel with selection functionality.
 	 * 
-	 * @param dataManager
+	 * @param dbManager the database manager for MariaDB operations
 	 */
-	public QuizThemeMainPanel(QuizDataManager dataManager) {
-		this.dataManager = dataManager; 
+	public QuizThemeMainPanel(DBManager dbManager) {
+		this.dbManager = dbManager;
 		setLayout(new BorderLayout());
 		setBackground(BACKGROUND_COLOR);
 
 		themePanel = new ThemePanel();
-		themeListPanel = new ThemeListPanel(dataManager);
+		themeListPanel = new ThemeListPanel(dbManager);
 		buttonPanel = new ThemeButtonPanel(BTN_DELETE_THEME, BTN_SAVE_THEME, BTN_ADD_THEME);
 		buttonPanel.setDelegate(this);
 
@@ -53,16 +62,30 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		add(themePanel, BorderLayout.WEST);
 		add(themeListPanel, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
+	}
 
-		dataManager.addUpdateListener(() -> {
-			themeListPanel.updateThemeList();
-		});
+	/**
+	 * Sets the listener for theme changes
+	 * 
+	 * @param listener the listener to notify when themes change
+	 */
+	public void setThemeChangeListener(ThemeChangeListener listener) {
+		this.themeChangeListener = listener;
+	}
+
+	/**
+	 * Notifies the theme change listener if set
+	 */
+	private void notifyThemeChanged() {
+		if (themeChangeListener != null) {
+			themeChangeListener.onThemeChanged();
+		}
 	}
 
 	@Override
 	public void onNewTheme(String themeTitle) {
 		themePanel.clearFields();
-	    buttonPanel.setMessage("Bereit für neues Thema"); 
+		buttonPanel.setMessage("Bereit für neues Thema");
 	}
 
 	@Override
@@ -80,12 +103,17 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		newTheme.setThemeDescription(info);
 		newTheme.setQuestions(new ArrayList<>());
 
-		@SuppressWarnings("unused")
-		String result = dataManager.saveTheme(newTheme);
+		String result = dbManager.saveTheme(newTheme);
 
-		buttonPanel.setMessage("Thema erfolgreich gespeichert: " + title);
+		if (result != null && result.contains("successfully")) {
+			buttonPanel.setMessage("Thema erfolgreich gespeichert: " + title);
+			themePanel.clearFields();
+			themeListPanel.updateThemeList();
 
-		themePanel.clearFields();
+			notifyThemeChanged();
+		} else {
+			buttonPanel.setMessage("Fehler beim Speichern: " + (result != null ? result : "Unbekannter Fehler"));
+		}
 	}
 
 	@Override
@@ -95,7 +123,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		String selectedTitle = themeListPanel.getSelectedThemeTitle();
 
 		if (selectedTheme == null || selectedTitle == null) {
-		    buttonPanel.setMessage("Bitte ein Thema zum Löschen auswählen"); 
+			buttonPanel.setMessage("Bitte ein Thema zum Löschen auswählen");
 			return;
 		}
 
@@ -105,23 +133,27 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 				"Thema löschen bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
 		if (confirm == JOptionPane.YES_OPTION) {
-			String result = dataManager.deleteTheme(selectedTheme);
+			String result = dbManager.deleteTheme(selectedTheme);
 
-			if (result == null) {
-			    buttonPanel.setMessage("Thema erfolgreich gelöscht: " + selectedTitle); 
+			if (result != null && result.contains("successfully")) {
+				buttonPanel.setMessage("Thema erfolgreich gelöscht: " + selectedTitle);
 
 				themePanel.clearFields();
 				themeListPanel.clearSelection();
+				themeListPanel.updateThemeList();
+
+				notifyThemeChanged();
 
 				System.out.println("DEBUG: Theme '" + selectedTitle + "' erfolgreich gelöscht");
 			} else {
 
-			    buttonPanel.setMessage("Fehler beim Löschen des Themas: " + result); 
+				buttonPanel.setMessage(
+						"Fehler beim Löschen des Themas: " + (result != null ? result : "Unbekannter Fehler"));
 
 				System.err.println("ERROR: Fehler beim Löschen: " + result);
 			}
 		} else {
-			System.out.println("DEBUG: Löschen abgebrochen vom Benutzer");
+			buttonPanel.setMessage("Löschen abgebrochen");
 		}
 	}
 }

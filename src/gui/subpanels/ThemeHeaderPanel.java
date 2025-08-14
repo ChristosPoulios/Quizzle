@@ -29,24 +29,30 @@ public class ThemeHeaderPanel extends JPanel implements GUIConstants {
 		setLayout(new FlowLayout(FlowLayout.CENTER, PANEL_MARGIN_H, PANEL_MARGIN_V));
 		themeLabel = new JLabel(GUIConstants.THEME_LABEL);
 		themeLabel.setFont(TITLE_FONT);
-
-		valueLabel = new JLabel();
-		valueLabel.setFont(TITLE_FONT);
-
+		
+		valueLabel = new JLabel("");
+		valueLabel.setFont(DEFAULT_FONT);
+		
 		add(themeLabel);
 		add(valueLabel);
 	}
-
+	
 	/**
-	 * Sets the displayed theme text.
-	 * 
-	 * @param theme The current theme as string
+	 * Sets the theme name to display
+	 * @param themeName the name of the theme to display
 	 */
-	public void setTheme(String theme) {
-		valueLabel.setText(theme == null ? "" : theme);
+	public void setTheme(String themeName) {
+		if (themeName != null && !themeName.trim().isEmpty()) {
+			valueLabel.setText(themeName);
+		} else {
+			valueLabel.setText("");
+		}
 	}
-
-	public Object getThemeTitle() {
-		return themeLabel.getText();
+	
+	/**
+	 * Clears the theme display
+	 */
+	public void clearTheme() {
+		valueLabel.setText("");
 	}
 }

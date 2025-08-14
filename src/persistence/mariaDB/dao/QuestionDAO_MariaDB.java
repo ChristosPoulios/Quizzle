@@ -8,16 +8,19 @@ import persistence.mariaDB.MariaAccessObject;
 import quizlogic.dto.QuestionDTO;
 
 /**
- * Data Access Object for Question entities in MariaDB
+ * Data Access Object for Question entities in MariaDB Updated to match
+ * quizzle.sql schema
  */
 public class QuestionDAO_MariaDB extends MariaAccessObject {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String SQL_INSERT = "INSERT INTO Question (title, text, theme_id) VALUES (?, ?, ?)";
-	private final String SQL_UPDATE = "UPDATE Question SET title = ?, text = ?, theme_id = ? WHERE id = ?";
-	private final String SQL_SELECT = "SELECT id, title, text, theme_id FROM Question";
-	private final String SQL_DELETE = "DELETE FROM Question WHERE id = ?";
+	// Updated SQL statements to match schema: Questions table with columns: id,
+	// title, text, theme_id
+	private final String SQL_INSERT = "INSERT INTO Questions (title, text, theme_id) VALUES (?, ?, ?)";
+	private final String SQL_UPDATE = "UPDATE Questions SET title = ?, text = ?, theme_id = ? WHERE id = ?";
+	private final String SQL_SELECT = "SELECT id, title, text, theme_id FROM Questions";
+	private final String SQL_DELETE = "DELETE FROM Questions WHERE id = ?";
 
 	private String title;
 	private String text;
@@ -31,47 +34,47 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Constructor with QuestionDTO from class diagram
+	 * Constructor with ID
+	 */
+	public QuestionDAO_MariaDB(int id) {
+		super(id);
+	}
+
+	/**
+	 * Full constructor
+	 */
+	public QuestionDAO_MariaDB(int id, String title, String text, int themeId) {
+		super(id);
+		this.title = title;
+		this.text = text;
+		this.themeId = themeId;
+	}
+
+	/**
+	 * Constructor with QuestionDTO
 	 */
 	public QuestionDAO_MariaDB(QuestionDTO dto) {
 		super();
 		this.title = dto.getQuestionTitle();
 		this.text = dto.getQuestionText();
-
 	}
 
-	/**
-	 * Constructor with Object array from class diagram
-	 */
-	public QuestionDAO_MariaDB(Object[] row) {
-		super();
-		if (row.length >= 4) {
-			setId((Integer) row[0]);
-			this.title = (String) row[1];
-			this.text = (String) row[2];
-			this.themeId = (Integer) row[3];
-		}
-	}
-
-	// ==================== Getters/Setters ====================
-
-	/**
-	 * Gets the question title
-	 */
-	public String getQuestionTitle() {
+	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * Sets the question title
-	 */
-	public void setQuestionTitle(String title) {
+	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * Gets the question text
-	 */
+	public String getText() {
+		return text;
+	}
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
 	public String getQuestionText() {
 		return text;
 	}
@@ -87,8 +90,6 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 	public void setThemeId(int themeId) {
 		this.themeId = themeId;
 	}
-
-	// ==================== SQL Methods ====================
 
 	@Override
 	public String getSelectStatement() {
@@ -110,63 +111,69 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 	}
 
 	@Override
-	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
-		if (isNew()) {
-			ps.setString(1, this.title);
-			ps.setString(2, this.text);
-			ps.setInt(3, this.themeId);
-		} else {
-			ps.setString(1, this.title);
-			ps.setString(2, this.text);
-			ps.setInt(3, this.themeId);
-			ps.setInt(4, getId());
-		}
-	}
-
 	public boolean isNew() {
 		return getId() <= 0;
 	}
 
 	@Override
-	public void fromResultSet(ResultSet rs) throws SQLException {
-		setId(rs.getInt("id"));
-		this.themeId = rs.getInt("theme_id");
-		this.text = rs.getString("question_text");
+	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
+		if (isNew()) {
+			// INSERT: title, text, theme_id
+			ps.setString(1, title);
+			ps.setString(2, text);
+			ps.setInt(3, themeId);
+		} else {
+			// UPDATE: title, text, theme_id, id
+			ps.setString(1, title);
+			ps.setString(2, text);
+			ps.setInt(3, themeId);
+			ps.setInt(4, getId());
+		}
 	}
 
 	@Override
 	public boolean performValidation() {
-		if (text == null || text.isEmpty()) {
-			throw new IllegalArgumentException("Question text cannot be null or empty");
+		if (title == null || title.trim().isEmpty()) {
+			throw new IllegalArgumentException("Question title cannot be empty");
 		}
-		if (text.length() > 1000) {
-			throw new IllegalArgumentException("Question text cannot exceed 1000 characters");
+		if (text == null || text.trim().isEmpty()) {
+			throw new IllegalArgumentException("Question text cannot be empty");
 		}
 		if (themeId <= 0) {
-			throw new IllegalArgumentException("Theme ID must be positive");
+			throw new IllegalArgumentException("Valid theme ID is required");
 		}
-		return false;
-	}
-
-	@Override
-	protected String getEntityInfo() {
-		return "themeId=" + themeId + ", text='" + text + "'";
+		return true;
 	}
 
 	/**
-	 * Converts this DAO to a DTO object
+	 * Populates this DAO from a ResultSet
+	 */
+	public void fromResultSet(ResultSet rs) throws SQLException {
+		setId(rs.getInt("id"));
+		this.title = rs.getString("title");
+		this.text = rs.getString("text");
+		this.themeId = rs.getInt("theme_id");
+	}
+
+	/**
+	 * Creates a QuestionDTO for transport
 	 */
 	public QuestionDTO forTransport() {
 		QuestionDTO dto = new QuestionDTO();
-		dto.setQuestionText(this.text);
+		dto.setId(getId());
+		dto.setQuestionTitle(title);
+		dto.setQuestionText(text);
 		return dto;
 	}
 
 	/**
-	 * Creates a DAO from a DTO object
+	 * Creates a QuestionDAO from a QuestionDTO with theme ID
 	 */
 	public static QuestionDAO_MariaDB fromTransport(QuestionDTO dto, int themeId) {
-		QuestionDAO_MariaDB dao = new QuestionDAO_MariaDB(dto);
+		QuestionDAO_MariaDB dao = new QuestionDAO_MariaDB();
+		dao.setId(dto.getId());
+		dao.setTitle(dto.getQuestionTitle());
+		dao.setText(dto.getQuestionText());
 		dao.setThemeId(themeId);
 		return dao;
 	}

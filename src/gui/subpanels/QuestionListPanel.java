@@ -18,13 +18,15 @@ import javax.swing.ScrollPaneConstants;
 
 import gui.interfaces.GUIConstants;
 import gui.interfaces.QuizQuestionDelegator;
-import persistence.serialization.QuizDataManager;
+import persistence.mariaDB.DBManager;
+import quizlogic.dto.QuestionDTO;
+import quizlogic.dto.ThemeDTO;
 
 /**
  * Panel displaying a list of questions with theme filtering and persistent data
  * integration.
  * 
- * Provides theme selection and question browsing with automatic updates.
+ * Provides theme selection and question browsing with MariaDB integration.
  * 
  * @author Christos Poulios
  * @version 2.0
@@ -36,16 +38,18 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	private DefaultListModel<String> listModel;
 	private JList<String> questionList;
 	private JScrollPane scrollPane;
-	private QuizDataManager dataManager;
+	private DBManager dbManager;
 	private QuizQuestionDelegator delegate;
+	private ArrayList<QuestionDTO> currentQuestions; // Cache for current questions
 
 	/**
-	 * Constructs the question list panel with data manager integration.
+	 * Constructs the question list panel with database manager integration.
 	 * 
-	 * @param dataManager The data manager for question access
+	 * @param dbManager The database manager for question access
 	 */
-	public QuestionListPanel(QuizDataManager dataManager) {
-		this.dataManager = dataManager;
+	public QuestionListPanel(DBManager dbManager) {
+		this.dbManager = dbManager;
+		this.currentQuestions = new ArrayList<>();
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(BACKGROUND_COLOR);
 
@@ -87,9 +91,9 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		themeComboBox.setEditable(false);
 		themeComboBox.addItem("Alle Themen");
 
-		ArrayList<String> themeTitles = dataManager.getThemeTitles();
-		for (String themeTitle : themeTitles) {
-			themeComboBox.addItem(themeTitle);
+		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		for (ThemeDTO theme : themes) {
+			themeComboBox.addItem(theme.getThemeTitle());
 		}
 
 		themeComboBox.setBackground(TEXTFIELD_BACKGROUND);
@@ -142,37 +146,86 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	 */
 	public void updateQuestionList(String selectedThemeTitle) {
 		listModel.clear();
-		ArrayList<String> entries = dataManager.getQuestionListEntries(selectedThemeTitle);
-		for (String entry : entries) {
-			listModel.addElement(entry);
+		currentQuestions.clear();
+
+		if ("Alle Themen".equals(selectedThemeTitle)) {
+
+			ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+			for (ThemeDTO theme : themes) {
+				ArrayList<QuestionDTO> questions = dbManager.getQuestionsFor(theme);
+				currentQuestions.addAll(questions);
+			}
+		} else {
+
+			ThemeDTO selectedTheme = findThemeByTitle(selectedThemeTitle);
+			if (selectedTheme != null) {
+				currentQuestions = dbManager.getQuestionsFor(selectedTheme);
+			}
 		}
 
-		String currentSelection = (String) themeComboBox.getSelectedItem();
-		ArrayList<String> themeTitles = dataManager.getThemeTitles();
 
-		boolean needsUpdate = themeComboBox.getItemCount() != themeTitles.size() + 1;
-		if (!needsUpdate) {
-			for (int i = 1; i < themeComboBox.getItemCount(); i++) {
-				String item = themeComboBox.getItemAt(i);
-				if (!themeTitles.contains(item)) {
-					needsUpdate = true;
+		for (QuestionDTO question : currentQuestions) {
+			String displayText = question.getQuestionTitle();
+			if (displayText == null || displayText.trim().isEmpty()) {
+				displayText = question.getQuestionText();
+				if (displayText.length() > 50) {
+					displayText = displayText.substring(0, 47) + "...";
+				}
+			}
+			listModel.addElement(displayText);
+		}
+
+
+		updateThemeComboBox();
+	}
+
+	/**
+	 * Updates the theme combo box with current themes from database.
+	 */
+	private void updateThemeComboBox() {
+		String currentSelection = (String) themeComboBox.getSelectedItem();
+		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		
+		themeComboBox.removeAllItems();
+		themeComboBox.addItem("Alle Themen");
+		
+		for (ThemeDTO theme : themes) {
+			themeComboBox.addItem(theme.getThemeTitle());
+		}
+
+		if (currentSelection != null) {
+
+			for (int i = 0; i < themeComboBox.getItemCount(); i++) {
+				if (currentSelection.equals(themeComboBox.getItemAt(i))) {
+					themeComboBox.setSelectedIndex(i);
 					break;
 				}
 			}
 		}
+	}
 
-		if (needsUpdate) {
+	/**
+	 * Forces a refresh of the theme combo box from the database.
+	 * Call this method when themes have been added/modified/deleted.
+	 */
+	public void refreshThemeComboBox() {
+		updateThemeComboBox();
+	}
 
-			themeComboBox.removeAllItems();
-			themeComboBox.addItem("Alle Themen");
-			for (String themeTitle : themeTitles) {
-				themeComboBox.addItem(themeTitle);
-			}
-
-			if (currentSelection != null) {
-				themeComboBox.setSelectedItem(currentSelection);
+	/**
+	 * Finds a theme by its title.
+	 * 
+	 * @param title The theme title to search for
+	 * @return The theme DTO or null if not found
+	 */
+	private ThemeDTO findThemeByTitle(String title) {
+		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		for (ThemeDTO theme : themes) {
+			if (theme.getThemeTitle().equals(title)) {
+				return theme;
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -185,16 +238,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Gets the theme combo box component.
-	 * 
-	 * @return The JComboBox for theme selection
-	 */
-	public JComboBox<String> getThemeComboBox() {
-		return themeComboBox;
-	}
-
-	/**
-	 * Gets the currently selected theme title.
+	 * Gets the selected theme title from the combo box.
 	 * 
 	 * @return The selected theme title
 	 */
@@ -202,4 +246,16 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		return (String) themeComboBox.getSelectedItem();
 	}
 
+	/**
+	 * Gets a question by its index in the current list.
+	 * 
+	 * @param index The index of the question
+	 * @return The question DTO or null if index is invalid
+	 */
+	public QuestionDTO getQuestionByIndex(int index) {
+		if (index >= 0 && index < currentQuestions.size()) {
+			return currentQuestions.get(index);
+		}
+		return null;
+	}
 }

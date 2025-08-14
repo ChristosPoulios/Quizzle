@@ -8,7 +8,8 @@ import persistence.mariaDB.MariaAccessObject;
 import quizlogic.dto.ThemeDTO;
 
 /**
- * Data Access Object for Theme entities in MariaDB
+ * Data Access Object for Theme entities in MariaDB Updated to match quizzle.sql
+ * schema
  */
 public class ThemeDAO_MariaDB extends MariaAccessObject {
 
@@ -18,6 +19,7 @@ public class ThemeDAO_MariaDB extends MariaAccessObject {
 	private final String SQL_UPDATE = "UPDATE Theme SET title = ?, description = ? WHERE id = ?";
 	private final String SQL_SELECT = "SELECT id, title, description FROM Theme";
 	private final String SQL_DELETE = "DELETE FROM Theme WHERE id = ?";
+
 	private String title;
 	private String description;
 
@@ -80,61 +82,60 @@ public class ThemeDAO_MariaDB extends MariaAccessObject {
 	}
 
 	@Override
-	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
-		if (isNew()) {
-			ps.setString(1, this.title);
-			ps.setString(2, this.description);
-		} else {
-			ps.setString(1, this.title);
-			ps.setString(2, this.description);
-			ps.setInt(3, getId());
-		}
-	}
-
 	public boolean isNew() {
 		return getId() <= 0;
 	}
 
 	@Override
+	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
+		if (isNew()) {
+			// INSERT: title, description
+			ps.setString(1, title);
+			ps.setString(2, description);
+		} else {
+			// UPDATE: title, description, id
+			ps.setString(1, title);
+			ps.setString(2, description);
+			ps.setInt(3, getId());
+		}
+	}
+
+	@Override
+	public boolean performValidation() {
+		if (title == null || title.trim().isEmpty()) {
+			throw new IllegalArgumentException("Theme title cannot be empty");
+		}
+		return true;
+	}
+
+	/**
+	 * Populates this DAO from a ResultSet
+	 */
 	public void fromResultSet(ResultSet rs) throws SQLException {
 		setId(rs.getInt("id"));
 		this.title = rs.getString("title");
 		this.description = rs.getString("description");
 	}
 
-	@Override
-	public boolean performValidation() {
-		if (title == null || title.isEmpty()) {
-			throw new IllegalArgumentException("Title cannot be null or empty");
-		}
-		if (description == null) {
-			throw new IllegalArgumentException("Description cannot be null");
-		}
-		if (description.length() > 500) {
-			throw new IllegalArgumentException("Description cannot exceed 500 characters");
-		}
-		return false;
-	}
-
-	@Override
-	protected String getEntityInfo() {
-		return "title='" + title + "'";
-	}
-
 	/**
-	 * Converts this DAO to a DTO object
+	 * Creates a ThemeDTO for transport
 	 */
 	public ThemeDTO forTransport() {
 		ThemeDTO dto = new ThemeDTO();
-		dto.setThemeTitle(this.title);
-		dto.setThemeDescription(this.description);
+		dto.setId(getId());
+		dto.setThemeTitle(title);
+		dto.setThemeDescription(description);
 		return dto;
 	}
 
 	/**
-	 * Creates a DAO from a DTO object
+	 * Creates a ThemeDAO from a ThemeDTO
 	 */
 	public static ThemeDAO_MariaDB fromTransport(ThemeDTO dto) {
-		return new ThemeDAO_MariaDB(0, dto.getThemeTitle(), dto.getThemeDescription());
+		ThemeDAO_MariaDB dao = new ThemeDAO_MariaDB();
+		dao.setId(dto.getId());
+		dao.setThemeTitle(dto.getThemeTitle());
+		dao.setThemeDescription(dto.getThemeDescription());
+		return dao;
 	}
 }

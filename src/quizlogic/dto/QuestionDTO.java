@@ -44,7 +44,6 @@ public class QuestionDTO extends DataTransportObject {
 		this.answers = new ArrayList<>();
 	}
 
-	// ==================== Getters/Setters ====================
 
 	public String getQuestionText() {
 		return questionText;
@@ -70,7 +69,6 @@ public class QuestionDTO extends DataTransportObject {
 		this.answers = answers != null ? answers : new ArrayList<>();
 	}
 
-	// ==================== Legacy-Kompatibilität ====================
 
 	/**
 	 * Legacy method - delegates to getQuestionText()
@@ -100,35 +98,6 @@ public class QuestionDTO extends DataTransportObject {
 		setQuestionTitle(title);
 	}
 
-	// ==================== Convenience Methods ====================
-
-	public void addAnswer(AnswerDTO answer) {
-		if (answer != null) {
-			this.answers.add(answer);
-		}
-	}
-
-	public boolean removeAnswer(AnswerDTO answer) {
-		return this.answers.remove(answer);
-	}
-
-	public int getAnswerCount() {
-		return answers.size();
-	}
-
-	public boolean hasAnswers() {
-		return !answers.isEmpty();
-	}
-
-	/**
-	 * Gets the correct answer(s) for this question
-	 * 
-	 * @return list of correct answers
-	 */
-	public List<AnswerDTO> getCorrectAnswers() {
-		return answers.stream().filter(AnswerDTO::isCorrect).collect(java.util.stream.Collectors.toList());
-	}
-
 	/**
 	 * Checks if this question has at least one correct answer
 	 * 
@@ -137,35 +106,6 @@ public class QuestionDTO extends DataTransportObject {
 	public boolean hasCorrectAnswer() {
 		return answers.stream().anyMatch(AnswerDTO::isCorrect);
 	}
-
-	/**
-	 * Gets difficulty level (based on number of answers)
-	 * 
-	 * @return difficulty as int (1-5)
-	 */
-	public int getDifficulty() {
-		int answerCount = answers.size();
-		if (answerCount <= 2)
-			return 1;
-		if (answerCount <= 3)
-			return 2;
-		if (answerCount <= 4)
-			return 3;
-		if (answerCount <= 6)
-			return 4;
-		return 5;
-	}
-
-	/**
-	 * Gets explanation (could be question title or derived)
-	 * 
-	 * @return explanation text
-	 */
-	public String getExplanation() {
-		return questionTitle != null ? questionTitle : questionText;
-	}
-
-	// ==================== Template Method Implementations ====================
 
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {

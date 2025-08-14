@@ -5,8 +5,8 @@ import gui.interfaces.QuizQuestionDelegator;
 /**
  * Button panel for question management operations.
  * 
- * Provides three main actions: Delete Question, Save Question, Add New Question.
- * Uses the Delegate pattern to communicate with the parent panel.
+ * Provides three main actions: Delete Question, Save Question, Add New
+ * Question. Uses the Delegate pattern to communicate with the parent panel.
  * 
  * @author Quizzle Team
  * @version 2.0
@@ -14,27 +14,22 @@ import gui.interfaces.QuizQuestionDelegator;
 public class QuestionButtonPanel extends MyButtonPanel {
 
 	private static final long serialVersionUID = 1L;
-	
-	// ==================== Dependencies ====================
+
 	private QuizQuestionDelegator delegate;
 	private QuestionPanel questionPanel;
 	private QuestionListPanel questionListPanel;
 
-	// ==================== Constructor ====================
-	
 	/**
 	 * Creates a new QuestionButtonPanel with the specified button labels.
 	 * 
 	 * @param deleteButtonText Text for the delete button
-	 * @param saveButtonText Text for the save button  
-	 * @param addButtonText Text for the add new question button
+	 * @param saveButtonText   Text for the save button
+	 * @param addButtonText    Text for the add new question button
 	 */
 	public QuestionButtonPanel(String deleteButtonText, String saveButtonText, String addButtonText) {
 		super(deleteButtonText, saveButtonText, addButtonText);
 		setupButtonActions();
 	}
-
-	// ==================== Configuration Methods ====================
 
 	/**
 	 * Sets the delegate that will handle button actions.
@@ -51,8 +46,6 @@ public class QuestionButtonPanel extends MyButtonPanel {
 		this.questionListPanel = questionListPanel;
 	}
 
-	// ==================== Button Action Setup ====================
-
 	private void setupButtonActions() {
 
 		getButton1().addActionListener(_ -> {
@@ -61,7 +54,6 @@ public class QuestionButtonPanel extends MyButtonPanel {
 				delegate.onQuestionDeleted(questionTitle);
 			}
 		});
-
 
 		getButton2().addActionListener(_ -> {
 			if (delegate != null) {
@@ -75,7 +67,6 @@ public class QuestionButtonPanel extends MyButtonPanel {
 			}
 		});
 
-
 		getButton3().addActionListener(_ -> {
 			if (delegate != null) {
 				String themeTitle = extractThemeTitle();
@@ -84,8 +75,6 @@ public class QuestionButtonPanel extends MyButtonPanel {
 			}
 		});
 	}
-
-	// ==================== Data Extraction Methods ====================
 
 	private String extractQuestionTitle() {
 		if (questionPanel != null && questionPanel.getMetaPanel() != null) {

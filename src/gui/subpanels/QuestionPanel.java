@@ -51,8 +51,13 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 	 */
 	public void fillWithQuestionData(QuestionDTO question) {
 		if (question == null) {
+			headerPanel.clearTheme();
+			metaPanel.getTitleField().setText("");
+			metaPanel.getQuestionTextArea().setText("");
+			answersPanel.clearAnswers();
 			return;
 		}
+		
 		if (question.getText() != null) {
 			metaPanel.getQuestionTextArea().setText(question.getText());
 		} else {
@@ -63,6 +68,20 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 		answersPanel.setAnswers(question.getAnswers());
 		revalidate();
 		repaint();
+	}
+	
+	/**
+	 * Fills the panel with question data and sets the theme in header
+	 * @param question The question to display
+	 * @param themeName The name of the theme to display in header
+	 */
+	public void fillWithQuestionData(QuestionDTO question, String themeName) {
+		fillWithQuestionData(question);
+		if (themeName != null && !themeName.trim().isEmpty()) {
+			headerPanel.setTheme(themeName);
+		} else {
+			headerPanel.clearTheme();
+		}
 	}
 
 	/**

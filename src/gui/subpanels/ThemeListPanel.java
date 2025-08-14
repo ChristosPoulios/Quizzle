@@ -12,14 +12,14 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import gui.interfaces.GUIConstants;
-import persistence.serialization.QuizDataManager;
+import persistence.mariaDB.DBManager;
 import quizlogic.dto.ThemeDTO;
 
 /**
  * Panel displaying a list of available themes with selection functionality.
  * 
  * Automatically updates when themes are added and notifies when themes are
- * selected.
+ * selected. Uses MariaDB for data persistence.
  * 
  * @author Christos Poulios
  * @version 2.0
@@ -30,7 +30,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	private DefaultListModel<String> listModel;
 	private JList<String> themeList;
 	private JScrollPane scrollPane;
-	private QuizDataManager dataManager;
+	private DBManager dbManager;
 	private ThemeSelectionListener selectionListener;
 
 	/**
@@ -41,12 +41,12 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Constructs the theme list panel with data manager integration.
+	 * Constructs the theme list panel with database manager integration.
 	 * 
-	 * @param dataManager The data manager for theme access
+	 * @param dbManager The database manager for theme access
 	 */
-	public ThemeListPanel(QuizDataManager dataManager) {
-		this.dataManager = dataManager;
+	public ThemeListPanel(DBManager dbManager) {
+		this.dbManager = dbManager;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(BACKGROUND_COLOR);
 		add(Box.createRigidArea(new Dimension(0, 10)));
@@ -79,11 +79,9 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 		themeList.setBackground(TEXTFIELD_BACKGROUND);
 
 		themeList.addListSelectionListener(e -> {
-
 			if (!e.getValueIsAdjusting() && selectionListener != null) {
 				String selectedThemeTitle = themeList.getSelectedValue();
 				if (selectedThemeTitle != null) {
-
 					ThemeDTO selectedTheme = findThemeByTitle(selectedThemeTitle);
 					if (selectedTheme != null) {
 						selectionListener.onThemeSelected(selectedTheme);
@@ -108,7 +106,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	 * @return Das Theme-Objekt oder null falls nicht gefunden
 	 */
 	private ThemeDTO findThemeByTitle(String title) {
-		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeTitle().equals(title)) {
 				return theme;
@@ -118,13 +116,13 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Updates the theme list from persistent storage.
+	 * Updates the theme list from database.
 	 */
 	public void updateThemeList() {
 		listModel.clear();
-		ArrayList<String> themeNames = dataManager.getThemeTitles();
-		for (String themeName : themeNames) {
-			listModel.addElement(themeName);
+		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		for (ThemeDTO theme : themes) {
+			listModel.addElement(theme.getThemeTitle());
 		}
 	}
 
@@ -169,7 +167,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Clears the current selection in the theme list.
+	 * Clears the current selection.
 	 */
 	public void clearSelection() {
 		themeList.clearSelection();

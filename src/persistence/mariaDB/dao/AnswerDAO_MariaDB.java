@@ -8,16 +8,19 @@ import persistence.mariaDB.MariaAccessObject;
 import quizlogic.dto.AnswerDTO;
 
 /**
- * Data Access Object for Answer entities in MariaDB
+ * Data Access Object for Answer entities in MariaDB Updated to match
+ * quizzle.sql schema
  */
 public class AnswerDAO_MariaDB extends MariaAccessObject {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String SQL_INSERT = "INSERT INTO Answer (text, isCorrect, question_id) VALUES (?, ?, ?)";
-	private final String SQL_UPDATE = "UPDATE Answer SET text = ?, isCorrect = ?, question_id = ? WHERE id = ?";
-	private final String SQL_SELECT = "SELECT id, text, isCorrect, question_id FROM Answer";
-	private final String SQL_DELETE = "DELETE FROM Answer WHERE id = ?";
+	// Updated SQL statements to match schema: Answers table with columns: id, text,
+	// isCorrect, question_id
+	private final String SQL_INSERT = "INSERT INTO Answers (text, isCorrect, question_id) VALUES (?, ?, ?)";
+	private final String SQL_UPDATE = "UPDATE Answers SET text = ?, isCorrect = ?, question_id = ? WHERE id = ?";
+	private final String SQL_SELECT = "SELECT id, text, isCorrect, question_id FROM Answers";
+	private final String SQL_DELETE = "DELETE FROM Answers WHERE id = ?";
 
 	private String text;
 	private boolean correct;
@@ -31,59 +34,51 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Constructor with AnswerDTO from class diagram
+	 * Constructor with ID
+	 */
+	public AnswerDAO_MariaDB(int id) {
+		super(id);
+	}
+
+	/**
+	 * Full constructor
+	 */
+	public AnswerDAO_MariaDB(int id, String text, boolean correct, int questionId) {
+		super(id);
+		this.text = text;
+		this.correct = correct;
+		this.questionId = questionId;
+	}
+
+	/**
+	 * Constructor with AnswerDTO
 	 */
 	public AnswerDAO_MariaDB(AnswerDTO dto) {
 		super();
 		this.text = dto.getAnswerText();
 		this.correct = dto.isCorrect();
-		this.questionId = dto.getQuestionId();
 	}
 
-	/**
-	 * Constructor with Object array from class diagram
-	 */
-	public AnswerDAO_MariaDB(Object[] row) {
-		super();
-		if (row.length >= 4) {
-			setId((Integer) row[0]);
-			this.text = (String) row[1];
-			this.correct = (Boolean) row[2];
-			this.questionId = (Integer) row[3];
-		}
+	public String getText() {
+		return text;
 	}
 
-	/**
-	 * Additional setter for practical use
-	 */
 	public void setText(String text) {
 		this.text = text;
 	}
 
-	/**
-	 * isCorrect method from class diagram
-	 */
 	public boolean isCorrect() {
 		return correct;
 	}
 
-	/**
-	 * setCorrect method from class diagram
-	 */
 	public void setCorrect(boolean correct) {
 		this.correct = correct;
 	}
 
-	/**
-	 * getQuestionId method from class diagram
-	 */
 	public int getQuestionId() {
 		return questionId;
 	}
 
-	/**
-	 * setQuestionId method from class diagram
-	 */
 	public void setQuestionId(int questionId) {
 		this.questionId = questionId;
 	}
@@ -108,88 +103,78 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	@Override
-	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
-		if (isNew()) {
-			ps.setString(1, this.text);
-			ps.setBoolean(2, this.correct);
-			ps.setInt(3, this.questionId);
-		} else {
-			ps.setString(1, this.text);
-			ps.setBoolean(2, this.correct);
-			ps.setInt(3, this.questionId);
-			ps.setInt(4, getId());
-		}
-	}
-
 	public boolean isNew() {
 		return getId() <= 0;
 	}
 
 	@Override
-	public void fromResultSet(ResultSet rs) throws SQLException {
-		setId(rs.getInt("id"));
-		this.questionId = rs.getInt("question_id");
-		this.text = rs.getString("text");
-		this.correct = rs.getBoolean("isCorrect");
+	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
+		if (isNew()) {
+			// INSERT: text, isCorrect, question_id
+			ps.setString(1, text);
+			ps.setBoolean(2, correct);
+			ps.setInt(3, questionId);
+		} else {
+			// UPDATE: text, isCorrect, question_id, id
+			ps.setString(1, text);
+			ps.setBoolean(2, correct);
+			ps.setInt(3, questionId);
+			ps.setInt(4, getId());
+		}
 	}
 
 	@Override
 	public boolean performValidation() {
-		if (text == null || text.isEmpty()) {
-			throw new IllegalArgumentException("Answer text cannot be null or empty");
-		}
-		if (text.length() > 500) {
-			throw new IllegalArgumentException("Answer text cannot exceed 500 characters");
+		if (text == null || text.trim().isEmpty()) {
+			throw new IllegalArgumentException("Answer text cannot be empty");
 		}
 		if (questionId <= 0) {
-			throw new IllegalArgumentException("Question ID must be positive");
+			throw new IllegalArgumentException("Valid question ID is required");
 		}
-		return correct;
-	}
-
-	@Override
-	protected String getEntityInfo() {
-		return "questionId=" + questionId + ", text='" + text + "', correct=" + correct;
+		return true;
 	}
 
 	/**
-	 * Converts this DAO to a DTO object
+	 * Populates this DAO from a ResultSet
+	 */
+	public void fromResultSet(ResultSet rs) throws SQLException {
+		setId(rs.getInt("id"));
+		this.text = rs.getString("text");
+		this.correct = rs.getBoolean("isCorrect");
+		this.questionId = rs.getInt("question_id");
+	}
+
+	/**
+	 * Creates an AnswerDTO for transport
 	 */
 	public AnswerDTO forTransport() {
 		AnswerDTO dto = new AnswerDTO();
-		dto.setAnswerText(this.text);
-		dto.setCorrect(this.correct);
+		dto.setId(getId());
+		dto.setAnswerText(text);
+		dto.setCorrect(correct);
 		return dto;
 	}
 
 	/**
-	 * Creates a DAO from a DTO object
+	 * Creates an AnswerDAO from an AnswerDTO with question ID
 	 */
 	public static AnswerDAO_MariaDB fromTransport(AnswerDTO dto, int questionId) {
-		AnswerDAO_MariaDB dao = new AnswerDAO_MariaDB(dto);
+		AnswerDAO_MariaDB dao = new AnswerDAO_MariaDB();
+		dao.setId(dto.getId());
+		dao.setText(dto.getAnswerText());
+		dao.setCorrect(dto.isCorrect());
 		dao.setQuestionId(questionId);
 		return dao;
 	}
 
 	public CharSequence getValidationErrors() {
 		StringBuilder errors = new StringBuilder();
-		if (text == null || text.isEmpty()) {
-			errors.append("Answer text cannot be null or empty. ");
-		}
-		if (text.length() > 500) {
-			errors.append("Answer text cannot exceed 500 characters. ");
+		if (text == null || text.trim().isEmpty()) {
+			errors.append("Answer text cannot be empty.\n");
 		}
 		if (questionId <= 0) {
-			errors.append("Question ID must be positive. ");
+			errors.append("Valid question ID is required.\n");
 		}
-		return errors.toString();
+		return errors.length() > 0 ? errors.toString() : null;
 	}
-
-	/**
-	 * getText method from class diagram
-	 */
-	public String getText() {
-		return text;
-	}
-
 }

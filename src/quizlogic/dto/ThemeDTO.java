@@ -44,8 +44,6 @@ public class ThemeDTO extends DataTransportObject {
 		this.questions = new ArrayList<>();
 	}
 
-	// ==================== Getters/Setters ====================
-
 	public String getThemeTitle() {
 		return themeTitle;
 	}
@@ -70,8 +68,6 @@ public class ThemeDTO extends DataTransportObject {
 		this.questions = questions != null ? questions : new ArrayList<>();
 	}
 
-	// ==================== Legacy-Kompatibilität ====================
-
 	/**
 	 * Legacy method - delegates to getThemeTitle() Für Kompatibilität mit
 	 * bestehender GUI
@@ -90,42 +86,8 @@ public class ThemeDTO extends DataTransportObject {
 	/**
 	 * Legacy method - delegates to getThemeDescription()
 	 */
-	public String getDescription() {
-		return getThemeDescription();
-	}
-
-	/**
-	 * Legacy method - delegates to setThemeDescription()
-	 */
-	public void setDescription(String description) {
-		setThemeDescription(description);
-	}
-
-	/**
-	 * Legacy method - delegates to getThemeDescription()
-	 */
 	public String getText() {
 		return getThemeDescription();
-	}
-
-	// ==================== Convenience Methods ====================
-
-	public void addQuestion(QuestionDTO question) {
-		if (question != null) {
-			this.questions.add(question);
-		}
-	}
-
-	public boolean removeQuestion(QuestionDTO question) {
-		return this.questions.remove(question);
-	}
-
-	public int getQuestionCount() {
-		return questions.size();
-	}
-
-	public boolean hasQuestions() {
-		return !questions.isEmpty();
 	}
 
 	/**
@@ -140,8 +102,6 @@ public class ThemeDTO extends DataTransportObject {
 		int randomIndex = (int) (Math.random() * questions.size());
 		return questions.get(randomIndex);
 	}
-
-	// ==================== Template Method Implementations ====================
 
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {

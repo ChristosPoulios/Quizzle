@@ -86,4 +86,10 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 		}
 		return null;
 	}
+
+	public void clearAnswers() {
+		for (AnswerRowPanel row : answerRows) {
+			row.setAnswer("", false);
+		}
+	}
 }

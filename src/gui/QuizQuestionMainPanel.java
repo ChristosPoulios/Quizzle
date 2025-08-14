@@ -11,7 +11,7 @@ import gui.subpanels.AnswerRowPanel;
 import gui.subpanels.QuestionButtonPanel;
 import gui.subpanels.QuestionListPanel;
 import gui.subpanels.QuestionPanel;
-import persistence.serialization.QuizDataManager;
+import persistence.mariaDB.DBManager;
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
@@ -20,7 +20,8 @@ import quizlogic.dto.ThemeDTO;
  * Main panel for quiz question management.
  * 
  * Coordinates between question editing, question listing, and button actions.
- * Provides a complete interface for CRUD operations on quiz questions.
+ * Provides a complete interface for CRUD operations on quiz questions. Uses
+ * MariaDB for data persistence.
  * 
  * @author Christos Poulios
  * @version 2.0
@@ -29,22 +30,17 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 
 	private static final long serialVersionUID = 1L;
 
-	// ==================== Components ====================
-	private final QuizDataManager dataManager;
+	private final DBManager dbManager;
 	private QuestionPanel questionPanel;
 	private QuestionListPanel questionListPanel;
 	private QuestionButtonPanel buttonPanel;
 
-	// ==================== Constructor ====================
-
-	public QuizQuestionMainPanel(QuizDataManager dataManager) {
-		this.dataManager = dataManager;
+	public QuizQuestionMainPanel(DBManager dbManager) {
+		this.dbManager = dbManager;
 		initializeLayout();
 		initializeComponents();
 		connectComponents();
 	}
-
-	// ==================== Initialization ====================
 
 	private void initializeLayout() {
 		setBackground(BACKGROUND_COLOR);
@@ -56,7 +52,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		questionPanel.setEditable(true);
 		questionPanel.getMetaPanel().getQuestionTextArea().setBackground(BACKGROUND_COLOR);
 
-		questionListPanel = new QuestionListPanel(dataManager);
+		questionListPanel = new QuestionListPanel(dbManager);
 
 		buttonPanel = new QuestionButtonPanel(BTN_DELETE_QUESTION, BTN_SAVE_QUESTION, BTN_ADD_QUESTION);
 	}
@@ -71,8 +67,6 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
-	// ==================== QuizQuestionDelegator Implementation
-
 	@Override
 	public void onThemeSelected(String themeTitle) {
 		questionListPanel.updateQuestionList(themeTitle);
@@ -82,8 +76,18 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 
 	@Override
 	public void onQuestionSelected(String entry, int index) {
-		QuestionDTO question = dataManager.getQuestionByGlobalIndex(index);
-		displayQuestion(question);
+		QuestionDTO question = questionListPanel.getQuestionByIndex(index);
+		if (question != null) {
+			ArrayList<AnswerDTO> answers = dbManager.getAnswersFor(question);
+			question.setAnswers(answers);
+
+			String selectedThemeName = questionListPanel.getSelectedThemeTitle();
+			if ("Alle Themen".equals(selectedThemeName)) {
+
+				selectedThemeName = getThemeNameForQuestion(question);
+			}
+			questionPanel.fillWithQuestionData(question, selectedThemeName);
+		}
 	}
 
 	@Override
@@ -95,18 +99,21 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				return;
 			}
 
-			QuestionDTO questionToDelete = dataManager.getQuestionByGlobalIndex(selectedIndex);
+			QuestionDTO questionToDelete = questionListPanel.getQuestionByIndex(selectedIndex);
 			if (questionToDelete == null) {
 				buttonPanel.setMessage("Frage nicht gefunden");
 				return;
 			}
 
-			if (removeQuestionFromTheme(questionToDelete)) {
+			String result = dbManager.deleteQuestion(questionToDelete);
+
+			if (result != null && result.contains("successfully")) {
 				buttonPanel.setMessage("Frage erfolgreich gelöscht: " + questionToDelete.getQuestionTitle());
 				clearQuestionSelection();
 				questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
 			} else {
-				buttonPanel.setMessage("Frage konnte nicht gelöscht werden");
+				buttonPanel.setMessage(
+						"Frage konnte nicht gelöscht werden: " + (result != null ? result : "Unbekannter Fehler"));
 			}
 		} catch (Exception e) {
 			buttonPanel.setMessage("Fehler beim Löschen: " + e.getMessage());
@@ -135,19 +142,32 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 
 			updateQuestionData(question);
 
-			ArrayList<AnswerDTO> answers = collectAnswers(question);
-			if (!validateAnswers(answers)) {
-				return;
-			}
+			String result = dbManager.saveQuestion(question, targetTheme);
 
-			question.setAnswers(answers);
+			if (result != null && result.contains("successfully")) {
 
-			String result = dataManager.saveTheme(targetTheme);
-			if (result.contains("erfolgreich")) {
-				buttonPanel.setMessage("Frage erfolgreich gespeichert: " + question.getQuestionTitle());
-				questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
+				ArrayList<AnswerDTO> answers = collectAnswers(question);
+				if (!validateAnswers(answers)) {
+					return;
+				}
+
+				boolean allAnswersSaved = true;
+				for (AnswerDTO answer : answers) {
+					String answerResult = dbManager.saveAnswer(answer, question);
+					if (answerResult == null || !answerResult.contains("successfully")) {
+						allAnswersSaved = false;
+						break;
+					}
+				}
+
+				if (allAnswersSaved) {
+					buttonPanel.setMessage("Frage erfolgreich gespeichert: " + question.getQuestionTitle());
+					questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
+				} else {
+					buttonPanel.setMessage("Frage gespeichert, aber Fehler beim Speichern der Antworten");
+				}
 			} else {
-				buttonPanel.setMessage("Fehler beim Speichern: " + result);
+				buttonPanel.setMessage("Fehler beim Speichern: " + (result != null ? result : "Unbekannter Fehler"));
 			}
 
 		} catch (Exception e) {
@@ -183,8 +203,6 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		}
 	}
 
-	// ==================== Helper Methods ====================
-
 	private void clearQuestionSelection() {
 		questionListPanel.getQuestionList().clearSelection();
 		questionPanel.fillWithQuestionData(null);
@@ -196,79 +214,51 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		}
 	}
 
-	private void displayQuestion(QuestionDTO question) {
-		if (question != null) {
-			questionPanel.fillWithQuestionData(question);
-			questionPanel.setEditable(true);
-		}
-	}
-
-	private boolean removeQuestionFromTheme(QuestionDTO questionToDelete) {
-		for (ThemeDTO theme : dataManager.getAllThemes()) {
-			if (theme.getQuestions() != null) {
-				for (int i = 0; i < theme.getQuestions().size(); i++) {
-					QuestionDTO q = theme.getQuestions().get(i);
-					if (q.getId() == questionToDelete.getId()) {
-						theme.getQuestions().remove(i);
-						String result = dataManager.saveTheme(theme);
-						return result.contains("erfolgreich");
-					}
-				}
-			}
-		}
-		return false;
+	/**
+	 * Refreshes the theme list in the question list panel.
+	 * Call this method when themes have been added, modified, or deleted.
+	 */
+	public void refreshThemeList() {
+		questionListPanel.refreshThemeComboBox();
 	}
 
 	private boolean validateInput(String themeTitle) {
-		if (themeTitle == null || themeTitle.trim().isEmpty()) {
-			buttonPanel.setMessage("Bitte wählen Sie ein Thema aus");
+		if (themeTitle == null || themeTitle.trim().isEmpty() || themeTitle.equals("Alle Themen")) {
+			buttonPanel.setMessage("Bitte wählen Sie ein gültiges Thema aus");
 			return false;
 		}
-
-		String questionTitle = questionPanel.getMetaPanel().getTitleField().getText().trim();
-		if (questionTitle.isEmpty()) {
-			buttonPanel.setMessage("Bitte geben Sie einen Fragetitel ein");
-			return false;
-		}
-
-		String questionContent = questionPanel.getMetaPanel().getQuestionTextArea().getText().trim();
-		if (questionContent.isEmpty()) {
-			buttonPanel.setMessage("Bitte geben Sie einen Fragetext ein");
-			return false;
-		}
-
 		return true;
 	}
 
 	private ThemeDTO findTheme(String themeTitle) {
-		for (ThemeDTO theme : dataManager.getAllThemes()) {
-			if (themeTitle.equals(theme.getThemeTitle())) {
+
+		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		for (ThemeDTO theme : themes) {
+			if (theme.getThemeTitle().equals(themeTitle)) {
 				return theme;
 			}
 		}
 		return null;
 	}
 
-	private QuestionDTO getOrCreateQuestion(ThemeDTO targetTheme) {
+	private QuestionDTO getOrCreateQuestion(ThemeDTO theme) {
 		int selectedIndex = questionListPanel.getQuestionList().getSelectedIndex();
-		boolean isNewQuestion = selectedIndex < 0;
-
-		if (isNewQuestion) {
-			QuestionDTO question = new QuestionDTO();
-			question.setId(generateNewQuestionId(targetTheme));
-			targetTheme.getQuestions().add(question);
-			return question;
+		if (selectedIndex >= 0) {
+			return questionListPanel.getQuestionByIndex(selectedIndex);
 		} else {
-			return dataManager.getQuestionByGlobalIndex(selectedIndex);
+
+			QuestionDTO newQuestion = new QuestionDTO();
+			newQuestion.setId(-1);
+			return newQuestion;
 		}
 	}
 
 	private void updateQuestionData(QuestionDTO question) {
-		String questionTitle = questionPanel.getMetaPanel().getTitleField().getText().trim();
-		String questionContent = questionPanel.getMetaPanel().getQuestionTextArea().getText().trim();
+		String title = questionPanel.getMetaPanel().getTitleField().getText().trim();
+		String questionText = questionPanel.getMetaPanel().getQuestionTextArea().getText().trim();
 
-		question.setQuestionTitle(questionTitle);
-		question.setQuestionText(questionContent);
+		question.setQuestionTitle(title);
+		question.setQuestionText(questionText);
 	}
 
 	private ArrayList<AnswerDTO> collectAnswers(QuestionDTO question) {
@@ -276,16 +266,16 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		AnswerRowPanel[] answerRows = questionPanel.getAnswersPanel().getAnswerRows();
 
 		for (int i = 0; i < answerRows.length; i++) {
-			String answerText = answerRows[i].getAnswerText().trim();
+			String answerText = answerRows[i].getTextField().getText().trim();
 			if (!answerText.isEmpty()) {
 				AnswerDTO answer = new AnswerDTO();
-				answer.setId(i);
+				answer.setId(-1);
 				answer.setAnswerText(answerText);
 				answer.setCorrect(answerRows[i].isCorrect());
-				answer.setQuestionId(question.getId());
 				answers.add(answer);
 			}
 		}
+
 		return answers;
 	}
 
@@ -295,22 +285,37 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 			return false;
 		}
 
-		boolean hasCorrectAnswer = answers.stream().anyMatch(AnswerDTO::isCorrect);
+		boolean hasCorrectAnswer = false;
+		for (AnswerDTO answer : answers) {
+			if (answer.isCorrect()) {
+				hasCorrectAnswer = true;
+				break;
+			}
+		}
+
 		if (!hasCorrectAnswer) {
-			buttonPanel.setMessage("Bitte markieren Sie mindestens eine richtige Antwort");
+			buttonPanel.setMessage("Bitte markieren Sie mindestens eine Antwort als korrekt");
 			return false;
 		}
 
 		return true;
 	}
 
-	private int generateNewQuestionId(ThemeDTO theme) {
-		int maxId = 0;
-		if (theme.getQuestions() != null) {
-			for (QuestionDTO q : theme.getQuestions()) {
-				maxId = Math.max(maxId, q.getId());
+	/**
+	 * Gets the theme name for a specific question by looking up the theme_id
+	 */
+	private String getThemeNameForQuestion(QuestionDTO question) {
+		try {
+			ArrayList<ThemeDTO> allThemes = dbManager.getAllThemes();
+
+			String currentTheme = questionListPanel.getSelectedThemeTitle();
+			if (currentTheme != null && !"Alle Themen".equals(currentTheme)) {
+				return currentTheme;
 			}
+
+			return "";
+		} catch (Exception e) {
+			return "";
 		}
-		return maxId + 1;
 	}
 }
