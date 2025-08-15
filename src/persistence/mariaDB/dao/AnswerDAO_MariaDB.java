@@ -8,40 +8,80 @@ import persistence.mariaDB.MariaAccessObject;
 import quizlogic.dto.AnswerDTO;
 
 /**
- * Data Access Object for Answer entities in MariaDB Updated to match
- * quizzle.sql schema
+ * MariaDB DAO (Data Access Object) for quiz answers.
+ * <p>
+ * Provides mapping between the database table {@code Answers} and the
+ * {@link AnswerDTO} used for transport in the application.
+ * <p>
+ * Table structure:
+ * <ul>
+ * <li>id (INT, primary key)</li>
+ * <li>text (VARCHAR) – the answer text</li>
+ * <li>isCorrect (BOOLEAN) – whether this is the correct answer</li>
+ * <li>question_id (INT, foreign key referencing Questions table)</li>
+ * </ul>
+ * 
+ * Responsibilities:
+ * <ul>
+ * <li>Generate SQL statements for SELECT, INSERT, UPDATE, DELETE
+ * operations</li>
+ * <li>Map result sets from the database to DTOs</li>
+ * <li>Map DTOs to SQL prepared statement parameters</li>
+ * <li>Provide validation for answer data</li>
+ * </ul>
+ * 
+ * @author Christos Poulios
+ * @version 1.0
+ * @since 1.0
  */
 public class AnswerDAO_MariaDB extends MariaAccessObject {
 
 	private static final long serialVersionUID = 1L;
 
-	// Updated SQL statements to match schema: Answers table with columns: id, text,
-	// isCorrect, question_id
+	/** SQL INSERT statement for the Answers table */
 	private final String SQL_INSERT = "INSERT INTO Answers (text, isCorrect, question_id) VALUES (?, ?, ?)";
+
+	/** SQL UPDATE statement for the Answers table */
 	private final String SQL_UPDATE = "UPDATE Answers SET text = ?, isCorrect = ?, question_id = ? WHERE id = ?";
+
+	/** SQL SELECT statement for the Answers table */
 	private final String SQL_SELECT = "SELECT id, text, isCorrect, question_id FROM Answers";
+
+	/** SQL DELETE statement for the Answers table */
 	private final String SQL_DELETE = "DELETE FROM Answers WHERE id = ?";
 
+	/** Answer text */
 	private String text;
+
+	/** Whether the answer is correct */
 	private boolean correct;
+
+	/** ID of the associated question */
 	private int questionId;
 
 	/**
-	 * Default constructor
+	 * Default constructor.
 	 */
 	public AnswerDAO_MariaDB() {
 		super();
 	}
 
 	/**
-	 * Constructor with ID
+	 * Constructor with ID for existing entities.
+	 *
+	 * @param id answer ID
 	 */
 	public AnswerDAO_MariaDB(int id) {
 		super(id);
 	}
 
 	/**
-	 * Full constructor
+	 * Full constructor.
+	 *
+	 * @param id         answer ID
+	 * @param text       answer text
+	 * @param correct    whether the answer is correct
+	 * @param questionId associated question ID
 	 */
 	public AnswerDAO_MariaDB(int id, String text, boolean correct, int questionId) {
 		super(id);
@@ -51,7 +91,9 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Constructor with AnswerDTO
+	 * Constructor from DTO.
+	 *
+	 * @param dto AnswerDTO containing answer data
 	 */
 	public AnswerDAO_MariaDB(AnswerDTO dto) {
 		super();
@@ -59,63 +101,15 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 		this.correct = dto.isCorrect();
 	}
 
-	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public boolean isCorrect() {
-		return correct;
-	}
-
-	public void setCorrect(boolean correct) {
-		this.correct = correct;
-	}
-
-	public int getQuestionId() {
-		return questionId;
-	}
-
-	public void setQuestionId(int questionId) {
-		this.questionId = questionId;
-	}
-
-	@Override
-	public String getSelectStatement() {
-		return SQL_SELECT;
-	}
-
-	@Override
-	public String getInsertStatement() {
-		return SQL_INSERT;
-	}
-
-	@Override
-	public String getUpdateStatement() {
-		return SQL_UPDATE;
-	}
-
-	public String getDeleteStatement() {
-		return SQL_DELETE;
-	}
-
-	@Override
-	public boolean isNew() {
-		return getId() <= 0;
-	}
-
 	@Override
 	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
 		if (isNew()) {
-			// INSERT: text, isCorrect, question_id
+			// INSERT
 			ps.setString(1, text);
 			ps.setBoolean(2, correct);
 			ps.setInt(3, questionId);
 		} else {
-			// UPDATE: text, isCorrect, question_id, id
+			// UPDATE
 			ps.setString(1, text);
 			ps.setBoolean(2, correct);
 			ps.setInt(3, questionId);
@@ -123,6 +117,12 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 		}
 	}
 
+	/**
+	 * Validates the answer data.
+	 *
+	 * @return true if validation passes
+	 * @throws IllegalArgumentException if validation fails
+	 */
 	@Override
 	public boolean performValidation() {
 		if (text == null || text.trim().isEmpty()) {
@@ -135,7 +135,10 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Populates this DAO from a ResultSet
+	 * Populates this DAO from a database {@link ResultSet}.
+	 *
+	 * @param rs ResultSet containing query results
+	 * @throws SQLException if a database access error occurs
 	 */
 	public void fromResultSet(ResultSet rs) throws SQLException {
 		setId(rs.getInt("id"));
@@ -145,7 +148,9 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Creates an AnswerDTO for transport
+	 * Converts this DAO to a transferable {@link AnswerDTO}.
+	 *
+	 * @return populated AnswerDTO
 	 */
 	public AnswerDTO forTransport() {
 		AnswerDTO dto = new AnswerDTO();
@@ -156,7 +161,11 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Creates an AnswerDAO from an AnswerDTO with question ID
+	 * Creates a DAO from an AnswerDTO and an associated question ID.
+	 *
+	 * @param dto        the AnswerDTO
+	 * @param questionId associated question ID
+	 * @return AnswerDAO_MariaDB instance
 	 */
 	public static AnswerDAO_MariaDB fromTransport(AnswerDTO dto, int questionId) {
 		AnswerDAO_MariaDB dao = new AnswerDAO_MariaDB();
@@ -167,6 +176,11 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 		return dao;
 	}
 
+	/**
+	 * Returns validation error messages without throwing exceptions.
+	 *
+	 * @return error messages as a string, or null if no errors
+	 */
 	public CharSequence getValidationErrors() {
 		StringBuilder errors = new StringBuilder();
 		if (text == null || text.trim().isEmpty()) {
@@ -176,5 +190,108 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 			errors.append("Valid question ID is required.\n");
 		}
 		return errors.length() > 0 ? errors.toString() : null;
+	}
+
+	/**
+	 * Returns the answer text.
+	 *
+	 * @return the answer text
+	 */
+	public String getText() {
+		return text;
+	}
+
+	/**
+	 * Sets the answer text.
+	 *
+	 * @param text the answer text to set
+	 */
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	/**
+	 * Checks if this answer is marked as correct.
+	 *
+	 * @return true if the answer is correct, false otherwise
+	 */
+	public boolean isCorrect() {
+		return correct;
+	}
+
+	/**
+	 * Sets whether this answer is correct.
+	 *
+	 * @param correct true if the answer is correct, false otherwise
+	 */
+	public void setCorrect(boolean correct) {
+		this.correct = correct;
+	}
+
+	/**
+	 * Returns the ID of the associated question.
+	 *
+	 * @return the question ID
+	 */
+	public int getQuestionId() {
+		return questionId;
+	}
+
+	/**
+	 * Sets the ID of the associated question.
+	 *
+	 * @param questionId the question ID to set
+	 */
+	public void setQuestionId(int questionId) {
+		this.questionId = questionId;
+	}
+
+	/**
+	 * Returns the SQL SELECT statement for retrieving answers.
+	 *
+	 * @return SQL SELECT statement string
+	 */
+	@Override
+	public String getSelectStatement() {
+		return SQL_SELECT;
+	}
+
+	/**
+	 * Returns the SQL INSERT statement for adding new answers.
+	 *
+	 * @return SQL INSERT statement string
+	 */
+	@Override
+	public String getInsertStatement() {
+		return SQL_INSERT;
+	}
+
+	/**
+	 * Returns the SQL UPDATE statement for modifying existing answers.
+	 *
+	 * @return SQL UPDATE statement string
+	 */
+	@Override
+	public String getUpdateStatement() {
+		return SQL_UPDATE;
+	}
+
+	/**
+	 * Returns the SQL DELETE statement for removing answers.
+	 *
+	 * @return SQL DELETE statement string
+	 */
+	public String getDeleteStatement() {
+		return SQL_DELETE;
+	}
+
+	/**
+	 * Checks if this DAO represents a new answer (ID <= 0).
+	 *
+	 * @return true if the answer is new, false otherwise
+	 */
+	@Override
+	public boolean isNew() {
+		return getId() <= 0;
 	}
 }

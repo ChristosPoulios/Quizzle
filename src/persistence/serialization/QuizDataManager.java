@@ -8,31 +8,54 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import persistence.QuizDataInterface;
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
 
 /**
- * Central data manager for quiz persistence with proper ID management.
+ * Serialization-based data manager for quiz persistence.
+ * <p>
+ * This implementation of {@link persistence.QuizDataInterface} stores each
+ * theme as a separate serialized file. It provides:
+ * <ul>
+ * <li>Persistent storage of themes, questions, and answers using file
+ * serialization</li>
+ * <li>Automatic ID assignment for new themes</li>
+ * <li>Observer/listener support for UI updates</li>
+ * <li>Methods to retrieve random questions and formatted lists for display</li>
+ * </ul>
  * 
- * Ensures each theme gets a unique ID and is saved to a separate file. Provides
- * observer pattern for UI updates and replaces FakeDataFactory functionality.
+ * <b>Storage Layout:</b>
  * 
- * @author System
+ * <pre>
+ * ./quizData/theme_{id}.dat
+ * </pre>
+ * 
+ * Where {@code id} is the unique theme identifier.
+ * 
+ * @author Christos Poulios
  * @version 2.0
  * @since 2.0
  */
 public class QuizDataManager implements QuizDataInterface {
+
+	/** Directory where serialized theme files are stored */
 	private static final String FOLDER = "./quizData";
+
+	/** Prefix for theme filenames */
 	private static final String THEME_PREFIX = "theme_";
+
+	/** File extension for serialized theme files */
 	private static final String EXTENSION = ".dat";
 
-	/** List of observers that get notified when data changes */
+	/** List of update listeners that are notified when data changes */
 	private List<Runnable> updateListeners = new ArrayList<>();
 
 	/**
-	 * Constructs a new QuizDataManager and ensures the data directory exists.
+	 * Creates a new QuizDataManager instance. Ensures that the quiz data directory
+	 * exists, creating it if necessary.
 	 */
 	public QuizDataManager() {
 		File folder = new File(FOLDER);
@@ -42,9 +65,9 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Returns all theme titles for UI components like ComboBoxes.
-	 * 
-	 * @return ArrayList containing all theme titles
+	 * Returns a list of all theme titles from storage.
+	 *
+	 * @return an {@link ArrayList} containing theme titles
 	 */
 	public ArrayList<String> getThemeTitles() {
 		ArrayList<String> titles = new ArrayList<>();
@@ -56,25 +79,22 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Returns a question by its global index across all themes.
-	 * 
-	 * @param idx zero-based global index
-	 * @return requested Question or null if not found
+	 * Retrieves a question by its global index across all themes.
+	 *
+	 * @param idx zero-based global index across all stored questions
+	 * @return the {@link QuestionDTO} or null if index is invalid
 	 */
 	public QuestionDTO getQuestionByGlobalIndex(int idx) {
 		ArrayList<ThemeDTO> themes = getAllThemes();
 		ArrayList<QuestionDTO> allQuestions = new ArrayList<>();
-
 		for (ThemeDTO theme : themes) {
 			if (theme.getQuestions() != null) {
 				allQuestions.addAll(theme.getQuestions());
 			}
 		}
-
 		if (idx < 0 || idx >= allQuestions.size()) {
 			return null;
 		}
-
 		QuestionDTO question = allQuestions.get(idx);
 		if (question.getAnswers() == null || question.getAnswers().isEmpty()) {
 			createAnswersFor(question);
@@ -83,11 +103,15 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Returns display entries for questions based on the selected theme title.
-	 * 
-	 * @param themeTitle The title of the selected theme, or null/"Alle Themen" for
-	 *                   all themes
-	 * @return ArrayList of question display strings with title and question text
+	 * Returns formatted display entries for questions for a given theme title.
+	 * <p>
+	 * If {@code themeTitle} is null or equals "Alle Themen", all questions from all
+	 * themes are returned. Otherwise, only questions belonging to the matching
+	 * theme are included.
+	 *
+	 * @param themeTitle Selected theme title, or null/“Alle Themen” for all
+	 * @return an {@link ArrayList} of formatted strings showing both title and a
+	 *         truncated preview of text
 	 */
 	public ArrayList<String> getQuestionListEntries(String themeTitle) {
 		ArrayList<String> entries = new ArrayList<>();
@@ -95,7 +119,6 @@ public class QuizDataManager implements QuizDataInterface {
 
 		if (themeTitle == null || themeTitle.equals("Alle Themen")) {
 			int questionCounter = 1;
-
 			for (ThemeDTO theme : themes) {
 				if (theme.getQuestions() != null) {
 					for (QuestionDTO q : theme.getQuestions()) {
@@ -121,23 +144,20 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Formats a question for display in the question list. Shows both title and
-	 * question text in a readable format.
-	 * 
-	 * @param question The question to format
-	 * @param number   The question number for display
-	 * @return Formatted string for the question list
+	 * Formats a question for list display combining title and a truncated preview
+	 * of the question text.
+	 *
+	 * @param question the {@link QuestionDTO} to format
+	 * @param number   the number of the question in the list
+	 * @return formatted string for display purposes
 	 */
 	private String formatQuestionDisplay(QuestionDTO question, int number) {
 		if (question == null) {
 			return "Frage " + number + ": [Keine Daten]";
 		}
-
 		String title = question.getQuestionTitle();
 		String text = question.getQuestionText();
-
 		String displayTitle = (title != null && !title.trim().isEmpty()) ? title : "Frage " + number;
-
 		if (text != null && !text.trim().isEmpty()) {
 			String preview = text.length() > 50 ? text.substring(0, 47) + "..." : text;
 			return displayTitle + ": " + preview;
@@ -147,16 +167,16 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Adds an observer that gets notified when data changes.
-	 * 
-	 * @param listener The callback to execute when data updates occur
+	 * Adds an observer/listener that will be notified whenever quiz data changes.
+	 *
+	 * @param listener Runnable callback to execute on updates
 	 */
 	public void addUpdateListener(Runnable listener) {
 		updateListeners.add(listener);
 	}
 
 	/**
-	 * Notifies all registered observers about data changes.
+	 * Notifies all registered update listeners about a data change.
 	 */
 	private void notifyListeners() {
 		for (Runnable listener : updateListeners) {
@@ -165,9 +185,10 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Creates sample answers for a question if none exist.
-	 * 
-	 * @param question The question to create answers for
+	 * Creates default placeholder answers for a question if none exist. Useful for
+	 * ensuring the UI has something to display.
+	 *
+	 * @param question the {@link QuestionDTO} to populate with answers
 	 */
 	private void createAnswersFor(QuestionDTO question) {
 		ArrayList<AnswerDTO> answers = new ArrayList<>();
@@ -182,30 +203,43 @@ public class QuizDataManager implements QuizDataInterface {
 		question.setAnswers(answers);
 	}
 
+	/**
+	 * Saves a theme to storage as a serialized file.
+	 * <p>
+	 * If the theme has no ID yet, a new ID is generated automatically.
+	 *
+	 * @param theme the {@link ThemeDTO} to save
+	 * @return success or error message
+	 */
 	@Override
 	public String saveTheme(ThemeDTO theme) {
 		try {
-
 			if (theme.getId() == -1) {
 				int newId = createNewThemeId();
 				theme.setId(newId);
-				System.out.println("DEBUG: Neue Theme ID vergeben: " + newId);
+				System.out.println("DEBUG: New Theme ID assigned: " + newId);
 			}
-
 			String filename = FOLDER + "/" + THEME_PREFIX + theme.getId() + EXTENSION;
-			System.out.println("DEBUG: Speichere Theme in Datei: " + filename);
-
+			System.out.println("DEBUG: Saving Theme to file: " + filename);
 			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
 				oos.writeObject(theme);
 				notifyListeners();
-				return "Thema erfolgreich gespeichert: " + theme.getThemeTitle() + " (ID: " + theme.getId() + ")";
+				return "Theme successfully saved: " + theme.getThemeTitle() + " (ID: " + theme.getId() + ")";
+			} catch (IOException e) {
+				e.printStackTrace();
+				return "Error while saving: " + e.getMessage();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			return "Fehler beim Speichern: " + e.getMessage();
+			return "Error while saving: " + e.getMessage();
 		}
 	}
 
+	/**
+	 * Loads all themes from storage.
+	 *
+	 * @return list of all loaded {@link ThemeDTO}s
+	 */
 	@Override
 	public ArrayList<ThemeDTO> getAllThemes() {
 		ArrayList<ThemeDTO> themes = new ArrayList<>();
@@ -213,21 +247,16 @@ public class QuizDataManager implements QuizDataInterface {
 		if (!folder.exists() || !folder.isDirectory()) {
 			return themes;
 		}
-
 		@SuppressWarnings("unused")
 		File[] files = folder.listFiles((dir, name) -> name.startsWith(THEME_PREFIX) && name.endsWith(EXTENSION));
 		if (files != null) {
-
-			System.out.println("DEBUG: Gefundene Theme-Dateien: " + files.length);
-
+			System.out.println("DEBUG: Found theme files: " + files.length);
 			for (File file : files) {
-
 				try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
 					ThemeDTO theme = (ThemeDTO) ois.readObject();
 					themes.add(theme);
-
 					System.out
-							.println("DEBUG: Theme geladen: " + theme.getThemeTitle() + " (ID: " + theme.getId() + ")");
+							.println("DEBUG: Theme loaded: " + theme.getThemeTitle() + " (ID: " + theme.getId() + ")");
 				} catch (IOException | ClassNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -239,130 +268,129 @@ public class QuizDataManager implements QuizDataInterface {
 	/**
 	 * Creates a new unique theme ID by finding the highest existing ID and adding
 	 * 1.
-	 * 
-	 * @return The next available theme ID
+	 *
+	 * @return the next available theme ID
 	 */
 	private int createNewThemeId() {
 		int maxId = 0;
 		File folder = new File(FOLDER);
 		if (folder.exists() && folder.isDirectory()) {
-
 			@SuppressWarnings("unused")
 			File[] files = folder.listFiles((dir, name) -> name.startsWith(THEME_PREFIX) && name.endsWith(EXTENSION));
-
 			if (files != null) {
-
-				System.out.println("DEBUG: Analysiere " + files.length + " existierende Dateien für ID-Vergabe");
-
+				System.out.println("DEBUG: Analyzing " + files.length + " existing files for ID assignment");
 				for (File file : files) {
 					String name = file.getName();
 					String idStr = name.substring(THEME_PREFIX.length(), name.length() - EXTENSION.length());
-
 					try {
 						int id = Integer.parseInt(idStr);
 						maxId = Math.max(maxId, id);
-						System.out.println("DEBUG: Gefundene ID: " + id + ", aktuelle Max-ID: " + maxId);
+						System.out.println("DEBUG: Found ID: " + id + ", current max ID: " + maxId);
 					} catch (NumberFormatException e) {
-						System.out.println("DEBUG: Konnte ID nicht parsen aus: " + name);
+						System.out.println("DEBUG: Could not parse ID from: " + name);
 					}
 				}
 			}
 		}
 		int newId = maxId + 1;
-		System.out.println("DEBUG: Neue ID wird sein: " + newId);
+		System.out.println("DEBUG: New ID will be: " + newId);
 		return newId;
 	}
 
+	/**
+	 * Gets a random question from all available questions in storage.
+	 *
+	 * @return a random {@link QuestionDTO}, or null if no questions exist
+	 */
 	@Override
 	public QuestionDTO getRandomQuestion() {
 		ArrayList<ThemeDTO> themes = getAllThemes();
-
 		if (themes.isEmpty())
 			return null;
-
 		ArrayList<QuestionDTO> allQuestions = new ArrayList<>();
-
 		for (ThemeDTO theme : themes) {
-
 			if (theme.getQuestions() != null) {
 				allQuestions.addAll(theme.getQuestions());
 			}
 		}
-
 		if (allQuestions.isEmpty())
 			return null;
-
 		int randomIndex = (int) (Math.random() * allQuestions.size());
 		QuestionDTO question = allQuestions.get(randomIndex);
-
 		if (question.getAnswers() == null || question.getAnswers().isEmpty()) {
 			createAnswersFor(question);
 		}
 		return question;
 	}
 
+	/**
+	 * Returns the list of questions for a given theme.
+	 *
+	 * @param theme a {@link ThemeDTO}
+	 * @return list of associated {@link QuestionDTO}s
+	 */
 	@Override
 	public ArrayList<QuestionDTO> getQuestionsFor(ThemeDTO theme) {
 		return (ArrayList<QuestionDTO>) theme.getQuestions();
 	}
 
+	/**
+	 * Returns the list of answers for a given question.
+	 *
+	 * @param question a {@link QuestionDTO}
+	 * @return list of answers
+	 */
 	@Override
 	public ArrayList<AnswerDTO> getAnswersFor(QuestionDTO question) {
 		return (ArrayList<AnswerDTO>) question.getAnswers();
 	}
 
 	/**
-	 * Deletes a theme from persistent storage.
-	 * 
-	 * @param theme The theme to delete
-	 * @return null if successful, error message if failed
+	 * Deletes a theme from storage by removing its serialized file.
+	 *
+	 * @param theme the {@link ThemeDTO} to delete
+	 * @return null if successful, otherwise an error message
 	 */
 	@Override
 	public String deleteTheme(ThemeDTO theme) {
 		try {
 			if (theme == null || theme.getId() <= 0) {
-				return "Ungültiges Theme";
+				return "Invalid Theme";
 			}
-
 			String filename = FOLDER + "/" + THEME_PREFIX + theme.getId() + EXTENSION;
 			File file = new File(filename);
-
 			if (file.exists()) {
-
 				if (file.delete()) {
-					System.out.println("DEBUG: Theme-Datei gelöscht: " + filename);
+					System.out.println("DEBUG: Theme file deleted: " + filename);
 					notifyListeners();
 					return null;
 				} else {
-
-					return "Datei konnte nicht gelöscht werden";
+					return "File could not be deleted";
 				}
 			} else {
-
-				return "Theme-Datei nicht gefunden: " + filename;
+				return "Theme file not found: " + filename;
 			}
 		} catch (Exception e) {
-
 			e.printStackTrace();
-			return "Fehler beim Löschen: " + e.getMessage();
+			return "Error deleting theme: " + e.getMessage();
 		}
 	}
 
 	@Override
 	public QuestionDTO getRandomQuestionFor(ThemeDTO theme) {
-		// TODO Auto-generated method stub
+		// TODO: Implement method
 		return null;
 	}
 
 	@Override
 	public String saveQuestion(QuestionDTO question) {
-		// TODO Auto-generated method stub
+		// TODO: Implement method
 		return null;
 	}
 
 	@Override
 	public String deleteQuestion(QuestionDTO question) {
-		// TODO Auto-generated method stub
+		// TODO: Implement method
 		return null;
 	}
 }

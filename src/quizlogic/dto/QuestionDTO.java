@@ -7,19 +7,39 @@ import java.util.Objects;
 import quizlogic.DataTransportObject;
 
 /**
- * Data Transfer Object for quiz questions. Extends DataTransportObject for
- * consistent DTO behavior.
+ * Data Transfer Object (DTO) representing a quiz question.
+ * <p>
+ * Each question contains:
+ * <ul>
+ * <li>The main question text</li>
+ * <li>An optional title or short description</li>
+ * <li>A list of possible answers</li>
+ * </ul>
+ * This class extends {@link DataTransportObject} for consistent ID and
+ * validation handling.
+ * <p>
+ * Used in both in-memory operations and persistent storage layers.
+ * 
+ * @author Christos Poulios
+ * @version 1.0
+ * @since 1.0
  */
 public class QuestionDTO extends DataTransportObject {
 
 	private static final long serialVersionUID = 1L;
 
+	/** The main question text to be displayed */
 	private String questionText;
+
+	/** Optional short title for the question */
 	private String questionTitle;
+
+	/** List of possible answers to this question */
 	private List<AnswerDTO> answers;
 
 	/**
-	 * Default constructor
+	 * Default constructor for creating a new QuestionDTO. Initializes an empty
+	 * answer list.
 	 */
 	public QuestionDTO() {
 		super();
@@ -27,7 +47,10 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructor with ID
+	 * Constructor for creating a QuestionDTO with an existing ID (persisted
+	 * entity).
+	 *
+	 * @param id the unique ID of the question
 	 */
 	public QuestionDTO(int id) {
 		super(id);
@@ -35,7 +58,10 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Full constructor
+	 * Constructor for creating a new question with text and title.
+	 *
+	 * @param questionText  the main question text
+	 * @param questionTitle the question title
 	 */
 	public QuestionDTO(String questionText, String questionTitle) {
 		super();
@@ -44,89 +70,154 @@ public class QuestionDTO extends DataTransportObject {
 		this.answers = new ArrayList<>();
 	}
 
-
+	/**
+	 * Gets the main question text.
+	 *
+	 * @return the question text
+	 */
 	public String getQuestionText() {
 		return questionText;
 	}
 
+	/**
+	 * Sets the main question text.
+	 *
+	 * @param questionText the new question text
+	 */
 	public void setQuestionText(String questionText) {
 		this.questionText = questionText;
 	}
 
+	/**
+	 * Gets the question title.
+	 *
+	 * @return the question title
+	 */
 	public String getQuestionTitle() {
 		return questionTitle;
 	}
 
+	/**
+	 * Sets the question title.
+	 *
+	 * @param questionTitle the new question title
+	 */
 	public void setQuestionTitle(String questionTitle) {
 		this.questionTitle = questionTitle;
 	}
 
+	/**
+	 * Gets the list of answers for this question.
+	 *
+	 * @return list of answers
+	 */
 	public List<AnswerDTO> getAnswers() {
 		return answers;
 	}
 
+	/**
+	 * Sets the list of answers for this question.
+	 *
+	 * @param answers list of answers, if null an empty list will be assigned
+	 */
 	public void setAnswers(List<AnswerDTO> answers) {
 		this.answers = answers != null ? answers : new ArrayList<>();
 	}
 
-
 	/**
-	 * Legacy method - delegates to getQuestionText()
+	 * Legacy method - alias for {@link #getQuestionText()}.
+	 *
+	 * @return the question text
 	 */
 	public String getText() {
 		return getQuestionText();
 	}
 
 	/**
-	 * Legacy method - delegates to setQuestionText()
+	 * Legacy method - alias for {@link #setQuestionText(String)}.
+	 *
+	 * @param text question text
 	 */
 	public void setText(String text) {
 		setQuestionText(text);
 	}
 
 	/**
-	 * Legacy method - delegates to getQuestionTitle()
+	 * Legacy method - alias for {@link #getQuestionTitle()}.
+	 *
+	 * @return question title
 	 */
 	public String getTitle() {
 		return getQuestionTitle();
 	}
 
 	/**
-	 * Legacy method - delegates to setQuestionTitle()
+	 * Legacy method - alias for {@link #setQuestionTitle(String)}.
+	 *
+	 * @param title the title to set
 	 */
 	public void setTitle(String title) {
 		setQuestionTitle(title);
 	}
 
 	/**
-	 * Checks if this question has at least one correct answer
-	 * 
-	 * @return true if question has correct answer(s)
+	 * Checks if this question has at least one correct answer.
+	 *
+	 * @return true if there is at least one answer marked as correct
 	 */
 	public boolean hasCorrectAnswer() {
 		return answers.stream().anyMatch(AnswerDTO::isCorrect);
 	}
 
+	/**
+	 * Compares the main content of this question to another for equality.
+	 * <p>
+	 * Used for comparing new entities without an assigned ID.
+	 *
+	 * @param other DTO to compare against
+	 * @return true if question text and title match
+	 */
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {
 		if (!(other instanceof QuestionDTO))
 			return false;
-
 		QuestionDTO that = (QuestionDTO) other;
 		return Objects.equals(this.questionText, that.questionText)
 				&& Objects.equals(this.questionTitle, that.questionTitle);
 	}
 
+	/**
+	 * Computes a hash code based on question content.
+	 * <p>
+	 * Used when the entity is new and not yet persisted.
+	 *
+	 * @return hash based on question text and title
+	 */
 	@Override
 	protected int contentHashCode() {
 		return Objects.hash(questionText, questionTitle);
 	}
 
+	/**
+	 * Returns a string summary of question content for debugging.
+	 *
+	 * @return formatted string showing title and number of answers
+	 */
 	@Override
 	protected String getContentString() {
 		return "title='" + questionTitle + "', answers=" + answers.size();
 	}
 
+	/**
+	 * Validates the question content.
+	 * <ul>
+	 * <li>Question text must not be null or empty</li>
+	 * <li>Question text must not exceed 1000 characters</li>
+	 * <li>Question title, if present, must not exceed 200 characters</li>
+	 * </ul>
+	 *
+	 * @throws IllegalArgumentException if validation fails
+	 */
 	@Override
 	protected void validate() {
 		if (questionText == null || questionText.trim().isEmpty()) {

@@ -19,32 +19,70 @@ import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
 
 /**
- * Database Manager for MariaDB operations. Implements QuizDataInterface for
- * database persistence.
+ * MariaDB-based implementation of the {@link persistence.QuizDataInterface}.
+ * <p>
+ * This class provides CRUD operations and queries for:
+ * <ul>
+ * <li>Quiz themes</li>
+ * <li>Quiz questions</li>
+ * <li>Quiz answers</li>
+ * </ul>
+ * It uses DAOs from the {@code persistence.mariaDB.dao} package to map between
+ * database table rows and DTO objects from the {@code quizlogic.dto} package.
+ * <p>
+ * The DBManager is a <b>Singleton</b>, ensuring a single shared connection is
+ * used throughout the application's lifecycle.
+ * <p>
+ * Connection configuration is stored in constants within this class.
+ * 
+ * <b>Responsibilities:</b>
+ * <ul>
+ * <li>Manage lifecycle of the MariaDB connection</li>
+ * <li>Implement persistence logic declared in {@link QuizDataInterface}</li>
+ * <li>Maintain in-memory mappings between DTOs and their associated DAOs</li>
+ * </ul>
+ * 
+ * @author Christos Poulios
+ * @version 2.0
+ * @since 2.0
  */
 public class DBManager implements QuizDataInterface {
 
+	/** Singleton instance */
 	private static DBManager instance;
+
+	/** Active database connection instance */
 	private Connection connection;
 
+	/** JDBC connection URL to the MariaDB instance */
 	private static final String DB_URL = "jdbc:mariadb://localhost:3306/quizzle_db";
+
+	/** Database user */
 	private static final String DB_USER = "root";
+
+	/** Database password */
 	private static final String DB_PASSWORD = "vu8dzctc";
 
+	/** Map of ThemeDTO to ThemeDAO_MariaDB for caching */
 	private Map<ThemeDTO, ThemeDAO_MariaDB> themeDaoMap = new HashMap<>();
+
+	/** Map of QuestionDTO to QuestionDAO_MariaDB for caching */
 	private Map<QuestionDTO, QuestionDAO_MariaDB> questionDaoMap = new HashMap<>();
+
+	/** Map of AnswerDTO to AnswerDAO_MariaDB for caching */
 	private Map<AnswerDTO, AnswerDAO_MariaDB> answerDaoMap = new HashMap<>();
 
 	/**
-	 * Private constructor for singleton pattern
+	 * Private constructor (singleton). Use {@link #getInstance()} to access the
+	 * shared instance.
 	 */
 	private DBManager() {
 	}
 
 	/**
-	 * Gets the singleton instance
-	 * 
-	 * @return DBManager instance
+	 * Returns the singleton instance of the DBManager.
+	 *
+	 * @return DBManager singleton
 	 */
 	public static DBManager getInstance() {
 		if (instance == null) {
@@ -54,7 +92,9 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Establishes database connection
+	 * Establishes a connection to the MariaDB database if not already connected.
+	 *
+	 * @throws RuntimeException if the connection fails
 	 */
 	public void connect() {
 		try {
@@ -69,7 +109,9 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Closes database connection
+	 * Closes the database connection if it is open.
+	 *
+	 * @throws RuntimeException if closing the connection fails
 	 */
 	public void disconnect() {
 		try {
@@ -83,9 +125,9 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Checks if connected to database
-	 * 
-	 * @return true if connected
+	 * Checks whether the DBManager currently has an active database connection.
+	 *
+	 * @return true if connected, false otherwise
 	 */
 	public boolean isConnected() {
 		try {
@@ -95,64 +137,66 @@ public class DBManager implements QuizDataInterface {
 		}
 	}
 
+	/**
+	 * Retrieves a random question from the database.
+	 *
+	 * @return a random {@link QuestionDTO} or null if no questions exist
+	 */
 	@Override
 	public QuestionDTO getRandomQuestion() {
 		connect();
-
 		String sql = "SELECT id, title, text, theme_id FROM Questions ORDER BY RAND() LIMIT 1";
-
 		try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-
 			if (rs.next()) {
 				QuestionDAO_MariaDB dao = new QuestionDAO_MariaDB();
 				dao.fromResultSet(rs);
-
 				QuestionDTO dto = dao.forTransport();
 				questionDaoMap.put(dto, dao);
-
 				return dto;
 			}
-
 		} catch (SQLException e) {
 			throw new RuntimeException("Failed to get random question", e);
 		}
-
 		return null;
 	}
 
+	/**
+	 * Retrieves a random question for a given theme from the database.
+	 *
+	 * @param theme the {@link ThemeDTO} representing the theme
+	 * @return a random {@link QuestionDTO} or null if no questions exist for that
+	 *         theme
+	 */
 	@Override
 	public QuestionDTO getRandomQuestionFor(ThemeDTO theme) {
 		connect();
-
 		ThemeDAO_MariaDB themeDao = themeDaoMap.get(theme);
 		if (themeDao == null) {
 			return null;
 		}
-
 		String sql = "SELECT id, title, text, theme_id FROM Questions WHERE theme_id = ? ORDER BY RAND() LIMIT 1";
-
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
 			ps.setInt(1, themeDao.getId());
-
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
 					QuestionDAO_MariaDB dao = new QuestionDAO_MariaDB();
 					dao.fromResultSet(rs);
-
 					QuestionDTO dto = dao.forTransport();
 					questionDaoMap.put(dto, dao);
-
 					return dto;
 				}
 			}
-
 		} catch (SQLException e) {
 			throw new RuntimeException("Failed to get random question for theme", e);
 		}
-
 		return null;
 	}
 
+	/**
+	 * Retrieves all available themes from the database.
+	 *
+	 * @return list of {@link ThemeDTO} objects
+	 */
 	@Override
 	public ArrayList<ThemeDTO> getAllThemes() {
 		connect();
@@ -172,10 +216,16 @@ public class DBManager implements QuizDataInterface {
 		return themes;
 	}
 
+	/**
+	 * Saves a theme to the database. Inserts if the theme is new, updates
+	 * otherwise.
+	 *
+	 * @param theme theme DTO to save
+	 * @return result message
+	 */
 	@Override
 	public String saveTheme(ThemeDTO theme) {
 		connect();
-
 		try {
 			ThemeDAO_MariaDB dao = themeDaoMap.get(theme);
 			if (dao == null) {
@@ -192,11 +242,9 @@ public class DBManager implements QuizDataInterface {
 			}
 
 			if (dao.isNew()) {
-
 				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
 						Statement.RETURN_GENERATED_KEYS)) {
 					dao.setPreparedStatementParameters(ps);
-
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -211,26 +259,28 @@ public class DBManager implements QuizDataInterface {
 					}
 				}
 			} else {
-
 				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
 					dao.setPreparedStatementParameters(ps);
-
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						return "Theme successfully updated";
 					}
 				}
 			}
-
 		} catch (SQLException e) {
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
 			return "Error: " + e.getMessage();
 		}
-
 		return "Failed to save theme";
 	}
 
+	/**
+	 * Deletes a theme from the database.
+	 *
+	 * @param theme Theme DTO to delete
+	 * @return result message
+	 */
 	@Override
 	public String deleteTheme(ThemeDTO theme) {
 		connect();
@@ -252,6 +302,12 @@ public class DBManager implements QuizDataInterface {
 		}
 	}
 
+	/**
+	 * Retrieves all questions for a given theme.
+	 *
+	 * @param theme theme DTO
+	 * @return list of {@link QuestionDTO}s
+	 */
 	@Override
 	public ArrayList<QuestionDTO> getQuestionsFor(ThemeDTO theme) {
 		connect();
@@ -278,30 +334,31 @@ public class DBManager implements QuizDataInterface {
 		return questions;
 	}
 
+	/**
+	 * Saves a question to the database (must already be linked to a theme in
+	 * cache).
+	 *
+	 * @param question Question DTO
+	 * @return result message
+	 */
 	@Override
 	public String saveQuestion(QuestionDTO question) {
 		connect();
-
 		try {
 			QuestionDAO_MariaDB dao = questionDaoMap.get(question);
 			if (dao == null) {
 				return "Question not associated with a theme. Use saveQuestion with theme parameter.";
 			}
-
 			dao.setQuestionText(question.getQuestionText());
-
 			try {
 				dao.performValidation();
 			} catch (IllegalArgumentException ex) {
 				return "Validation failed: " + ex.getMessage();
 			}
-
 			if (dao.isNew()) {
-
 				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
 						Statement.RETURN_GENERATED_KEYS)) {
 					dao.setPreparedStatementParameters(ps);
-
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -313,95 +370,89 @@ public class DBManager implements QuizDataInterface {
 					}
 				}
 			} else {
-
 				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
 					dao.setPreparedStatementParameters(ps);
-
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						return "Question successfully updated";
 					}
 				}
 			}
-
 		} catch (SQLException e) {
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
 			return "Error: " + e.getMessage();
 		}
-
 		return "Failed to save question";
 	}
 
 	/**
-	 * Additional method to save question with theme
+	 * Saves a question and associates it with a specific theme.
+	 *
+	 * @param question question DTO
+	 * @param theme    theme DTO
+	 * @return result message
 	 */
 	public String saveQuestion(QuestionDTO question, ThemeDTO theme) {
 		connect();
-
 		ThemeDAO_MariaDB themeDao = themeDaoMap.get(theme);
 		if (themeDao == null) {
 			return "Theme not found in database";
 		}
-
 		try {
 			QuestionDAO_MariaDB dao = questionDaoMap.get(question);
 			if (dao == null) {
-
 				dao = QuestionDAO_MariaDB.fromTransport(question, themeDao.getId());
 				questionDaoMap.put(question, dao);
 			} else {
-
 				dao.setTitle(question.getQuestionTitle());
 				dao.setQuestionText(question.getQuestionText());
 				dao.setThemeId(themeDao.getId());
 			}
-
 			try {
 				dao.performValidation();
 			} catch (IllegalArgumentException ex) {
 				return "Validation failed: " + ex.getMessage();
 			}
-
 			if (dao.isNew()) {
-
 				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
 						Statement.RETURN_GENERATED_KEYS)) {
 					dao.setPreparedStatementParameters(ps);
-
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
 							if (generatedKeys.next()) {
 								int newId = generatedKeys.getInt(1);
 								dao.setId(newId);
-								question.setId(newId); // IMPORTANT: Update the DTO with new ID
+								question.setId(newId); // Update DTO with new ID
 								return "Question successfully created";
 							}
 						}
 					}
 				}
 			} else {
-
 				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
 					dao.setPreparedStatementParameters(ps);
-
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						return "Question successfully updated";
 					}
 				}
 			}
-
 		} catch (SQLException e) {
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
 			return "Error: " + e.getMessage();
 		}
-
 		return "Failed to save question";
 	}
 
+	/**
+	 * Deletes a question from the database.
+	 *
+	 * @param question Question DTO to delete
+	 * @return result message
+	 */
 	@Override
 	public String deleteQuestion(QuestionDTO question) {
 		connect();
@@ -423,6 +474,12 @@ public class DBManager implements QuizDataInterface {
 		}
 	}
 
+	/**
+	 * Retrieves all answers for a given question from the database.
+	 *
+	 * @param question Question DTO
+	 * @return list of {@link AnswerDTO}s
+	 */
 	@Override
 	public ArrayList<AnswerDTO> getAnswersFor(QuestionDTO question) {
 		connect();
@@ -450,8 +507,87 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Tests the database connection
-	 * 
+	 * Saves an answer and associates it with a given question.
+	 *
+	 * @param answer   Answer DTO
+	 * @param question Question DTO
+	 * @return result message
+	 */
+	public String saveAnswer(AnswerDTO answer, QuestionDTO question) {
+		connect();
+		QuestionDAO_MariaDB questionDao = questionDaoMap.get(question);
+		if (questionDao == null) {
+			return "Question not found in database";
+		}
+		try {
+			AnswerDAO_MariaDB dao = answerDaoMap.get(answer);
+			if (dao == null) {
+				dao = AnswerDAO_MariaDB.fromTransport(answer, questionDao.getId());
+				answerDaoMap.put(answer, dao);
+			} else {
+				dao.setText(answer.getAnswerText());
+				dao.setCorrect(answer.isCorrect());
+				dao.setQuestionId(questionDao.getId());
+			}
+			try {
+				dao.performValidation();
+			} catch (IllegalArgumentException ex) {
+				return "Validation failed: " + ex.getMessage();
+			}
+			if (dao.isNew()) {
+				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
+						Statement.RETURN_GENERATED_KEYS)) {
+					dao.setPreparedStatementParameters(ps);
+					int rowsAffected = ps.executeUpdate();
+					if (rowsAffected > 0) {
+						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+							if (generatedKeys.next()) {
+								int newId = generatedKeys.getInt(1);
+								dao.setId(newId);
+								answer.setId(newId);
+								return "Answer successfully created";
+							}
+						}
+					}
+				}
+			} else {
+				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
+					dao.setPreparedStatementParameters(ps);
+					int rowsAffected = ps.executeUpdate();
+					if (rowsAffected > 0) {
+						return "Answer successfully updated";
+					}
+				}
+			}
+		} catch (SQLException e) {
+			return "Database error: " + e.getMessage();
+		} catch (Exception e) {
+			return "Error: " + e.getMessage();
+		}
+		return "Failed to save answer";
+	}
+
+	/**
+	 * Deletes all answers for a specific question.
+	 *
+	 * @param questionId ID of the question whose answers should be deleted
+	 * @throws SQLException if a database error occurs
+	 */
+	public void deleteAnswersForQuestion(int questionId) throws SQLException {
+		String deleteSQL = "DELETE FROM answers WHERE question_id = ?";
+		try (PreparedStatement ps = connection.prepareStatement(deleteSQL)) {
+			ps.setInt(1, questionId);
+			ps.executeUpdate();
+			answerDaoMap.entrySet().removeIf(entry -> {
+				AnswerDAO_MariaDB dao = entry.getValue();
+				return dao.getQuestionId() == questionId;
+			});
+		}
+	}
+
+	/**
+	 * Tests database connectivity.
+	 *
 	 * @return status message
 	 */
 	public String testConnection() {
@@ -464,9 +600,9 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Gets the current connection
-	 * 
-	 * @return current connection
+	 * Returns the active JDBC connection.
+	 *
+	 * @return active database connection
 	 * @throws SQLException if not connected
 	 */
 	public Connection getConnection() throws SQLException {
@@ -475,7 +611,7 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Clear all mappings
+	 * Clears all cached DTO-to-DAO mappings.
 	 */
 	public void clearMappings() {
 		themeDaoMap.clear();
@@ -484,7 +620,9 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Returns a list of all theme titles.
+	 * Returns a list of all theme titles from the database.
+	 *
+	 * @return list of theme titles
 	 */
 	public ArrayList<String> getThemeTitles() {
 		connect();
@@ -501,7 +639,10 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Returns a list of question entries for a given theme.
+	 * Returns a list of question entries for a given theme title.
+	 *
+	 * @param selectedThemeTitle theme title, or "Alle Themen" for all
+	 * @return list of question text entries
 	 */
 	public ArrayList<String> getQuestionListEntries(String selectedThemeTitle) {
 		connect();
@@ -533,7 +674,10 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Returns the QuestionDTO by its global index.
+	 * Gets a question by its global index (0-based) in the database.
+	 *
+	 * @param index the index of the question
+	 * @return QuestionDTO or null if index is invalid
 	 */
 	public QuestionDTO getQuestionByGlobalIndex(int index) {
 		connect();
@@ -553,69 +697,5 @@ public class DBManager implements QuizDataInterface {
 			throw new RuntimeException("Failed to get question by index", e);
 		}
 		return null;
-	}
-
-	public String saveAnswer(AnswerDTO answer, QuestionDTO question) {
-		connect();
-
-		QuestionDAO_MariaDB questionDao = questionDaoMap.get(question);
-		if (questionDao == null) {
-			return "Question not found in database";
-		}
-
-		try {
-			AnswerDAO_MariaDB dao = answerDaoMap.get(answer);
-			if (dao == null) {
-				dao = AnswerDAO_MariaDB.fromTransport(answer, questionDao.getId());
-				answerDaoMap.put(answer, dao);
-			} else {
-				dao.setText(answer.getAnswerText());
-				dao.setCorrect(answer.isCorrect());
-				dao.setQuestionId(questionDao.getId());
-			}
-
-			try {
-				dao.performValidation();
-			} catch (IllegalArgumentException ex) {
-				return "Validation failed: " + ex.getMessage();
-			}
-
-			if (dao.isNew()) {
-
-				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
-						Statement.RETURN_GENERATED_KEYS)) {
-					dao.setPreparedStatementParameters(ps);
-
-					int rowsAffected = ps.executeUpdate();
-					if (rowsAffected > 0) {
-						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-							if (generatedKeys.next()) {
-								int newId = generatedKeys.getInt(1);
-								dao.setId(newId);
-								answer.setId(newId); 
-								return "Answer successfully created";
-							}
-						}
-					}
-				}
-			} else {
-
-				try (PreparedStatement ps = connection.prepareStatement(dao.getUpdateStatement())) {
-					dao.setPreparedStatementParameters(ps);
-
-					int rowsAffected = ps.executeUpdate();
-					if (rowsAffected > 0) {
-						return "Answer successfully updated";
-					}
-				}
-			}
-
-		} catch (SQLException e) {
-			return "Database error: " + e.getMessage();
-		} catch (Exception e) {
-			return "Error: " + e.getMessage();
-		}
-
-		return "Failed to save answer";
 	}
 }

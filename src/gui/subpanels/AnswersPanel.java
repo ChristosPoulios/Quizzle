@@ -10,21 +10,25 @@ import javax.swing.JPanel;
 import gui.interfaces.GUIConstants;
 
 /**
- * Panel displaying all possible answers as rows.
- * 
- * Contains multiple AnswerRowPanels and updates them according to the current
- * question. Used to show and indicate which answer(s) are marked as correct.
+ * Panel displaying all possible answers as individual answer rows.
+ * <p>
+ * Contains multiple {@link AnswerRowPanel} components and updates them
+ * according to the current question. Used to show the answer options and
+ * indicate which answers are marked as correct.
+ * </p>
  * 
  * @author Christos Poulios
  * @version 1.0
  * @since 1.0
  */
 public class AnswersPanel extends JPanel implements GUIConstants {
+
 	private static final long serialVersionUID = 1L;
+
 	private final AnswerRowPanel[] answerRows = new AnswerRowPanel[GUIConstants.ANSWERS_COUNT];
 
 	/**
-	 * Constructs the AnswersPanel, initializing all AnswerRowPanels.
+	 * Constructs the AnswersPanel and initializes all answer rows.
 	 */
 	public AnswersPanel() {
 		setBackground(BACKGROUND_COLOR);
@@ -34,12 +38,12 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 		headerPanel.setBackground(BACKGROUND_COLOR);
 
 		JLabel answerLabel = new JLabel(GUIConstants.POSSIBLE_ANSWERS_LABEL);
-		answerLabel.setPreferredSize(new java.awt.Dimension(300, 20));
-
+		answerLabel.setPreferredSize(new java.awt.Dimension(ANSWER_LABEL_WIDTH, ANSWER_LABEL_HEIGHT));
 		JLabel correctLabel = new JLabel(GUIConstants.ANSWER_LABEL);
 
 		headerPanel.add(answerLabel);
 		headerPanel.add(correctLabel);
+
 		add(headerPanel);
 
 		for (int i = 0; i < GUIConstants.ANSWERS_COUNT; i++) {
@@ -49,9 +53,10 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Set the list of answers for all rows (used when displaying a new question).
+	 * Sets the list of answers to be displayed in each row.
 	 * 
-	 * @param answers List of answers (must match ANSWERS_COUNT)
+	 * @param answers List of answers to display; must match the number of answer
+	 *                rows
 	 */
 	public void setAnswers(List<quizlogic.dto.AnswerDTO> answers) {
 		for (int i = 0; i < answerRows.length; i++) {
@@ -65,18 +70,18 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Gets all AnswerRowPanels.
+	 * Returns the array of all answer rows.
 	 * 
-	 * @return Array of AnswerRowPanel
+	 * @return Array of {@link AnswerRowPanel}
 	 */
 	public AnswerRowPanel[] getAnswerRows() {
 		return answerRows;
 	}
 
 	/**
-	 * Gets the answer text for the row marked as correct.
+	 * Gets the text of the answer marked as correct.
 	 * 
-	 * @return The correct answer text, or null if none marked correct
+	 * @return The correct answer text, or null if none is marked correct
 	 */
 	public String getCorrectAnswerText() {
 		for (AnswerRowPanel row : answerRows) {
@@ -87,6 +92,9 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 		return null;
 	}
 
+	/**
+	 * Clears all answers from the panel, resetting text and unchecking boxes.
+	 */
 	public void clearAnswers() {
 		for (AnswerRowPanel row : answerRows) {
 			row.setAnswer("", false);

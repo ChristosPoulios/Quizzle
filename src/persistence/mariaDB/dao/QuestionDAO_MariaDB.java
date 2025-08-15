@@ -8,40 +8,79 @@ import persistence.mariaDB.MariaAccessObject;
 import quizlogic.dto.QuestionDTO;
 
 /**
- * Data Access Object for Question entities in MariaDB Updated to match
- * quizzle.sql schema
+ * MariaDB DAO (Data Access Object) for quiz questions.
+ * <p>
+ * Maps between the database table {@code Questions} and {@link QuestionDTO}
+ * objects used for data transfer in the application.
+ * <p>
+ * Table structure:
+ * <ul>
+ * <li>id (INT, primary key)</li>
+ * <li>title (VARCHAR) – optional short title of the question</li>
+ * <li>text (TEXT) – the main question content</li>
+ * <li>theme_id (INT, foreign key referencing Theme table)</li>
+ * </ul>
+ * 
+ * Responsibilities:
+ * <ul>
+ * <li>Provide SQL statements for CRUD operations</li>
+ * <li>Populate DAO from database ResultSets</li>
+ * <li>Convert DAO to/from transport DTOs</li>
+ * <li>Validate question data</li>
+ * </ul>
+ * 
+ * @author Christos Poulios
+ * @version 1.0
+ * @since 1.0
  */
 public class QuestionDAO_MariaDB extends MariaAccessObject {
 
 	private static final long serialVersionUID = 1L;
 
-	// Updated SQL statements to match schema: Questions table with columns: id,
-	// title, text, theme_id
+	/** SQL INSERT statement for questions */
 	private final String SQL_INSERT = "INSERT INTO Questions (title, text, theme_id) VALUES (?, ?, ?)";
+
+	/** SQL UPDATE statement for questions */
 	private final String SQL_UPDATE = "UPDATE Questions SET title = ?, text = ?, theme_id = ? WHERE id = ?";
+
+	/** SQL SELECT statement for questions */
 	private final String SQL_SELECT = "SELECT id, title, text, theme_id FROM Questions";
+
+	/** SQL DELETE statement for questions */
 	private final String SQL_DELETE = "DELETE FROM Questions WHERE id = ?";
 
+	/** Question title */
 	private String title;
+
+	/** Question text */
 	private String text;
+
+	/** Associated theme ID */
 	private int themeId;
 
 	/**
-	 * Default constructor
+	 * Default constructor for a new question DAO.
 	 */
 	public QuestionDAO_MariaDB() {
 		super();
 	}
 
 	/**
-	 * Constructor with ID
+	 * Constructor for existing question with an assigned ID.
+	 *
+	 * @param id the ID of the question
 	 */
 	public QuestionDAO_MariaDB(int id) {
 		super(id);
 	}
 
 	/**
-	 * Full constructor
+	 * Full constructor setting all fields.
+	 *
+	 * @param id      the question ID
+	 * @param title   the question title
+	 * @param text    the question text
+	 * @param themeId the associated theme ID
 	 */
 	public QuestionDAO_MariaDB(int id, String title, String text, int themeId) {
 		super(id);
@@ -51,7 +90,9 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Constructor with QuestionDTO
+	 * Constructs from a QuestionDTO instance.
+	 *
+	 * @param dto the QuestionDTO containing data
 	 */
 	public QuestionDAO_MariaDB(QuestionDTO dto) {
 		super();
@@ -59,71 +100,23 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 		this.text = dto.getQuestionText();
 	}
 
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public String getQuestionText() {
-		return text;
-	}
-
-	public void setQuestionText(String text) {
-		this.text = text;
-	}
-
-	public int getThemeId() {
-		return themeId;
-	}
-
-	public void setThemeId(int themeId) {
-		this.themeId = themeId;
-	}
-
-	@Override
-	public String getSelectStatement() {
-		return SQL_SELECT;
-	}
-
-	@Override
-	public String getInsertStatement() {
-		return SQL_INSERT;
-	}
-
-	@Override
-	public String getUpdateStatement() {
-		return SQL_UPDATE;
-	}
-
-	public String getDeleteStatement() {
-		return SQL_DELETE;
-	}
-
-	@Override
-	public boolean isNew() {
-		return getId() <= 0;
-	}
-
+	/**
+	 * Sets the parameters for a PreparedStatement based on the current DAO state.
+	 * <p>
+	 * Used for both INSERT and UPDATE operations.
+	 *
+	 * @param ps PreparedStatement to set parameters on
+	 * @throws SQLException if setting parameters fails
+	 */
 	@Override
 	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
 		if (isNew()) {
-			// INSERT: title, text, theme_id
+			// INSERT
 			ps.setString(1, title);
 			ps.setString(2, text);
 			ps.setInt(3, themeId);
 		} else {
-			// UPDATE: title, text, theme_id, id
+			// UPDATE
 			ps.setString(1, title);
 			ps.setString(2, text);
 			ps.setInt(3, themeId);
@@ -131,6 +124,14 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 		}
 	}
 
+	/**
+	 * Validates the question data.
+	 * <p>
+	 * Ensures that title, text, and themeId are set correctly.
+	 *
+	 * @return true if validation passes
+	 * @throws IllegalArgumentException if validation fails
+	 */
 	@Override
 	public boolean performValidation() {
 		if (title == null || title.trim().isEmpty()) {
@@ -146,7 +147,10 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Populates this DAO from a ResultSet
+	 * Populates this DAO from a ResultSet row.
+	 *
+	 * @param rs ResultSet containing question data
+	 * @throws SQLException on database access error
 	 */
 	public void fromResultSet(ResultSet rs) throws SQLException {
 		setId(rs.getInt("id"));
@@ -156,7 +160,9 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Creates a QuestionDTO for transport
+	 * Converts this DAO into a transferable QuestionDTO.
+	 *
+	 * @return populated QuestionDTO
 	 */
 	public QuestionDTO forTransport() {
 		QuestionDTO dto = new QuestionDTO();
@@ -167,7 +173,11 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Creates a QuestionDAO from a QuestionDTO with theme ID
+	 * Creates a QuestionDAO_MariaDB from a DTO and a given theme ID.
+	 *
+	 * @param dto     question DTO
+	 * @param themeId associated theme ID
+	 * @return new QuestionDAO_MariaDB instance
 	 */
 	public static QuestionDAO_MariaDB fromTransport(QuestionDTO dto, int themeId) {
 		QuestionDAO_MariaDB dao = new QuestionDAO_MariaDB();
@@ -177,4 +187,126 @@ public class QuestionDAO_MariaDB extends MariaAccessObject {
 		dao.setThemeId(themeId);
 		return dao;
 	}
+
+	/**
+	 * Returns the SQL SELECT statement for retrieving themes.
+	 *
+	 * @return SQL SELECT statement string
+	 */
+	@Override
+	public String getSelectStatement() {
+		return SQL_SELECT;
+	}
+
+	/**
+	 * Returns the SQL INSERT statement for adding new questions.
+	 *
+	 * @return SQL INSERT statement string
+	 */
+	@Override
+	public String getInsertStatement() {
+		return SQL_INSERT;
+	}
+
+	/**
+	 * Returns the SQL UPDATE statement for modifying existing questions.
+	 *
+	 * @return SQL UPDATE statement string
+	 */
+	@Override
+	public String getUpdateStatement() {
+		return SQL_UPDATE;
+	}
+
+	/**
+	 * Returns the SQL DELETE statement for removing questions.
+	 *
+	 * @return SQL DELETE statement string
+	 */
+	public String getDeleteStatement() {
+		return SQL_DELETE;
+	}
+
+	/**
+	 * Checks if this DAO represents a new question (ID <= 0).
+	 *
+	 * @return true if the question is new, false otherwise
+	 */
+	@Override
+	public boolean isNew() {
+		return getId() <= 0;
+	}
+
+	/**
+	 * Returns the question title.
+	 *
+	 * @return the title of the question
+	 */
+	public String getTitle() {
+		return title;
+	}
+
+	/**
+	 * Sets the question title.
+	 *
+	 * @param title the title to set
+	 */
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	/**
+	 * Returns the question text.
+	 *
+	 * @return the text of the question
+	 */
+	public String getText() {
+		return text;
+	}
+
+	/**
+	 * Sets the question text.
+	 *
+	 * @param text the text to set
+	 */
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	/**
+	 * Returns the associated theme ID.
+	 *
+	 * @return the theme ID
+	 */
+	public String getQuestionText() {
+		return text;
+	}
+
+	/**
+	 * Sets the question text.
+	 *
+	 * @param text the text to set
+	 */
+	public void setQuestionText(String text) {
+		this.text = text;
+	}
+
+	/**
+	 * Returns the associated theme ID.
+	 *
+	 * @return the theme ID
+	 */
+	public int getThemeId() {
+		return themeId;
+	}
+
+	/**
+	 * Sets the associated theme ID.
+	 *
+	 * @param themeId the theme ID to set
+	 */
+	public void setThemeId(int themeId) {
+		this.themeId = themeId;
+	}
+
 }

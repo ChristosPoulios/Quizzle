@@ -14,6 +14,7 @@ import java.awt.*;
  */
 public interface GUIConstants {
 
+	// Frame and panel dimensions
 	int FRAME_X = 300;
 	int FRAME_Y = 100;
 	int FRAME_WIDTH = 850;
@@ -23,6 +24,7 @@ public interface GUIConstants {
 	int GAP_BETWEEN_INPUTS = 8;
 	int BUTTON_PANEL_GAP = 100;
 
+	// Colors and fonts used in the GUI
 	Color BACKGROUND_COLOR = Color.WHITE;
 	Color THEME_PANEL_COLOR = new Color(245, 245, 245);
 	Color BUTTON_COLOR = new Color(240, 240, 240);
@@ -33,10 +35,42 @@ public interface GUIConstants {
 	Color QUESTION_TEXT_AREA = new Color(240, 240, 240);
 
 	Font DEFAULT_FONT = new Font("Helvetica", Font.PLAIN, 15);
-	Font TITLE_FONT = new Font("Helvetica", Font.BOLD, 17);
+	Font THEME_LABEL_FONT = new Font("Helvetica", Font.BOLD, 20);
+	Font TITLE_FONT = new Font("Helvetica", Font.BOLD, 18);
 	Font BUTTON_FONT = new Font("Helvetica", Font.BOLD, 15);
 	Font TAB_FONT = new Font("Helvetica", Font.BOLD, 15);
 	Font CORRECT_LABEL_FONT = new Font("Helvetica", Font.ITALIC, 13);
+
+	// Sizes for various components
+	int VERTICAL_STRUT_SMALL = 10;
+	int VERTICAL_STRUT_MEDIUM = 16;
+	int VERTICAL_STRUT_LARGE = 35;
+
+	
+	int THEME_TEXTAREA_WIDTH = 400;
+	int THEME_TEXTAREA_HEIGHT = 120;
+	int THEME_LIST_WIDTH = 300;
+	int THEME_LIST_HEIGHT = 383;
+	int COMBOBOX_HEIGHT = 30;
+	int QUIZ_PANEL_WIDTH = 350;
+	int QUIZ_PANEL_HEIGHT = 400;
+
+	
+	int QUESTION_LIST_WIDTH = 400;
+	int QUESTION_LIST_HEIGHT = 350;
+	int QUESTION_LIST_MIN_WIDTH = 300;
+	int QUESTION_TEXT_MAX_LENGTH = 50;
+	int QUESTION_TEXT_TRUNCATE_LENGTH = 47;
+
+	
+	int ANSWER_LABEL_WIDTH = 300;
+	int ANSWER_LABEL_HEIGHT = 20;
+
+	// Insets for various components
+	int BORDER_TOP = 5;
+	int BORDER_BOTTOM = 10;
+	int BORDER_LEFT = 10;
+	int BORDER_RIGHT = 0;
 
 	Insets DEFAULT_INSETS = new Insets(2, 5, 2, 5);
 	int TEXTFIELD_COLUMNS = 25;
@@ -45,6 +79,7 @@ public interface GUIConstants {
 	int QUESTIONAREA_COLUMNS = 25;
 	int CHECKBOX_LABEL_OFFSET = 105;
 
+	// Text labels and button texts used in the GUI
 	String WINDOW_TITLE = "Quizzle";
 	String THEME_LABEL = "Thema:";
 	String POSSIBLE_ANSWERS_LABEL = "Mögliche Antworten";

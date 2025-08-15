@@ -1,6 +1,7 @@
 package gui.subpanels;
 
 import java.awt.FlowLayout;
+
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -11,17 +12,23 @@ import javax.swing.JTextField;
 import gui.interfaces.GUIConstants;
 
 /**
- * Panel for displaying a question's meta-information (title and main text).
- * 
- * Consists of a title field and a read-only text area for the question itself.
+ * Panel for displaying a question's meta-information including the title and
+ * main question text.
+ * <p>
+ * Consists of a title field and a read-only text area for displaying the
+ * question content.
+ * </p>
  * 
  * @author Christos Poulios
  * @version 1.0
  * @since 1.0
  */
 public class QuestionMetaPanel extends JPanel implements GUIConstants {
+
 	private static final long serialVersionUID = 1L;
+
 	private final JTextField titleField;
+
 	private final JTextArea questionTextArea;
 
 	/**
@@ -33,25 +40,22 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 
 		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		titlePanel.setBackground(BACKGROUND_COLOR);
-
 		JLabel titleLabel = new JLabel("Titel");
 		titleField = new JTextField("", GUIConstants.TEXTFIELD_COLUMNS);
 		titleField.setEditable(false);
-
 		titlePanel.add(titleLabel);
 		titlePanel.add(titleField);
 
 		JPanel questionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		questionPanel.setBackground(BACKGROUND_COLOR);
-
 		JLabel questionLabel = new JLabel("Frage");
 		questionTextArea = new JTextArea("", GUIConstants.QUESTIONAREA_ROWS, GUIConstants.QUESTIONAREA_COLUMNS);
 		questionTextArea.setBackground(GUIConstants.QUESTION_TEXT_AREA);
 		questionTextArea.setLineWrap(true);
 		questionTextArea.setWrapStyleWord(true);
 		questionTextArea.setEditable(false);
-
 		JScrollPane scrollPane = new JScrollPane(questionTextArea);
+
 		questionPanel.add(questionLabel);
 		questionPanel.add(scrollPane);
 
@@ -60,36 +64,36 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Sets the question title field.
+	 * Sets the question title text.
 	 * 
-	 * @param title Question title
+	 * @param title Question title to display
 	 */
 	public void setTitle(String title) {
 		titleField.setText(title == null ? "" : title);
 	}
 
 	/**
-	 * Sets the question text area.
+	 * Sets the question full text content.
 	 * 
-	 * @param text Full question text
+	 * @param text The question text to display
 	 */
 	public void setQuestionText(String text) {
 		questionTextArea.setText(text == null ? "" : text);
 	}
 
 	/**
-	 * Gets the title text field for further customization.
+	 * Returns the title text field component.
 	 * 
-	 * @return JTextField with title
+	 * @return The {@link JTextField} containing the question title
 	 */
 	public JTextField getTitleField() {
 		return titleField;
 	}
 
 	/**
-	 * Gets the question text area field for further customization.
+	 * Returns the question text area component.
 	 * 
-	 * @return JTextArea with question content
+	 * @return The {@link JTextArea} containing the question content
 	 */
 	public JTextArea getQuestionTextArea() {
 		return questionTextArea;

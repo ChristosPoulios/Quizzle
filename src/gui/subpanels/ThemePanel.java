@@ -2,6 +2,7 @@ package gui.subpanels;
 
 import java.awt.Component;
 import java.awt.Dimension;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -10,19 +11,24 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
 import gui.interfaces.GUIConstants;
 
 /**
  * Panel for creating and editing theme information.
- * 
- * Provides text fields for theme title and description with fill functionality.
+ * <p>
+ * Provides text fields for theme title and description with functionality to
+ * clear and fill fields.
+ * </p>
  * 
  * @author Christos Poulios
  * @version 2.0
  * @since 1.0
  */
 public class ThemePanel extends JPanel implements GUIConstants {
+
 	private static final long serialVersionUID = 1L;
+
 	private final JLabel titleLabel;
 	private final JTextField titleField;
 	private final JLabel infoLabel;
@@ -40,7 +46,8 @@ public class ThemePanel extends JPanel implements GUIConstants {
 		header.setFont(TITLE_FONT);
 		header.setAlignmentX(Component.LEFT_ALIGNMENT);
 		add(header);
-		add(Box.createVerticalStrut(16));
+
+		add(Box.createVerticalStrut(VERTICAL_STRUT_MEDIUM));
 
 		titleLabel = new JLabel("Titel");
 		titleLabel.setFont(DEFAULT_FONT);
@@ -51,6 +58,7 @@ public class ThemePanel extends JPanel implements GUIConstants {
 		titleField.setMaximumSize(new Dimension(Integer.MAX_VALUE, titleField.getPreferredSize().height));
 		titleField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		add(titleField);
+
 		add(Box.createVerticalStrut(GAP_BETWEEN_INPUTS));
 
 		infoLabel = new JLabel("Information zum Thema");
@@ -63,12 +71,12 @@ public class ThemePanel extends JPanel implements GUIConstants {
 		infoArea.setWrapStyleWord(true);
 		JScrollPane scrollPane = new JScrollPane(infoArea);
 		scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
-		scrollPane.setPreferredSize(new Dimension(400, 120));
+		scrollPane.setPreferredSize(new Dimension(THEME_TEXTAREA_WIDTH, THEME_TEXTAREA_HEIGHT));
 		add(scrollPane);
 	}
 
 	/**
-	 * Gets the title text from input field.
+	 * Gets the title text from the input field.
 	 * 
 	 * @return The title text
 	 */
@@ -77,7 +85,7 @@ public class ThemePanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Gets the info text from input area.
+	 * Gets the info text from the input area.
 	 * 
 	 * @return The info text
 	 */
@@ -86,7 +94,7 @@ public class ThemePanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Gets the theme title (trimmed).
+	 * Gets the trimmed theme title.
 	 * 
 	 * @return The trimmed theme title
 	 */
@@ -102,31 +110,29 @@ public class ThemePanel extends JPanel implements GUIConstants {
 		infoArea.setText("");
 	}
 
-	// ⭐ NEUE METHODEN: Felder befüllen
-
 	/**
-	 * Setzt den Titel im Textfeld.
+	 * Sets the title text field.
 	 * 
-	 * @param title Der zu setzende Titel
+	 * @param title The title to set
 	 */
 	public void setTitleText(String title) {
 		titleField.setText(title != null ? title : "");
 	}
 
 	/**
-	 * Setzt die Information im Textbereich.
+	 * Sets the info text area.
 	 * 
-	 * @param info Die zu setzende Information
+	 * @param info The info text to set
 	 */
 	public void setInfoText(String info) {
 		infoArea.setText(info != null ? info : "");
 	}
 
 	/**
-	 * Befüllt alle Felder mit Themendaten.
+	 * Fills all fields with the given theme data.
 	 * 
-	 * @param title Der Titel des Themes
-	 * @param info  Die Information zum Theme
+	 * @param title The theme title
+	 * @param info  The theme description
 	 */
 	public void fillFields(String title, String info) {
 		setTitleText(title);
