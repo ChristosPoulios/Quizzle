@@ -7,18 +7,18 @@ import java.util.Objects;
 import quizlogic.DataTransportObject;
 
 /**
- * Data Transfer Object (DTO) representing a quiz theme (category).
+ * Data Transfer Object (DTO) representing a quiz theme or category.
  * <p>
- * Each theme contains:
- * <ul>
- * <li>A title</li>
- * <li>An optional description</li>
- * <li>A list of associated quiz questions</li>
- * </ul>
- * This class extends {@link DataTransportObject} for consistent ID and
- * validation handling.
+ * A Theme groups multiple quiz questions under a common title and optional
+ * description. Themes can be persisted, edited, and displayed within the quiz
+ * application.
  * <p>
- * Themes can be persisted, edited, and displayed in the quiz application.
+ * This class extends {@link DataTransportObject} and inherits common DTO
+ * functionality such as validation, equality checks, and serialization
+ * compatibility.
+ * <p>
+ * Each theme maintains a list of quiz questions associated with it,
+ * facilitating themed quizzes.
  * 
  * @author Christos Poulios
  * @version 1.0
@@ -28,18 +28,24 @@ public class ThemeDTO extends DataTransportObject {
 
 	private static final long serialVersionUID = 1L;
 
-	/** The title of the theme */
+	/**
+	 * The title or name of the theme (e.g., "Science", "History").
+	 */
 	private String themeTitle;
 
-	/** An optional descriptive text for the theme */
+	/**
+	 * An optional descriptive text providing additional details about the theme.
+	 */
 	private String themeDescription;
 
-	/** The list of quiz questions associated with this theme */
+	/**
+	 * The list of quiz questions associated with this theme. Typically contains
+	 * objects of type {@link QuestionDTO}.
+	 */
 	private List<QuestionDTO> questions;
 
 	/**
-	 * Default constructor for creating a new ThemeDTO. Initializes an empty
-	 * question list.
+	 * Default constructor initializing an empty list of questions.
 	 */
 	public ThemeDTO() {
 		super();
@@ -47,9 +53,10 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructor for creating an existing persisted ThemeDTO.
+	 * Constructs a ThemeDTO with a specified ID for representing existing persisted
+	 * themes. Initializes the questions list to empty.
 	 *
-	 * @param id unique ID of the theme
+	 * @param id the unique identifier of the persisted theme
 	 */
 	public ThemeDTO(int id) {
 		super(id);
@@ -57,10 +64,11 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructor for creating a theme with title and description.
+	 * Constructs a new ThemeDTO with the specified title and description.
+	 * Initializes the questions list to empty.
 	 *
 	 * @param themeTitle       the title of the theme
-	 * @param themeDescription the descriptive text of the theme
+	 * @param themeDescription an optional description of the theme
 	 */
 	public ThemeDTO(String themeTitle, String themeDescription) {
 		super();
@@ -70,54 +78,54 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Gets the title of the theme.
+	 * Retrieves the title of this theme.
 	 *
-	 * @return the theme title
+	 * @return the theme title as a String
 	 */
 	public String getThemeTitle() {
 		return themeTitle;
 	}
 
 	/**
-	 * Sets the title of the theme.
+	 * Sets the title of this theme.
 	 *
-	 * @param themeTitle the new theme title
+	 * @param themeTitle the title to set for this theme
 	 */
 	public void setThemeTitle(String themeTitle) {
 		this.themeTitle = themeTitle;
 	}
 
 	/**
-	 * Gets the descriptive text of the theme.
+	 * Retrieves the description text for this theme.
 	 *
-	 * @return the theme description
+	 * @return the theme description or null if not set
 	 */
 	public String getThemeDescription() {
 		return themeDescription;
 	}
 
 	/**
-	 * Sets the descriptive text of the theme.
+	 * Sets the description text of this theme.
 	 *
-	 * @param themeDescription the new theme description
+	 * @param themeDescription the descriptive text to assign
 	 */
 	public void setThemeDescription(String themeDescription) {
 		this.themeDescription = themeDescription;
 	}
 
 	/**
-	 * Gets the list of associated questions.
+	 * Returns the list of quiz questions associated with this theme.
 	 *
-	 * @return list of questions
+	 * @return a list of {@link QuestionDTO} objects under this theme
 	 */
 	public List<QuestionDTO> getQuestions() {
 		return questions;
 	}
 
 	/**
-	 * Sets the list of associated questions.
+	 * Assigns the list of questions to this theme.
 	 *
-	 * @param questions a list of questions, if null an empty list will be assigned
+	 * @param questions a list containing quiz questions belonging to this theme
 	 */
 	public void setQuestions(List<QuestionDTO> questions) {
 		this.questions = questions != null ? questions : new ArrayList<>();
@@ -125,8 +133,6 @@ public class ThemeDTO extends DataTransportObject {
 
 	/**
 	 * Legacy method - alias for {@link #getThemeTitle()}.
-	 * <p>
-	 * Provided for GUI compatibility.
 	 *
 	 * @return theme title
 	 */
@@ -137,7 +143,7 @@ public class ThemeDTO extends DataTransportObject {
 	/**
 	 * Legacy method - alias for {@link #setThemeTitle(String)}.
 	 *
-	 * @param title the theme title
+	 * @param title the new title to set for this theme
 	 */
 	public void setTitle(String title) {
 		setThemeTitle(title);
@@ -153,9 +159,10 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Gets a random question from the theme.
+	 * Returns a random question from the theme's list of questions.
 	 *
-	 * @return a random {@link QuestionDTO} or null if no questions are available
+	 * @return a randomly selected {@link QuestionDTO} or null if no questions are
+	 *         present
 	 */
 	public QuestionDTO getRandomQuestion() {
 		if (questions.isEmpty()) {
@@ -166,10 +173,14 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Content equality comparison for new (unsaved) themes.
+	 * Compares the content of this ThemeDTO with another DTO for equality when new
+	 * (unsaved).
+	 * <p>
+	 * Equality is determined by matching theme title and description content.
 	 *
-	 * @param other another {@link DataTransportObject} to compare
-	 * @return true if titles and descriptions match
+	 * @param other another {@link DataTransportObject} to compare against
+	 * @return true if both themes have matching titles and descriptions, false
+	 *         otherwise
 	 */
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {
@@ -181,9 +192,11 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Computes a hash code based on the theme title and description.
+	 * Computes a hash code based on the main content of this theme.
+	 * <p>
+	 * Used when entity ID is not yet assigned (new entity).
 	 *
-	 * @return hash code value
+	 * @return hash code derived from theme title and description
 	 */
 	@Override
 	protected int contentHashCode() {
@@ -191,9 +204,11 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Creates a concise string summary of the theme.
+	 * Generates a concise string summary describing the theme for debugging.
+	 * <p>
+	 * Includes the theme title and the count of associated questions.
 	 *
-	 * @return formatted string showing title and number of questions
+	 * @return string representation summarizing the main theme content
 	 */
 	@Override
 	protected String getContentString() {
@@ -201,14 +216,12 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Validates theme data.
-	 * <ul>
-	 * <li>Theme title must not be null or empty</li>
-	 * <li>Theme title length must not exceed 100 characters</li>
-	 * <li>Theme description, if present, must not exceed 500 characters</li>
-	 * </ul>
-	 *
-	 * @throws IllegalArgumentException if validation fails
+	 * Validates this theme's data to ensure it meets constraints.
+	 * <p>
+	 * Theme title must not be null, empty, or exceed 100 characters. Theme
+	 * description, if present, cannot exceed 500 characters.
+	 * <p>
+	 * Throws {@link IllegalArgumentException} if validation fails.
 	 */
 	@Override
 	protected void validate() {

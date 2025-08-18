@@ -5,18 +5,22 @@ import java.util.Objects;
 import quizlogic.DataTransportObject;
 
 /**
- * Data Transfer Object (DTO) representing a quiz answer.
+ * Data Transfer Object (DTO) representing a single answer option in a quiz
+ * system.
  * <p>
- * This DTO can be serialized and persisted in storage (e.g., database). Each
- * answer contains:
- * <ul>
- * <li>The answer text</li>
- * <li>A flag indicating if it is the correct answer</li>
- * <li>The ID of the associated question</li>
- * </ul>
+ * This DTO can be serialized and persisted in storage, such as a database. It
+ * encapsulates the answer text, indicates whether the answer is correct, and
+ * associates the answer with a specific question by its ID.
  * <p>
- * Implements common DTO functionality from {@link DataTransportObject}.
- *
+ * This class extends {@link DataTransportObject} to inherit common DTO
+ * behaviors and contract implementations including validation, equality checks,
+ * and serialization support.
+ * 
+ * <p>
+ * <b>Note:</b> This class is designed for use in the quiz logic layer to
+ * transfer answer data between application tiers or store and retrieve from
+ * persistent storage.
+ * 
  * @author Christos Poulios
  * @version 1.0
  * @since 1.0
@@ -25,18 +29,23 @@ public class AnswerDTO extends DataTransportObject {
 
 	private static final long serialVersionUID = 1L;
 
-	/** The text content of the answer */
+	/** The textual content of this answer. */
 	private String answerText;
 
-	/** Flag indicating whether this is the correct answer */
+	/**
+	 * Flag indicating if this answer is the correct one for the associated
+	 * question.
+	 */
 	private boolean correct;
 
-	/** ID of the question this answer belongs to */
+	/** The unique identifier of the question this answer belongs to. */
 	private int questionId;
 
 	/**
-	 * Default constructor for creating a new AnswerDTO. Initializes correctness to
-	 * false and questionId to -1.
+	 * Default constructor creating a new, unsaved AnswerDTO instance.
+	 * <p>
+	 * Initializes the 'correct' flag to false and the question ID to -1, indicating
+	 * not yet associated with a persisted question.
 	 */
 	public AnswerDTO() {
 		super();
@@ -45,10 +54,12 @@ public class AnswerDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructor for creating an AnswerDTO for an existing persisted answer
-	 * record.
+	 * Constructor for creating an AnswerDTO representing an existing answer record.
+	 * <p>
+	 * The object is identified by a unique ID but the correctness is initialized as
+	 * false and questionId as -1 until explicitly set.
 	 *
-	 * @param id the unique ID of the answer
+	 * @param id the unique identifier of the persisted answer
 	 */
 	public AnswerDTO(int id) {
 		super(id);
@@ -57,10 +68,13 @@ public class AnswerDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructor for creating a new answer with text and correctness.
+	 * Constructs a new AnswerDTO with the given answer text and correctness status.
+	 * <p>
+	 * The questionId is initialized to -1, indicating the answer is not yet
+	 * attached to any question.
 	 *
-	 * @param answerText the text content of the answer
-	 * @param correct    true if this answer is correct, false otherwise
+	 * @param answerText the textual content of this answer
+	 * @param correct    true if this answer is the correct choice, false otherwise
 	 */
 	public AnswerDTO(String answerText, boolean correct) {
 		super();
@@ -70,12 +84,13 @@ public class AnswerDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructor for creating a complete AnswerDTO with all fields.
+	 * Constructs a fully specified AnswerDTO including its ID, answer text,
+	 * correctness status, and associated question ID.
 	 *
-	 * @param id         the unique ID of the answer
-	 * @param answerText the text content of the answer
-	 * @param correct    true if this answer is correct
-	 * @param questionId the ID of the question this answer belongs to
+	 * @param id         the unique identifier of the answer
+	 * @param answerText the textual content of this answer
+	 * @param correct    true if this answer is correct, false otherwise
+	 * @param questionId the ID of the question to which this answer belongs
 	 */
 	public AnswerDTO(int id, String answerText, boolean correct, int questionId) {
 		super(id);
@@ -85,65 +100,68 @@ public class AnswerDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Gets the text of this answer.
+	 * Retrieves the text content of this answer.
 	 *
-	 * @return the answer text
+	 * @return the answer text as a String
 	 */
 	public String getAnswerText() {
 		return answerText;
 	}
 
 	/**
-	 * Sets the text of this answer.
+	 * Updates the text content of this answer.
 	 *
-	 * @param answerText the new answer text
+	 * @param answerText the new answer text to set
 	 */
 	public void setAnswerText(String answerText) {
 		this.answerText = answerText;
 	}
 
 	/**
-	 * Checks if this answer is correct.
+	 * Checks if this answer is marked as the correct choice.
 	 *
-	 * @return true if correct, false otherwise
+	 * @return true if this is the correct answer, false otherwise
 	 */
 	public boolean isCorrect() {
 		return correct;
 	}
 
 	/**
-	 * Sets whether this answer is correct.
+	 * Sets the correctness flag for this answer.
 	 *
-	 * @param correct true if correct, false otherwise
+	 * @param correct true to mark this answer as correct, false to mark incorrect
 	 */
 	public void setCorrect(boolean correct) {
 		this.correct = correct;
 	}
 
 	/**
-	 * Gets the ID of the question this answer belongs to.
+	 * Retrieves the unique identifier of the question associated with this answer.
 	 *
-	 * @return the question ID
+	 * @return the question ID as an integer
 	 */
 	public int getQuestionId() {
 		return questionId;
 	}
 
 	/**
-	 * Sets the ID of the question this answer belongs to.
+	 * Sets the question ID that this answer belongs to.
 	 *
-	 * @param questionId the question ID
+	 * @param questionId the unique ID of the question to associate with this answer
 	 */
 	public void setQuestionId(int questionId) {
 		this.questionId = questionId;
 	}
 
 	/**
-	 * Compares the content of this AnswerDTO to another DTO for equality. Used when
-	 * both entities are new and have no assigned ID.
+	 * Compares the content of this AnswerDTO with another DataTransportObject to
+	 * determine equality when both objects are new (unsaved).
+	 * <p>
+	 * The comparison checks equality of answer text, correctness flag, and
+	 * associated question ID.
 	 *
-	 * @param other another DataTransportObject to compare against
-	 * @return true if the answer text, correctness, and question ID match
+	 * @param other another DTO to compare against
+	 * @return true if both have identical content, false otherwise
 	 */
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {
@@ -155,10 +173,11 @@ public class AnswerDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Computes a hash code based on the answer's content. Used when the answer is a
-	 * new entity with no ID.
+	 * Computes a hash code derived from the main content of this answer.
+	 * <p>
+	 * Used for new (unsaved) entities to support collections and hashing.
 	 *
-	 * @return hash code from answerText, correct, and questionId
+	 * @return hash code computed from answerText, correctness, and questionId
 	 */
 	@Override
 	protected int contentHashCode() {
@@ -166,11 +185,12 @@ public class AnswerDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Returns a string summary of this answer's content for debugging/logging
-	 * purposes.
+	 * Generates a concise string representation of this answer's main content.
+	 * <p>
+	 * Useful for debugging and logging, indicates answer text, correctness, and
+	 * question association.
 	 *
-	 * @return String in the format:
-	 *         {@code answerText='...', correct=..., questionId=...}
+	 * @return a formatted string summarizing the answer content
 	 */
 	@Override
 	protected String getContentString() {
@@ -178,13 +198,12 @@ public class AnswerDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Validates that the answer has valid data.
-	 * <ul>
-	 * <li>Answer text must not be null or empty</li>
-	 * <li>Answer text must not exceed 500 characters</li>
-	 * </ul>
-	 *
-	 * @throws IllegalArgumentException if validation fails
+	 * Validates the internal state of this AnswerDTO.
+	 * <p>
+	 * This method should ensure that the answer text is not null or empty,
+	 * correctness flag and question ID are within expected constraints.
+	 * <p>
+	 * Throws IllegalArgumentException if validation fails.
 	 */
 	@Override
 	protected void validate() {

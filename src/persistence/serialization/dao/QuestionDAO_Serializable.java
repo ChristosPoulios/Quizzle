@@ -10,13 +10,13 @@ import persistence.DataAccessObject;
  * handling from {@link persistence.DataAccessObject}. It is intended for
  * scenarios where quiz data is stored and retrieved from serialized files
  * rather than a relational database.
- * 
  * <p>
- * Stores:
- * </p>
+ * Responsibilities:
  * <ul>
- * <li>Unique question ID</li>
- * <li>Question title</li>
+ * <li>Store quiz question data</li>
+ * <li>Provide serialization/deserialization support for persistence</li>
+ * <li>Facilitate conversion between internal representation and transport DTOs
+ * if needed</li>
  * </ul>
  * 
  * @author Christos Poulios

@@ -92,9 +92,11 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Establishes a connection to the MariaDB database if not already connected.
+	 * Establishes a connection to the MariaDB database.
+	 * <p>
+	 * If the connection is already open, this method does nothing.
 	 *
-	 * @throws RuntimeException if the connection fails
+	 * @throws RuntimeException if connection fails
 	 */
 	public void connect() {
 		try {
@@ -109,9 +111,10 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Closes the database connection if it is open.
-	 *
-	 * @throws RuntimeException if closing the connection fails
+	 * Closes the active database connection if it exists.
+	 * <p>
+	 * After calling this method, the DBManager will no longer have an active
+	 * connection.
 	 */
 	public void disconnect() {
 		try {

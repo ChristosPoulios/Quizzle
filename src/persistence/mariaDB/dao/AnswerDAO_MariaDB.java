@@ -60,7 +60,7 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	private int questionId;
 
 	/**
-	 * Default constructor.
+	 * Default constructor for creating new AnswerDAO_MariaDB instances.
 	 */
 	public AnswerDAO_MariaDB() {
 		super();
@@ -76,7 +76,7 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Full constructor.
+	 * Constructor with all fields for creating new answers.
 	 *
 	 * @param id         answer ID
 	 * @param text       answer text
@@ -91,7 +91,7 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Constructor from DTO.
+	 * Constructor that initializes the DAO from an AnswerDTO.
 	 *
 	 * @param dto AnswerDTO containing answer data
 	 */
@@ -101,6 +101,12 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 		this.correct = dto.isCorrect();
 	}
 
+	/**
+	 * Sets the parameters for a prepared statement based on this DAO's fields.
+	 *
+	 * @param ps PreparedStatement to set parameters for
+	 * @throws SQLException if a database access error occurs
+	 */
 	@Override
 	public void setPreparedStatementParameters(PreparedStatement ps) throws SQLException {
 		if (isNew()) {
@@ -119,6 +125,8 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 
 	/**
 	 * Validates the answer data.
+	 * <p>
+	 * Throws an exception if validation fails, otherwise returns true.
 	 *
 	 * @return true if validation passes
 	 * @throws IllegalArgumentException if validation fails
@@ -161,11 +169,11 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Creates a DAO from an AnswerDTO and an associated question ID.
+	 * Creates a new AnswerDAO_MariaDB from a transport DTO and question ID.
 	 *
-	 * @param dto        the AnswerDTO
-	 * @param questionId associated question ID
-	 * @return AnswerDAO_MariaDB instance
+	 * @param dto        AnswerDTO containing answer data
+	 * @param questionId ID of the associated question
+	 * @return new AnswerDAO_MariaDB instance
 	 */
 	public static AnswerDAO_MariaDB fromTransport(AnswerDTO dto, int questionId) {
 		AnswerDAO_MariaDB dao = new AnswerDAO_MariaDB();
@@ -177,9 +185,11 @@ public class AnswerDAO_MariaDB extends MariaAccessObject {
 	}
 
 	/**
-	 * Returns validation error messages without throwing exceptions.
+	 * Returns validation errors as a CharSequence.
+	 * <p>
+	 * Checks if the answer text is empty and if the question ID is valid.
 	 *
-	 * @return error messages as a string, or null if no errors
+	 * @return validation errors as a String, or null if no errors
 	 */
 	public CharSequence getValidationErrors() {
 		StringBuilder errors = new StringBuilder();

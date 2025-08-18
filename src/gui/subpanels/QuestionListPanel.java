@@ -18,9 +18,7 @@ import javax.swing.ScrollPaneConstants;
 
 import gui.interfaces.GUIConstants;
 import gui.interfaces.QuizQuestionDelegator;
-
 import persistence.mariaDB.DBManager;
-
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
 

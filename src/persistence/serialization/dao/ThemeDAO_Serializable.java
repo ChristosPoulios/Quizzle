@@ -17,16 +17,17 @@ import persistence.DataAccessObject;
  * This DAO persists its data directly to disk using Java serialization. Stored
  * data includes:
  * <ul>
- * <li>Unique theme ID</li>
  * <li>Theme title</li>
- * <li>List of associated questions</li>
+ * <li>Associated list of questions for the theme</li>
+ * <li>Unique theme identifier</li>
  * </ul>
- * <p>
  * Files are stored in the {@code ./quizData} folder with a naming pattern:
  * 
  * <pre>
  * Theme.{id}
  * </pre>
+ * 
+ * where <b>id</b> is the unique identifier for the theme.
  * 
  * @author Christos Poulios
  * @version 1.0
@@ -43,7 +44,7 @@ public class ThemeDAO_Serializable extends DataAccessObject {
 	private static final String FILE = FOLDER + "\\Theme.";
 
 	/** Theme title */
-	private String Title;
+	private String title;
 
 	/** List of questions associated with this theme */
 	private ArrayList<?> questions;
@@ -94,7 +95,7 @@ public class ThemeDAO_Serializable extends DataAccessObject {
 	 * @return theme title
 	 */
 	public String getThemeTitle() {
-		return Title;
+		return title;
 	}
 
 	/**
@@ -103,7 +104,7 @@ public class ThemeDAO_Serializable extends DataAccessObject {
 	 * @param title the new theme title
 	 */
 	public void setThemeTitle(String title) {
-		Title = title;
+		this.title = title;
 	}
 
 	/**

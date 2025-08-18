@@ -1,7 +1,6 @@
 package persistence;
 
 import java.util.ArrayList;
-
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
@@ -9,11 +8,12 @@ import quizlogic.dto.ThemeDTO;
 /**
  * Interface defining the contract for quiz data persistence operations.
  * <p>
- * Implementations can use various storage backends such as:
+ * Implementations can use diverse storage backends such as:
  * <ul>
  * <li>MariaDB relational database (see: persistence.mariaDB package)</li>
  * <li>File-based serialization (see: persistence.serialization package)</li>
  * </ul>
+ * 
  * This interface provides CRUD operations for:
  * <ul>
  * <li>Themes</li>
@@ -24,7 +24,7 @@ import quizlogic.dto.ThemeDTO;
  * <p>
  * All return types use DTO classes from the {@code quizlogic.dto} package.
  * 
- * @author Christos Poulios
+ * @author Christos
  * @version 1.0
  * @since 1.0
  */

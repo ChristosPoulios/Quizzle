@@ -18,22 +18,16 @@ import quizlogic.dto.ThemeDTO;
  * Serialization-based data manager for quiz persistence.
  * <p>
  * This implementation of {@link persistence.QuizDataInterface} stores each
- * theme as a separate serialized file. It provides:
+ * theme as a separate serialized file located in
+ * {@code ./quizData/theme_{id}.dat} where {@code id} is the unique theme
+ * identifier.
+ * <p>
+ * Responsibilities:
  * <ul>
- * <li>Persistent storage of themes, questions, and answers using file
- * serialization</li>
- * <li>Automatic ID assignment for new themes</li>
- * <li>Observer/listener support for UI updates</li>
- * <li>Methods to retrieve random questions and formatted lists for display</li>
+ * <li>Serializing and deserializing quiz theme objects</li>
+ * <li>Providing CRUD operations on themes, questions, and answers</li>
+ * <li>Managing listeners for updates on data changes</li>
  * </ul>
- * 
- * <b>Storage Layout:</b>
- * 
- * <pre>
- * ./quizData/theme_{id}.dat
- * </pre>
- * 
- * Where {@code id} is the unique theme identifier.
  * 
  * @author Christos Poulios
  * @version 2.0
@@ -103,13 +97,12 @@ public class QuizDataManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Returns formatted display entries for questions for a given theme title.
-	 * <p>
-	 * If {@code themeTitle} is null or equals "Alle Themen", all questions from all
-	 * themes are returned. Otherwise, only questions belonging to the matching
+	 * Returns a list of formatted question entries for a specified theme. If
+	 * {@code themeTitle} is null or equals "Alle Themen", all questions from all
+	 * themes are returned. Otherwise, only questions belonging to the provided
 	 * theme are included.
 	 *
-	 * @param themeTitle Selected theme title, or null/“Alle Themen” for all
+	 * @param themeTitle Selected theme title or null/"Alle Themen" for all
 	 * @return an {@link ArrayList} of formatted strings showing both title and a
 	 *         truncated preview of text
 	 */

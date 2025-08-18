@@ -4,46 +4,55 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Abstract base class for all Data Transfer Objects (DTOs) in the logic layer.
+ * Abstract base class for all Data Transfer Objects (DTOs) within the
+ * application logic layer.
  * <p>
- * This class provides common functionality for all DTOs, including:
+ * This class provides common functionality shared by all DTOs, including:
  * <ul>
- * <li>ID management for persisted and non-persisted entities</li>
- * <li>Equality and hash code handling based on either ID or content</li>
- * <li>String representation with content description</li>
- * <li>Validation framework for DTO data integrity</li>
+ * <li>Unique identifier management</li>
+ * <li>Content-based equality and hashing logic</li>
+ * <li>String representation for debugging</li>
+ * <li>Validation support</li>
  * </ul>
  * <p>
- * Subclasses must implement content comparison, content hash code, content
- * string, and validation logic.
- *
+ * Subclasses must implement abstract methods to define content-based
+ * comparison, hashing, string content description, and validation rules
+ * specific to their fields.
+ * <p>
+ * This class also implements {@link Serializable} to allow instances of DTOs to
+ * be serialized for storage or transmission.
+ * 
  * @author Christos Poulios
  * @version 1.0
  * @since 1.0
  */
 public abstract class DataTransportObject implements Serializable {
 
-	/** Serialization version UID for consistent serialization */
+	/**
+	 * Serialization version UID for ensuring compatibility during serialization.
+	 */
 	protected static final long serialVersionUID = 1L;
 
 	/**
-	 * Unique identifier for the entity. Default is -1 indicating unsaved/new
-	 * entity.
+	 * The unique identifier for the entity this DTO represents.
+	 * <p>
+	 * A default of -1 indicates the entity is new and has not yet been persisted.
 	 */
 	private int id = -1;
 
 	/**
-	 * Default constructor for creating a new (unsaved) entity DTO. Assigns a
-	 * default ID of -1.
+	 * Default constructor creating a new (unsaved) DTO entity.
+	 * <p>
+	 * The ID is initialized to -1 to indicate the entity is not yet persisted.
 	 */
 	public DataTransportObject() {
 		super();
 	}
 
 	/**
-	 * Constructor for creating a DTO representing an existing persisted entity.
-	 *
-	 * @param id the unique ID of the entity
+	 * Constructs a DTO representing an existing persisted entity with a known ID.
+	 * 
+	 * @param id the unique identifier of a persisted entity
 	 */
 	public DataTransportObject(int id) {
 		super();
@@ -51,9 +60,11 @@ public abstract class DataTransportObject implements Serializable {
 	}
 
 	/**
-	 * Gets the unique identifier of this DTO.
+	 * Returns the unique identifier of this DTO.
+	 * <p>
+	 * An ID of -1 indicates the entity has not yet been persisted.
 	 *
-	 * @return the entity ID, or -1 if not yet persisted
+	 * @return the entity ID or -1 if not persisted
 	 */
 	public int getId() {
 		return id;
@@ -62,42 +73,40 @@ public abstract class DataTransportObject implements Serializable {
 	/**
 	 * Sets the unique identifier of this DTO.
 	 *
-	 * @param id the entity ID
+	 * @param id the unique entity identifier to assign
 	 */
 	public void setId(int id) {
 		this.id = id;
 	}
 
 	/**
-	 * Checks if this DTO represents a new (unsaved) entity.
+	 * Indicates whether this DTO represents a new (unsaved) entity.
 	 *
-	 * @return {@code true} if entity ID is less than or equal to 0, otherwise false
+	 * @return true if the entity ID is less than or equal to 0, false otherwise
 	 */
 	public boolean isNew() {
 		return id <= 0;
 	}
 
 	/**
-	 * Checks if this DTO has been persisted.
+	 * Indicates whether this DTO has been persisted.
 	 *
-	 * @return {@code true} if entity ID is greater than 0, otherwise false
+	 * @return true if the entity ID is greater than 0, false otherwise
 	 */
 	public boolean isPersisted() {
 		return id > 0;
 	}
 
 	/**
-	 * Compares this DTO to another object for equality.
+	 * Compares this DTO with another object for equality.
 	 * <p>
-	 * Equality rules:
-	 * <ul>
-	 * <li>If both objects are new (unsaved), equality is based on
-	 * {@link #contentEquals(DataTransportObject)}</li>
-	 * <li>Otherwise, equality is based on their IDs</li>
-	 * </ul>
+	 * If both objects are new (unsaved), it compares their content using
+	 * {@link #contentEquals(DataTransportObject)}. If both have IDs, it compares
+	 * the IDs directly.
 	 *
-	 * @param obj the object to compare
-	 * @return true if equal according to the above rules, false otherwise
+	 * @param obj the object to compare with this DTO
+	 * @return true if both objects are equal based on their IDs or content, false
+	 *         otherwise
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -113,12 +122,12 @@ public abstract class DataTransportObject implements Serializable {
 	}
 
 	/**
-	 * Generates a hash code for this DTO.
+	 * Computes a hash code for this DTO.
 	 * <p>
-	 * If the entity is new (unsaved), the hash code is based on its content.
-	 * Otherwise, the hash code is based solely on the ID.
+	 * If the DTO is new (unsaved), it uses {@link #contentHashCode()} to compute
+	 * the hash based on its content. If it has an ID, it uses the ID for hashing.
 	 *
-	 * @return the computed hash code value
+	 * @return hash code based on ID or content
 	 */
 	@Override
 	public int hashCode() {
@@ -126,10 +135,12 @@ public abstract class DataTransportObject implements Serializable {
 	}
 
 	/**
-	 * Creates a string representation of this DTO, including ID and main content
-	 * description.
+	 * Returns a string representation of this DTO.
+	 * <p>
+	 * The format includes the class name, ID, and a summary of the main content
+	 * fields as defined by {@link #getContentString()}.
 	 *
-	 * @return human-readable string representation of the DTO
+	 * @return a string summary of this DTO's state
 	 */
 	@Override
 	public String toString() {

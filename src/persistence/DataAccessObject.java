@@ -5,19 +5,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Base Data Access Object (DAO) class providing common fields and methods for
- * all persistence layer entities.
+ * Interface defining the contract for quiz data persistence operations.
  * <p>
- * Each DAO maps a database row to a Java object and contains:
+ * Implementations of this interface can use various storage backends, such as
+ * relational databases, file systems, or in-memory stores.
+ * <p>
+ * All methods operate using Data Transfer Objects (DTOs) from the
+ * {@code quizlogic.dto} package to separate persistence logic from business
+ * logic.
+ * 
+ * <p>
+ * This interface covers operations to:
  * <ul>
- * <li>A unique identifier (ID)</li>
- * <li>Basic setter/getter for the ID</li>
- * <li>Utility to populate the DAO from a {@link java.sql.ResultSet}</li>
+ * <li>Retrieve random or themed quiz questions</li>
+ * <li>Retrieve collections of quiz themes, questions, and answers</li>
+ * <li>Save or update themes, questions, and answers</li>
+ * <li>Delete themes, questions, and answers</li>
  * </ul>
- * This base class is extended by DAO implementations for specific entities.
- * <p>
- * Implements {@link java.io.Serializable} for persistence via serialization if
- * needed.
  * 
  * @author Christos Poulios
  * @version 1.0
@@ -25,6 +29,7 @@ import java.sql.SQLException;
  */
 public class DataAccessObject implements Serializable {
 
+	/** Serial version UID for serialization compatibility */
 	private static final long serialVersionUID = 1L;
 
 	/** Unique entity ID, corresponds to the primary key in the database */

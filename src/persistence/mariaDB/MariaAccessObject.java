@@ -35,16 +35,22 @@ public abstract class MariaAccessObject extends DataAccessObject {
 	private int id;
 
 	/**
-	 * Default constructor for a new (unsaved) entity. Sets ID to 0.
+	 * Default constructor for a new entity (unsaved).
+	 * <p>
+	 * Initializes the ID to 0, indicating this is a new entity that has not been
+	 * persisted yet.
 	 */
 	public MariaAccessObject() {
 		this.id = 0;
 	}
 
 	/**
-	 * Constructor for an existing persisted entity.
+	 * Constructor for an existing entity with a specific ID.
+	 * <p>
+	 * Initializes the ID to the provided value, indicating this entity has been
+	 * persisted in the database.
 	 *
-	 * @param id the entity ID
+	 * @param id the unique identifier of the existing entity
 	 */
 	public MariaAccessObject(int id) {
 		this.id = id;
