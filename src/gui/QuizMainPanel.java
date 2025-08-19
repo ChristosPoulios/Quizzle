@@ -6,7 +6,7 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 import gui.interfaces.QuizPanelDelegator;
 import gui.subpanels.QuestionPanel;
 import gui.subpanels.QuizButtonPanel;

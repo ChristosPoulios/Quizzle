@@ -8,7 +8,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 
 /**
  * Panel containing control buttons with integrated message display.

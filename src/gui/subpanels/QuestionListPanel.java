@@ -16,7 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 import gui.interfaces.QuizQuestionDelegator;
 import persistence.mariaDB.DBManager;
 import quizlogic.dto.QuestionDTO;
@@ -60,7 +60,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(BACKGROUND_COLOR);
 		createHeaderPanel();
-		add(Box.createRigidArea(new Dimension(0, 8)));
+		add(Box.createRigidArea(new Dimension(0, QUESTION_LIST_RIGID_AREA_HEIGHT)));
 		createQuestionList();
 		add(Box.createVerticalGlue());
 		updateQuestionList("Alle Themen");

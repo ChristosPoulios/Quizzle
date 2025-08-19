@@ -7,7 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 
 /**
  * Panel representing a single answer option row in the answer section.

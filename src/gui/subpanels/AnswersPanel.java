@@ -7,7 +7,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 
 /**
  * Panel displaying all possible answers as individual answer rows.

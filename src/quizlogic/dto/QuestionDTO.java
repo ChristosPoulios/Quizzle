@@ -4,21 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import constants.ValidationConstants;
 import quizlogic.DataTransportObject;
 
 /**
  * Data Transfer Object (DTO) representing a quiz question.
  * <p>
- * This DTO contains the main question text, an optional short title, and a list
- * of possible answers. It is intended to be used both for in-memory operations
- * during quiz execution and for persistence in databases.
+ * Each question contains:
+ * <ul>
+ * <li>The main question text</li>
+ * <li>An optional title or short description</li>
+ * <li>A list of possible answers</li>
+ * </ul>
+ * This class extends {@link DataTransportObject} for consistent ID and
+ * validation handling.
  * <p>
- * This class extends {@link DataTransportObject} and inherits standard DTO
- * behavior such as validation, equality checks based on content or ID, and
- * serialization support.
- * <p>
- * Each question can have multiple answer options stored inside the answers
- * list.
+ * Used in both in-memory operations and persistent storage layers.
  * 
  * @author Christos Poulios
  * @version 1.0
@@ -28,20 +29,18 @@ public class QuestionDTO extends DataTransportObject {
 
 	private static final long serialVersionUID = 1L;
 
-	/** The main textual content of the question to be presented to the user. */
+	/** The main question text to be displayed */
 	private String questionText;
 
-	/** An optional short title or summary for the question. */
+	/** Optional short title for the question */
 	private String questionTitle;
 
-	/**
-	 * A list containing the possible answers for this question. Typically, this
-	 * list holds objects of type {@link AnswerDTO}.
-	 */
+	/** List of possible answers to this question */
 	private List<AnswerDTO> answers;
 
 	/**
-	 * Default constructor initializes an empty list of answers.
+	 * Default constructor for creating a new QuestionDTO. Initializes an empty
+	 * answer list.
 	 */
 	public QuestionDTO() {
 		super();
@@ -49,10 +48,10 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructs a QuestionDTO with a specific ID for representing an existing
-	 * persisted question. Initializes the answers list to empty.
+	 * Constructor for creating a QuestionDTO with an existing ID (persisted
+	 * entity).
 	 *
-	 * @param id the unique identifier of the persisted question
+	 * @param id the unique ID of the question
 	 */
 	public QuestionDTO(int id) {
 		super(id);
@@ -60,11 +59,10 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Constructs a QuestionDTO with the specified question text and title.
-	 * Initializes the answers list to empty.
+	 * Constructor for creating a new question with text and title.
 	 *
-	 * @param questionText  the main text of the question
-	 * @param questionTitle an optional title for the question
+	 * @param questionText  the main question text
+	 * @param questionTitle the question title
 	 */
 	public QuestionDTO(String questionText, String questionTitle) {
 		super();
@@ -92,27 +90,27 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Retrieves the short title of the question, if any.
+	 * Gets the question title.
 	 *
-	 * @return question title string or null if not set
+	 * @return the question title
 	 */
 	public String getQuestionTitle() {
 		return questionTitle;
 	}
 
 	/**
-	 * Sets the short title for this question.
+	 * Sets the question title.
 	 *
-	 * @param questionTitle the title to assign to this question
+	 * @param questionTitle the new question title
 	 */
 	public void setQuestionTitle(String questionTitle) {
 		this.questionTitle = questionTitle;
 	}
 
 	/**
-	 * Returns the list of answers associated with this question.
+	 * Gets the list of answers for this question.
 	 *
-	 * @return a list holding answer DTOs for this question
+	 * @return list of answers
 	 */
 	public List<AnswerDTO> getAnswers() {
 		return answers;
@@ -121,8 +119,7 @@ public class QuestionDTO extends DataTransportObject {
 	/**
 	 * Sets the list of answers for this question.
 	 *
-	 * @param answers a list containing {@link AnswerDTO} objects representing the
-	 *                possible answers
+	 * @param answers list of answers, if null an empty list will be assigned
 	 */
 	public void setAnswers(List<AnswerDTO> answers) {
 		this.answers = answers != null ? answers : new ArrayList<>();
@@ -131,7 +128,7 @@ public class QuestionDTO extends DataTransportObject {
 	/**
 	 * Legacy method - alias for {@link #getQuestionText()}.
 	 *
-	 * @return question text
+	 * @return the question text
 	 */
 	public String getText() {
 		return getQuestionText();
@@ -174,13 +171,12 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Compares the content of this QuestionDTO to another DTO for equality when
-	 * both are new (unsaved).
+	 * Compares the main content of this question to another for equality.
 	 * <p>
-	 * Equality is based on matching the question text and the question title.
+	 * Used for comparing new entities without an assigned ID.
 	 *
-	 * @param other another DataTransportObject to compare against
-	 * @return true if question text and title are equal, false otherwise
+	 * @param other DTO to compare against
+	 * @return true if question text and title match
 	 */
 	@Override
 	protected boolean contentEquals(DataTransportObject other) {
@@ -192,11 +188,11 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Computes a hash code based on the question content.
+	 * Computes a hash code based on question content.
 	 * <p>
 	 * Used when the entity is new and not yet persisted.
 	 *
-	 * @return hash code computed from question text and title
+	 * @return hash based on question text and title
 	 */
 	@Override
 	protected int contentHashCode() {
@@ -204,11 +200,9 @@ public class QuestionDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Generates a concise string summary of the question content.
-	 * <p>
-	 * This includes the question title and the number of associated answers.
+	 * Returns a string summary of question content for debugging.
 	 *
-	 * @return a formatted string for debugging/logging purposes
+	 * @return formatted string showing title and number of answers
 	 */
 	@Override
 	protected String getContentString() {
@@ -217,23 +211,24 @@ public class QuestionDTO extends DataTransportObject {
 
 	/**
 	 * Validates the question content.
-	 * <p>
-	 * Ensures that the main question text is not null or empty, does not exceed
-	 * 1000 characters, and the optional question title is within 200 characters if
-	 * provided.
-	 * <p>
-	 * Throws {@link IllegalArgumentException} if any validation rule is violated.
+	 * <ul>
+	 * <li>Question text must not be null or empty</li>
+	 * <li>Question text must not exceed {@value ValidationConstants#QUESTION_TEXT_MAX_LENGTH} characters</li>
+	 * <li>Question title, if present, must not exceed {@value ValidationConstants#QUESTION_TITLE_MAX_LENGTH} characters</li>
+	 * </ul>
+	 *
+	 * @throws IllegalArgumentException if validation fails
 	 */
 	@Override
 	protected void validate() {
 		if (questionText == null || questionText.trim().isEmpty()) {
 			throw new IllegalArgumentException("Question text cannot be null or empty");
 		}
-		if (questionText.length() > 1000) {
-			throw new IllegalArgumentException("Question text cannot exceed 1000 characters");
+		if (questionText.length() > ValidationConstants.QUESTION_TEXT_MAX_LENGTH) {
+			throw new IllegalArgumentException("Question text cannot exceed " + ValidationConstants.QUESTION_TEXT_MAX_LENGTH + " characters");
 		}
-		if (questionTitle != null && questionTitle.length() > 200) {
-			throw new IllegalArgumentException("Question title cannot exceed 200 characters");
+		if (questionTitle != null && questionTitle.length() > ValidationConstants.QUESTION_TITLE_MAX_LENGTH) {
+			throw new IllegalArgumentException("Question title cannot exceed " + ValidationConstants.QUESTION_TITLE_MAX_LENGTH + " characters");
 		}
 	}
 }

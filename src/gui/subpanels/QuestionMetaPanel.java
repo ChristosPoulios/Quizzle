@@ -9,7 +9,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 
 /**
  * Panel for displaying a question's meta-information including the title and

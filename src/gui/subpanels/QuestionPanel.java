@@ -5,8 +5,7 @@ import java.awt.BorderLayout;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
-import gui.interfaces.GUIConstants;
-
+import constants.GUIConstants;
 import quizlogic.dto.QuestionDTO;
 
 /**

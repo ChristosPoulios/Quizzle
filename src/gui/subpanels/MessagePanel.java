@@ -4,7 +4,7 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 
 /**
  * Panel for displaying messages or notifications to the user at the bottom of

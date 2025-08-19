@@ -6,7 +6,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 import persistence.mariaDB.DBManager;
 import quizlogic.dto.ThemeDTO;
 

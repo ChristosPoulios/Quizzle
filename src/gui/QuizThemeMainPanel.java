@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 import gui.interfaces.QuizThemeDelegator;
 import gui.subpanels.ThemeButtonPanel;
 import gui.subpanels.ThemeListPanel;

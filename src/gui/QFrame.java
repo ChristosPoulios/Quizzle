@@ -3,7 +3,7 @@ package gui;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 import gui.subpanels.TabPane;
 
 import persistence.mariaDB.DBManager;

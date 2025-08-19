@@ -13,7 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 import persistence.mariaDB.DBManager;
 import quizlogic.dto.ThemeDTO;
 

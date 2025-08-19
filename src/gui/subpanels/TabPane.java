@@ -2,7 +2,7 @@ package gui.subpanels;
 
 import javax.swing.JTabbedPane;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 
 /**
  * Custom tabbed pane for the application UI.

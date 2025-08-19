@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import gui.interfaces.GUIConstants;
+import constants.GUIConstants;
 import gui.interfaces.QuizQuestionDelegator;
 import gui.subpanels.AnswerRowPanel;
 import gui.subpanels.QuestionButtonPanel;
