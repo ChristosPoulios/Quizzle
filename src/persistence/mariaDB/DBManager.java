@@ -253,7 +253,7 @@ public class DBManager implements QuizDataInterface {
 								dao.setId(newId);
 								theme.setId(newId);
 								themeDaoMap.put(theme, dao);
-								connection.commit(); 
+								connection.commit();
 								return "Theme successfully created";
 							}
 						}
@@ -264,23 +264,23 @@ public class DBManager implements QuizDataInterface {
 					dao.setPreparedStatementParameters(ps);
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
-						connection.commit(); 
+						connection.commit();
 						return "Theme successfully updated";
 					}
 				}
 			}
 		} catch (SQLException e) {
 			try {
-				connection.rollback(); 
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
 			try {
-				connection.rollback(); 
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Error: " + e.getMessage();
 		}
@@ -305,16 +305,16 @@ public class DBManager implements QuizDataInterface {
 			int rowsAffected = ps.executeUpdate();
 			if (rowsAffected > 0) {
 				themeDaoMap.remove(theme);
-				connection.commit(); 
+				connection.commit();
 				return "Theme successfully deleted";
 			} else {
 				return "Theme not found";
 			}
 		} catch (SQLException e) {
 			try {
-				connection.rollback(); 
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Database error: " + e.getMessage();
 		}
@@ -382,7 +382,7 @@ public class DBManager implements QuizDataInterface {
 						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
 							if (generatedKeys.next()) {
 								dao.setId(generatedKeys.getInt(1));
-								connection.commit(); 
+								connection.commit();
 								return "Question successfully created";
 							}
 						}
@@ -393,23 +393,23 @@ public class DBManager implements QuizDataInterface {
 					dao.setPreparedStatementParameters(ps);
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
-						connection.commit(); 
+						connection.commit();
 						return "Question successfully updated";
 					}
 				}
 			}
 		} catch (SQLException e) {
 			try {
-				connection.rollback(); 
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
 			try {
-				connection.rollback(); 
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Error: " + e.getMessage();
 		}
@@ -444,8 +444,7 @@ public class DBManager implements QuizDataInterface {
 			} catch (IllegalArgumentException ex) {
 				return "Validation failed: " + ex.getMessage();
 			}
-			
-			
+
 			String questionResult = null;
 			if (dao.isNew()) {
 				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
@@ -472,47 +471,44 @@ public class DBManager implements QuizDataInterface {
 					}
 				}
 			}
-			
-			
+
 			if (questionResult != null && question.getAnswers() != null && !question.getAnswers().isEmpty()) {
 				StringBuilder results = new StringBuilder(questionResult);
-				
-				
+
 				if (!dao.isNew()) {
 					deleteAnswersForQuestion(dao.getId());
 				}
-				
-				
+
 				for (AnswerDTO answer : question.getAnswers()) {
-					answer.setQuestionId(dao.getId()); 
+					answer.setQuestionId(dao.getId());
 					String answerResult = saveAnswer(answer, question);
 					if (!answerResult.contains("successfully")) {
 						results.append("; Answer save failed: ").append(answerResult);
 					}
 				}
-				
+
 				connection.commit();
 				return results.toString();
 			}
-			
+
 			if (questionResult != null) {
 				connection.commit();
 			}
-			
+
 			return questionResult != null ? questionResult : "Failed to save question";
-			
+
 		} catch (SQLException e) {
 			try {
-				connection.rollback(); 
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
 			try {
-				connection.rollback(); // Rollback on error
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Error: " + e.getMessage();
 		}
@@ -543,9 +539,9 @@ public class DBManager implements QuizDataInterface {
 			}
 		} catch (SQLException e) {
 			try {
-				connection.rollback(); 
+				connection.rollback();
 			} catch (SQLException rollbackEx) {
-				
+
 			}
 			return "Database error: " + e.getMessage();
 		}
@@ -622,6 +618,7 @@ public class DBManager implements QuizDataInterface {
 								int newId = generatedKeys.getInt(1);
 								dao.setId(newId);
 								answer.setId(newId);
+								connection.commit();
 								return "Answer successfully created";
 							}
 						}
@@ -632,13 +629,24 @@ public class DBManager implements QuizDataInterface {
 					dao.setPreparedStatementParameters(ps);
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
+						connection.commit();
 						return "Answer successfully updated";
 					}
 				}
 			}
 		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackEx) {
+
+			}
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackEx) {
+
+			}
 			return "Error: " + e.getMessage();
 		}
 		return "Failed to save answer";
