@@ -1,6 +1,6 @@
 package gui.subpanels;
 
-import java.util.ArrayList;
+import java.awt.BorderLayout;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -8,7 +8,6 @@ import javax.swing.JScrollPane;
 
 import constants.GUIConstants;
 import persistence.mariaDB.DBManager;
-import quizlogic.dto.ThemeDTO;
 
 /**
  * Panel showing quiz statistics and information.
@@ -37,14 +36,14 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 		this.dbManager = dbManager;
 
 		setBackground(BACKGROUND_COLOR);
-		setLayout(new java.awt.BorderLayout());
+		setLayout(new BorderLayout());
 
 		infoPane = new JEditorPane();
 		infoPane.setContentType("text/html");
 		infoPane.setEditable(false);
 
 		JScrollPane scrollPane = new JScrollPane(infoPane);
-		add(scrollPane, java.awt.BorderLayout.CENTER);
+		add(scrollPane, BorderLayout.CENTER);
 
 //		updateInfo();
 	}

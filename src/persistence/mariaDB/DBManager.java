@@ -92,18 +92,16 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Establishes a connection to the MariaDB database.
-	 * <p>
-	 * If the connection is already open, this method does nothing.
+	 * Establishes a connection to the MariaDB database if not already connected.
 	 *
-	 * @throws RuntimeException if connection fails
+	 * @throws RuntimeException if the connection fails
 	 */
 	public void connect() {
 		try {
 			if (connection == null || connection.isClosed()) {
 				Class.forName("org.mariadb.jdbc.Driver");
 				connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-				connection.setAutoCommit(true);
+				connection.setAutoCommit(false);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to connect to database", e);
@@ -111,10 +109,9 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Closes the active database connection if it exists.
-	 * <p>
-	 * After calling this method, the DBManager will no longer have an active
-	 * connection.
+	 * Closes the database connection if it is open.
+	 *
+	 * @throws RuntimeException if closing the connection fails
 	 */
 	public void disconnect() {
 		try {
@@ -256,6 +253,7 @@ public class DBManager implements QuizDataInterface {
 								dao.setId(newId);
 								theme.setId(newId);
 								themeDaoMap.put(theme, dao);
+								connection.commit(); 
 								return "Theme successfully created";
 							}
 						}
@@ -266,13 +264,24 @@ public class DBManager implements QuizDataInterface {
 					dao.setPreparedStatementParameters(ps);
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
+						connection.commit(); 
 						return "Theme successfully updated";
 					}
 				}
 			}
 		} catch (SQLException e) {
+			try {
+				connection.rollback(); 
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
+			try {
+				connection.rollback(); 
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Error: " + e.getMessage();
 		}
 		return "Failed to save theme";
@@ -296,11 +305,17 @@ public class DBManager implements QuizDataInterface {
 			int rowsAffected = ps.executeUpdate();
 			if (rowsAffected > 0) {
 				themeDaoMap.remove(theme);
+				connection.commit(); 
 				return "Theme successfully deleted";
 			} else {
 				return "Theme not found";
 			}
 		} catch (SQLException e) {
+			try {
+				connection.rollback(); 
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Database error: " + e.getMessage();
 		}
 	}
@@ -367,6 +382,7 @@ public class DBManager implements QuizDataInterface {
 						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
 							if (generatedKeys.next()) {
 								dao.setId(generatedKeys.getInt(1));
+								connection.commit(); 
 								return "Question successfully created";
 							}
 						}
@@ -377,13 +393,24 @@ public class DBManager implements QuizDataInterface {
 					dao.setPreparedStatementParameters(ps);
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
+						connection.commit(); 
 						return "Question successfully updated";
 					}
 				}
 			}
 		} catch (SQLException e) {
+			try {
+				connection.rollback(); 
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
+			try {
+				connection.rollback(); 
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Error: " + e.getMessage();
 		}
 		return "Failed to save question";
@@ -417,6 +444,9 @@ public class DBManager implements QuizDataInterface {
 			} catch (IllegalArgumentException ex) {
 				return "Validation failed: " + ex.getMessage();
 			}
+			
+			
+			String questionResult = null;
 			if (dao.isNew()) {
 				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
 						Statement.RETURN_GENERATED_KEYS)) {
@@ -427,8 +457,8 @@ public class DBManager implements QuizDataInterface {
 							if (generatedKeys.next()) {
 								int newId = generatedKeys.getInt(1);
 								dao.setId(newId);
-								question.setId(newId); // Update DTO with new ID
-								return "Question successfully created";
+								question.setId(newId);
+								questionResult = "Question successfully created";
 							}
 						}
 					}
@@ -438,16 +468,54 @@ public class DBManager implements QuizDataInterface {
 					dao.setPreparedStatementParameters(ps);
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
-						return "Question successfully updated";
+						questionResult = "Question successfully updated";
 					}
 				}
 			}
+			
+			
+			if (questionResult != null && question.getAnswers() != null && !question.getAnswers().isEmpty()) {
+				StringBuilder results = new StringBuilder(questionResult);
+				
+				
+				if (!dao.isNew()) {
+					deleteAnswersForQuestion(dao.getId());
+				}
+				
+				
+				for (AnswerDTO answer : question.getAnswers()) {
+					answer.setQuestionId(dao.getId()); 
+					String answerResult = saveAnswer(answer, question);
+					if (!answerResult.contains("successfully")) {
+						results.append("; Answer save failed: ").append(answerResult);
+					}
+				}
+				
+				connection.commit();
+				return results.toString();
+			}
+			
+			if (questionResult != null) {
+				connection.commit();
+			}
+			
+			return questionResult != null ? questionResult : "Failed to save question";
+			
 		} catch (SQLException e) {
+			try {
+				connection.rollback(); 
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Database error: " + e.getMessage();
 		} catch (Exception e) {
+			try {
+				connection.rollback(); // Rollback on error
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Error: " + e.getMessage();
 		}
-		return "Failed to save question";
 	}
 
 	/**
@@ -468,11 +536,17 @@ public class DBManager implements QuizDataInterface {
 			int rowsAffected = ps.executeUpdate();
 			if (rowsAffected > 0) {
 				questionDaoMap.remove(question);
+				connection.commit();
 				return "Question successfully deleted";
 			} else {
 				return "Question not found";
 			}
 		} catch (SQLException e) {
+			try {
+				connection.rollback(); 
+			} catch (SQLException rollbackEx) {
+				
+			}
 			return "Database error: " + e.getMessage();
 		}
 	}
