@@ -30,8 +30,8 @@ import quizlogic.dto.ThemeDTO;
  * </ul>
  * 
  * @author Christos Poulios
- * @version 2.0
- * @since 2.0
+ * @version 1.0
+ * @since 1.0
  */
 public class QuizDataManager implements QuizDataInterface {
 

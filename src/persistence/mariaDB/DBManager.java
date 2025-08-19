@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import constants.ConfigManager;
 import persistence.QuizDataInterface;
 import persistence.mariaDB.dao.AnswerDAO_MariaDB;
 import persistence.mariaDB.dao.QuestionDAO_MariaDB;
@@ -33,7 +34,7 @@ import quizlogic.dto.ThemeDTO;
  * The DBManager is a <b>Singleton</b>, ensuring a single shared connection is
  * used throughout the application's lifecycle.
  * <p>
- * Connection configuration is stored in constants within this class.
+ * Connection configuration is loaded from the ConfigManager.
  * 
  * <b>Responsibilities:</b>
  * <ul>
@@ -43,8 +44,8 @@ import quizlogic.dto.ThemeDTO;
  * </ul>
  * 
  * @author Christos Poulios
- * @version 2.0
- * @since 2.0
+ * @version 1.0
+ * @since 1.0
  */
 public class DBManager implements QuizDataInterface {
 
@@ -54,14 +55,8 @@ public class DBManager implements QuizDataInterface {
 	/** Active database connection instance */
 	private Connection connection;
 
-	/** JDBC connection URL to the MariaDB instance */
-	private static final String DB_URL = "jdbc:mariadb://localhost:3306/quizzle_db";
-
-	/** Database user */
-	private static final String DB_USER = "root";
-
-	/** Database password */
-	private static final String DB_PASSWORD = "vu8dzctc";
+	/** Configuration manager for database settings */
+	private ConfigManager configManager;
 
 	/** Map of ThemeDTO to ThemeDAO_MariaDB for caching */
 	private Map<ThemeDTO, ThemeDAO_MariaDB> themeDaoMap = new HashMap<>();
@@ -77,6 +72,7 @@ public class DBManager implements QuizDataInterface {
 	 * shared instance.
 	 */
 	private DBManager() {
+		configManager = ConfigManager.getInstance();
 	}
 
 	/**
@@ -99,8 +95,12 @@ public class DBManager implements QuizDataInterface {
 	public void connect() {
 		try {
 			if (connection == null || connection.isClosed()) {
-				Class.forName("org.mariadb.jdbc.Driver");
-				connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+				Class.forName(configManager.getDatabaseDriver());
+				connection = DriverManager.getConnection(
+					configManager.getDatabaseUrl(),
+					configManager.getDatabaseUser(),
+					configManager.getDatabasePassword()
+				);
 				connection.setAutoCommit(false);
 			}
 		} catch (Exception e) {

@@ -9,8 +9,9 @@ import gui.interfaces.QuizQuestionDelegator;
  * Question. Uses the delegate pattern to communicate with the parent panel.
  * </p>
  * 
- * @author Quizzle Team
- * @version 2.0
+ * @author Christos Poulios
+ * @version 1.0
+ * @since 1.0
  */
 public class QuestionButtonPanel extends MyButtonPanel {
 

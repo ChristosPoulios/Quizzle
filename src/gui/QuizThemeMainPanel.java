@@ -24,7 +24,7 @@ import quizlogic.dto.ThemeDTO;
  * </p>
  * 
  * @author Christos Poulios
- * @version 2.0
+ * @version 1.0
  * @since 1.0
  */
 public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThemeDelegator {

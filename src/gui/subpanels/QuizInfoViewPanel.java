@@ -18,7 +18,7 @@ import persistence.mariaDB.DBManager;
  * 
  * @author Christos Poulios
  * @version 1.0
- * @since 2.0
+ * @since 1.0
  */
 public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 

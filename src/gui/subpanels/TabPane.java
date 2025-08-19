@@ -13,6 +13,7 @@ import constants.GUIConstants;
  * 
  * @author Christos Poulios
  * @version 1.0
+ * @since 1.0
  */
 public class TabPane extends JTabbedPane implements GUIConstants {
 

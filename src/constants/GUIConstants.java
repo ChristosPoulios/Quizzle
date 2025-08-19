@@ -26,7 +26,7 @@ public interface GUIConstants {
 	int FRAME_WIDTH = 850;
 
 	/** Height of the main application window in pixels */
-	int FRAME_HEIGHT = 600;
+	int FRAME_HEIGHT = 650;
 
 	/** Horizontal margin spacing for panels in pixels */
 	int PANEL_MARGIN_H = 10;

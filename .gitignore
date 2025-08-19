@@ -1,5 +1,4 @@
 /bin/
 /quizData/
-/.settings/
-/src/.idea/
 /doc/
+/config.properties
