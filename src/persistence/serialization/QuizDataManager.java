@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import constants.UserStringConstants;
 import persistence.QuizDataInterface;
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
@@ -217,14 +218,14 @@ public class QuizDataManager implements QuizDataInterface {
 			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
 				oos.writeObject(theme);
 				notifyListeners();
-				return "Theme successfully saved: " + theme.getThemeTitle() + " (ID: " + theme.getId() + ")";
+				return String.format("Theme successfully saved: %s (ID: %d)", theme.getThemeTitle(), theme.getId());
 			} catch (IOException e) {
 				e.printStackTrace();
-				return "Error while saving: " + e.getMessage();
+				return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Error while saving: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 		}
 	}
 
@@ -365,7 +366,7 @@ public class QuizDataManager implements QuizDataInterface {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "Error deleting theme: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 		}
 	}
 

@@ -10,6 +10,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 
 /**
  * Panel for displaying a question's meta-information including the title and
@@ -40,7 +41,7 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 
 		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		titlePanel.setBackground(BACKGROUND_COLOR);
-		JLabel titleLabel = new JLabel("Titel");
+		JLabel titleLabel = new JLabel(UserStringConstants.QUESTION_TITLE_LABEL);
 		titleField = new JTextField("", GUIConstants.TEXTFIELD_COLUMNS);
 		titleField.setEditable(false);
 		titlePanel.add(titleLabel);
@@ -48,7 +49,7 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 
 		JPanel questionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		questionPanel.setBackground(BACKGROUND_COLOR);
-		JLabel questionLabel = new JLabel("Frage");
+		JLabel questionLabel = new JLabel(UserStringConstants.QUESTION_TEXT_LABEL);
 		questionTextArea = new JTextArea("", GUIConstants.QUESTIONAREA_ROWS, GUIConstants.QUESTIONAREA_COLUMNS);
 		questionTextArea.setBackground(GUIConstants.QUESTION_TEXT_AREA);
 		questionTextArea.setLineWrap(true);

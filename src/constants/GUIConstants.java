@@ -4,15 +4,15 @@ import java.awt.*;
 
 /**
  * Central GUI constants for the entire quiz application. Provides frame
- * dimensions, colors, fonts, sizes, text labels, etc.
+ * dimensions, colors, fonts, sizes, etc. (excluding user-displayed strings).
  * 
- * These are used throughout the GUI to maintain consistent UI design.
+ * User-displayed strings are now located in {@link UserStringConstants}.
  * 
  * @author Christos Poulios
  * @version 1.0
  * @since 1.0
  */
-public interface GUIConstants {
+public interface GUIConstants extends UserStringConstants {
 
 	// Frame and panel dimensions
 
@@ -171,56 +171,6 @@ public interface GUIConstants {
 
 	/** Offset for checkbox labels in pixels */
 	int CHECKBOX_LABEL_OFFSET = 105;
-
-	// Text labels and button texts used in the GUI
-
-	/** Title displayed in the main application window */
-	String WINDOW_TITLE = "Quizzle";
-
-	/** Label text for theme fields */
-	String THEME_LABEL = "Thema:";
-
-	/** Label for the possible answers section */
-	String POSSIBLE_ANSWERS_LABEL = "Mögliche Antworten";
-
-	/** Label for correct answer indication */
-	String ANSWER_LABEL = "Richtig";
-
-	/** Prefix used for answer option labels */
-	String ANSWER_PREFIX = "Antwort ";
-
-	/** Default message text for message panels */
-	String MESSAGE_DEFAULT = "Meldungen";
-
-	/** Label for question lists */
-	String QUESTIONLIST_LABEL = "Fragen zum Thema";
-
-	/** Button text for showing answers */
-	String BTN_SHOW_ANSWER = "Antwort zeigen";
-
-	/** Button text for saving answers */
-	String BTN_SAVE_ANSWER = "Antwort speichern";
-
-	/** Button text for next question navigation */
-	String BTN_NEXT_QUESTION = "Nächste Frage";
-
-	/** Button text for deleting themes */
-	String BTN_DELETE_THEME = "Thema löschen";
-
-	/** Button text for saving themes */
-	String BTN_SAVE_THEME = "Thema speichern";
-
-	/** Button text for adding new themes */
-	String BTN_ADD_THEME = "Neues Thema";
-
-	/** Button text for deleting questions */
-	String BTN_DELETE_QUESTION = "Frage löschen";
-
-	/** Button text for saving questions */
-	String BTN_SAVE_QUESTION = "Frage speichern";
-
-	/** Button text for adding new questions */
-	String BTN_ADD_QUESTION = "Neue Frage";
 
 	/** Number of answer options available per question */
 	int ANSWERS_COUNT = 4;

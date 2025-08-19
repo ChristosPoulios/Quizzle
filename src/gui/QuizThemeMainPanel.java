@@ -7,6 +7,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 import gui.interfaces.QuizThemeDelegator;
 import gui.subpanels.ThemeButtonPanel;
 import gui.subpanels.ThemeListPanel;
@@ -100,7 +101,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 	@Override
 	public void onNewTheme(String themeTitle) {
 		themePanel.clearFields();
-		buttonPanel.setMessage("Bereit für neues Thema");
+		buttonPanel.setMessage(UserStringConstants.MSG_READY_FOR_NEW_THEME);
 	}
 
 	/**
@@ -115,7 +116,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		String description = themePanel.getInfoText();
 
 		if (title.isEmpty()) {
-			buttonPanel.setMessage("Bitte geben Sie einen Titel für das Thema ein");
+			buttonPanel.setMessage(UserStringConstants.MSG_PLEASE_ENTER_THEME_TITLE);
 			return;
 		}
 
@@ -127,12 +128,12 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 
 		String result = dbManager.saveTheme(newTheme);
 		if (result != null && result.toLowerCase().contains("successfully")) {
-			buttonPanel.setMessage("Thema erfolgreich gespeichert: " + title);
+			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_CREATED_SUCCESS, title));
 			themePanel.clearFields();
 			themeListPanel.updateThemeList();
 			notifyThemeChanged();
 		} else {
-			buttonPanel.setMessage("Fehler beim Speichern: " + (result != null ? result : "Unbekannter Fehler"));
+			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETE_ERROR, (result != null ? result : "Unbekannter Fehler")));
 		}
 	}
 
@@ -148,31 +149,29 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		String selectedTitle = themeListPanel.getSelectedThemeTitle();
 
 		if (selectedTheme == null || selectedTitle == null) {
-			buttonPanel.setMessage("Bitte ein Thema zum Löschen auswählen");
+			buttonPanel.setMessage(UserStringConstants.MSG_PLEASE_SELECT_THEME_TO_DELETE);
 			return;
 		}
 
 		int confirm = JOptionPane.showConfirmDialog(this,
-				"Sind Sie sicher, dass Sie das Thema '" + selectedTitle + "' löschen möchten?\n\n"
-						+ "⚠️ Diese Aktion kann nicht rückgängig gemacht werden!",
-				"Thema löschen bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				String.format(UserStringConstants.MSG_CONFIRM_DELETE_THEME, selectedTitle),
+				UserStringConstants.DIALOG_TITLE_CONFIRM_DELETE_THEME, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
 		if (confirm == JOptionPane.YES_OPTION) {
 			String result = dbManager.deleteTheme(selectedTheme);
 			if (result != null && result.toLowerCase().contains("successfully")) {
-				buttonPanel.setMessage("Thema erfolgreich gelöscht: " + selectedTitle);
+				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETED_SUCCESS, selectedTitle));
 				themePanel.clearFields();
 				themeListPanel.clearSelection();
 				themeListPanel.updateThemeList();
 				notifyThemeChanged();
 				System.out.println("DEBUG: Theme '" + selectedTitle + "' erfolgreich gelöscht");
 			} else {
-				buttonPanel.setMessage(
-						"Fehler beim Löschen des Themas: " + (result != null ? result : "Unbekannter Fehler"));
+				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETE_ERROR, (result != null ? result : "Unbekannter Fehler")));
 				System.err.println("ERROR: Fehler beim Löschen: " + result);
 			}
 		} else {
-			buttonPanel.setMessage("Löschen abgebrochen");
+			buttonPanel.setMessage(UserStringConstants.MSG_DELETE_CANCELLED);
 		}
 	}
 }

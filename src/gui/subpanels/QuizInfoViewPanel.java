@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 import persistence.mariaDB.DBManager;
 
 /**
@@ -39,7 +40,7 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 		setLayout(new BorderLayout());
 
 		infoPane = new JEditorPane();
-		infoPane.setContentType("text/html");
+		infoPane.setContentType(UserStringConstants.HTML_CONTENT_TYPE);
 		infoPane.setEditable(false);
 
 		JScrollPane scrollPane = new JScrollPane(infoPane);

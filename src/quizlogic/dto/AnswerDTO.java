@@ -2,6 +2,7 @@ package quizlogic.dto;
 
 import java.util.Objects;
 
+import constants.UserStringConstants;
 import constants.ValidationConstants;
 import quizlogic.DataTransportObject;
 
@@ -190,10 +191,10 @@ public class AnswerDTO extends DataTransportObject {
 	@Override
 	protected void validate() {
 		if (answerText == null || answerText.trim().isEmpty()) {
-			throw new IllegalArgumentException("Answer text cannot be null or empty");
+			throw new IllegalArgumentException(UserStringConstants.ERROR_ANSWER_TEXT_NULL_OR_EMPTY);
 		}
 		if (answerText.length() > ValidationConstants.ANSWER_TEXT_MAX_LENGTH) {
-			throw new IllegalArgumentException("Answer text cannot exceed " + ValidationConstants.ANSWER_TEXT_MAX_LENGTH + " characters");
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_ANSWER_TEXT_TOO_LONG, ValidationConstants.ANSWER_TEXT_MAX_LENGTH));
 		}
 	}
 }

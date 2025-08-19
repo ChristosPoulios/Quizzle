@@ -1,19 +1,17 @@
 package gui;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 import gui.interfaces.QuizPanelDelegator;
 import gui.subpanels.QuestionPanel;
 import gui.subpanels.QuizButtonPanel;
 import gui.subpanels.QuizInfoViewPanel;
-
 import persistence.mariaDB.DBManager;
-
 import quizlogic.dto.QuestionDTO;
 
 /**
@@ -61,7 +59,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	private void initPanels() {
 		questionPanel = new QuestionPanel();
 		quizInfoViewPanel = new QuizInfoViewPanel(dbManager);
-		contentPanel = new JPanel(new GridLayout(1, 2, PANEL_MARGIN_H, 0));
+		contentPanel = new JPanel(new java.awt.GridLayout(1, 2, PANEL_MARGIN_H, 0));
 		contentPanel.setBackground(BACKGROUND_COLOR);
 		contentPanel.add(questionPanel);
 		contentPanel.add(quizInfoViewPanel);
@@ -81,7 +79,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	public void fillWithQuestionData(QuestionDTO question) {
 		questionPanel.fillWithQuestionData(question);
 		if (question == null) {
-			buttonPanel.setMessage("Keine Frage verfügbar");
+			buttonPanel.setMessage(UserStringConstants.MSG_NO_QUESTION_AVAILABLE);
 		} else {
 			buttonPanel.setMessage("");
 		}
@@ -94,7 +92,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	@Override
 	public void onShowAnswerClicked() {
 		String correct = questionPanel.getAnswersPanel().getCorrectAnswerText();
-		buttonPanel.setMessage("Correct answer: " + correct);
+		buttonPanel.setMessage(String.format(UserStringConstants.MSG_CORRECT_ANSWER, correct));
 	}
 
 	/**
@@ -102,7 +100,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	 */
 	@Override
 	public void onSaveAnswerClicked() {
-		buttonPanel.setMessage("Answer saved.");
+		buttonPanel.setMessage(UserStringConstants.MSG_ANSWER_SAVED);
 	}
 
 	/**
@@ -112,7 +110,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	@Override
 	public void onNextQuestionClicked() {
 		fillWithQuestionData(dbManager.getRandomQuestion());
-		buttonPanel.setMessage("Next question.");
+		buttonPanel.setMessage(UserStringConstants.MSG_NEXT_QUESTION);
 	}
 
 	/**
@@ -124,7 +122,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	 */
 	@Override
 	public void onQuestionSelected(String entry, int index) {
-		buttonPanel.setMessage("Question selected: " + entry);
+		buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SELECTED, entry));
 	}
 
 	/**
@@ -135,6 +133,6 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	 */
 	@Override
 	public void onThemeSelected(String themeTitle) {
-		buttonPanel.setMessage("Theme selected: " + themeTitle);
+		buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_SELECTED, themeTitle));
 	}
 }

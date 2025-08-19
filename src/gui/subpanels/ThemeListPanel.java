@@ -14,6 +14,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 import persistence.mariaDB.DBManager;
 import quizlogic.dto.ThemeDTO;
 
@@ -70,14 +71,14 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Creates the header panel with a title label.
+	 * Creates the header section with theme list title.
 	 */
 	private void createHeader() {
 		JPanel headerPanel = new JPanel();
 		headerPanel.setBackground(BACKGROUND_COLOR);
 		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
 
-		JLabel headerLabel = new JLabel("Themen");
+		JLabel headerLabel = new JLabel(UserStringConstants.THEMES_HEADER);
 		headerLabel.setFont(TITLE_FONT);
 
 		headerPanel.add(headerLabel);

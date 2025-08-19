@@ -4,8 +4,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 import gui.subpanels.TabPane;
-
 import persistence.mariaDB.DBManager;
 
 /**
@@ -67,14 +67,11 @@ public class QFrame extends JFrame implements GUIConstants {
 			System.err.println("Please ensure:");
 			System.err.println("1. MariaDB server is running");
 			System.err.println("2. Database 'quizzle_db' exists");
-			System.err.println("3. MariaDB JDBC driver (mariadb-java-client.jar) is in classpath");
 
 			javax.swing.JOptionPane.showMessageDialog(null,
-					"Failed to connect to MariaDB database.\n\n" + "Error: " + e.getMessage() + "\n\n"
-							+ "Please check:\n" + "• MariaDB server is running\n" + "• Database 'quizzle_db' exists\n"
-							+ "• JDBC driver is in classpath\n\n"
-							+ "The application will continue with limited functionality.",
-					"Database Connection Error", javax.swing.JOptionPane.WARNING_MESSAGE);
+					String.format(UserStringConstants.DB_CONNECTION_FAILED_PREFIX, e.getMessage())
+							+ UserStringConstants.DB_CONNECTION_ERROR_MESSAGE,
+					UserStringConstants.DIALOG_TITLE_DB_CONNECTION_ERROR, javax.swing.JOptionPane.WARNING_MESSAGE);
 
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 				if (dbManager != null && dbManager.isConnected()) {
@@ -91,10 +88,10 @@ public class QFrame extends JFrame implements GUIConstants {
 		themeMainPanel.setThemeChangeListener(this::onThemeChanged);
 
 		TabPane tabPane = new TabPane();
-		tabPane.addTab("Quizthemen", themeMainPanel);
-		tabPane.addTab("Quizfragen", questionMainPanel);
-		tabPane.addTab("Quiz", quizMainPanel);
-		tabPane.addTab("Statistik", new JPanel());
+		tabPane.addTab(UserStringConstants.TAB_QUIZ_THEMES, themeMainPanel);
+		tabPane.addTab(UserStringConstants.TAB_QUIZ_QUESTIONS, questionMainPanel);
+		tabPane.addTab(UserStringConstants.TAB_QUIZ, quizMainPanel);
+		tabPane.addTab(UserStringConstants.TAB_STATISTICS, new JPanel());
 
 		add(tabPane);
 

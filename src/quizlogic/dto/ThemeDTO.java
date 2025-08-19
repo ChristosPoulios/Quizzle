@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import constants.UserStringConstants;
 import constants.ValidationConstants;
 import quizlogic.DataTransportObject;
 
@@ -214,13 +215,13 @@ public class ThemeDTO extends DataTransportObject {
 	@Override
 	protected void validate() {
 		if (themeTitle == null || themeTitle.trim().isEmpty()) {
-			throw new IllegalArgumentException("Theme title cannot be null or empty");
+			throw new IllegalArgumentException(UserStringConstants.ERROR_THEME_TITLE_NULL_OR_EMPTY);
 		}
 		if (themeTitle.length() > ValidationConstants.THEME_TITLE_MAX_LENGTH) {
-			throw new IllegalArgumentException("Theme title cannot exceed " + ValidationConstants.THEME_TITLE_MAX_LENGTH + " characters");
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_THEME_TITLE_TOO_LONG, ValidationConstants.THEME_TITLE_MAX_LENGTH));
 		}
 		if (themeDescription != null && themeDescription.length() > ValidationConstants.THEME_DESCRIPTION_MAX_LENGTH) {
-			throw new IllegalArgumentException("Theme description cannot exceed " + ValidationConstants.THEME_DESCRIPTION_MAX_LENGTH + " characters");
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_THEME_DESCRIPTION_TOO_LONG, ValidationConstants.THEME_DESCRIPTION_MAX_LENGTH));
 		}
 	}
 }

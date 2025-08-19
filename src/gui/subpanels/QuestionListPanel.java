@@ -21,6 +21,7 @@ import gui.interfaces.QuizQuestionDelegator;
 import persistence.mariaDB.DBManager;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
+import constants.UserStringConstants;
 
 /**
  * Panel displaying a list of questions with theme filtering and persistent data
@@ -63,7 +64,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		add(Box.createRigidArea(new Dimension(0, QUESTION_LIST_RIGID_AREA_HEIGHT)));
 		createQuestionList();
 		add(Box.createVerticalGlue());
-		updateQuestionList("Alle Themen");
+		updateQuestionList(UserStringConstants.ALL_THEMES_OPTION);
 	}
 
 	/**
@@ -93,7 +94,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		themeComboBox = new JComboBox<>();
 		themeComboBox.setPreferredSize(new Dimension(THEME_LIST_WIDTH, COMBOBOX_HEIGHT));
 		themeComboBox.setEditable(false);
-		themeComboBox.addItem("Alle Themen");
+		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
 
 		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
@@ -152,7 +153,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		listModel.clear();
 		currentQuestions.clear();
 
-		if ("Alle Themen".equals(selectedThemeTitle)) {
+		if (UserStringConstants.ALL_THEMES_OPTION.equals(selectedThemeTitle)) {
 			ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
 			for (ThemeDTO theme : themes) {
 				ArrayList<QuestionDTO> questions = dbManager.getQuestionsFor(theme);
@@ -187,7 +188,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
 
 		themeComboBox.removeAllItems();
-		themeComboBox.addItem("Alle Themen");
+		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
 		for (ThemeDTO theme : themes) {
 			themeComboBox.addItem(theme.getThemeTitle());
 		}

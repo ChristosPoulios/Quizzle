@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"Alle Packages","u":"allpackages-index.html"},{"l":"constants"},{"l":"gui"},{"l":"gui.interfaces"},{"l":"gui.subpanels"},{"l":"persistence"},{"l":"persistence.mariaDB"},{"l":"persistence.mariaDB.dao"},{"l":"persistence.serialization"},{"l":"persistence.serialization.dao"},{"l":"quizlogic"},{"l":"quizlogic.dto"}];updateSearchResults();

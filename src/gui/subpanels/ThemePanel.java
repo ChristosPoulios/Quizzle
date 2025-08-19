@@ -13,6 +13,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 
 /**
  * Panel for creating and editing theme information.
@@ -42,14 +43,14 @@ public class ThemePanel extends JPanel implements GUIConstants {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(PANEL_MARGIN_V, PANEL_MARGIN_H, PANEL_MARGIN_V, PANEL_MARGIN_H));
 
-		JLabel header = new JLabel("Neues Thema");
+		JLabel header = new JLabel(UserStringConstants.NEW_THEME_HEADER);
 		header.setFont(TITLE_FONT);
 		header.setAlignmentX(Component.LEFT_ALIGNMENT);
 		add(header);
 
 		add(Box.createVerticalStrut(VERTICAL_STRUT_MEDIUM));
 
-		titleLabel = new JLabel("Titel");
+		titleLabel = new JLabel(UserStringConstants.THEME_TITLE_LABEL);
 		titleLabel.setFont(DEFAULT_FONT);
 		titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		add(titleLabel);
@@ -61,7 +62,7 @@ public class ThemePanel extends JPanel implements GUIConstants {
 
 		add(Box.createVerticalStrut(GAP_BETWEEN_INPUTS));
 
-		infoLabel = new JLabel("Information zum Thema");
+		infoLabel = new JLabel(UserStringConstants.THEME_INFO_LABEL);
 		infoLabel.setFont(DEFAULT_FONT);
 		infoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		add(infoLabel);

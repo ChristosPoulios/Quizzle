@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import constants.UserStringConstants;
 import constants.ValidationConstants;
 import quizlogic.DataTransportObject;
 
@@ -222,13 +223,13 @@ public class QuestionDTO extends DataTransportObject {
 	@Override
 	protected void validate() {
 		if (questionText == null || questionText.trim().isEmpty()) {
-			throw new IllegalArgumentException("Question text cannot be null or empty");
+			throw new IllegalArgumentException(UserStringConstants.ERROR_QUESTION_TEXT_NULL_OR_EMPTY);
 		}
 		if (questionText.length() > ValidationConstants.QUESTION_TEXT_MAX_LENGTH) {
-			throw new IllegalArgumentException("Question text cannot exceed " + ValidationConstants.QUESTION_TEXT_MAX_LENGTH + " characters");
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_QUESTION_TEXT_TOO_LONG, ValidationConstants.QUESTION_TEXT_MAX_LENGTH));
 		}
 		if (questionTitle != null && questionTitle.length() > ValidationConstants.QUESTION_TITLE_MAX_LENGTH) {
-			throw new IllegalArgumentException("Question title cannot exceed " + ValidationConstants.QUESTION_TITLE_MAX_LENGTH + " characters");
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_QUESTION_TITLE_TOO_LONG, ValidationConstants.QUESTION_TITLE_MAX_LENGTH));
 		}
 	}
 }

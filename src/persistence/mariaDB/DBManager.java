@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import constants.ConfigManager;
+import constants.UserStringConstants;
 import persistence.QuizDataInterface;
 import persistence.mariaDB.dao.AnswerDAO_MariaDB;
 import persistence.mariaDB.dao.QuestionDAO_MariaDB;
@@ -104,7 +105,7 @@ public class DBManager implements QuizDataInterface {
 				connection.setAutoCommit(false);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to connect to database", e);
+			throw new RuntimeException(UserStringConstants.DB_ERROR_CONNECTION_FAILED, e);
 		}
 	}
 
@@ -120,7 +121,7 @@ public class DBManager implements QuizDataInterface {
 				connection = null;
 			}
 		} catch (SQLException e) {
-			throw new RuntimeException("Failed to disconnect from database", e);
+			throw new RuntimeException(UserStringConstants.DB_ERROR_DISCONNECT_FAILED, e);
 		}
 	}
 
@@ -238,7 +239,7 @@ public class DBManager implements QuizDataInterface {
 			try {
 				dao.performValidation();
 			} catch (IllegalArgumentException ex) {
-				return "Validation failed: " + ex.getMessage();
+				return String.format(UserStringConstants.DB_ERROR_VALIDATION_FAILED, ex.getMessage());
 			}
 
 			if (dao.isNew()) {
@@ -254,7 +255,7 @@ public class DBManager implements QuizDataInterface {
 								theme.setId(newId);
 								themeDaoMap.put(theme, dao);
 								connection.commit();
-								return "Theme successfully created";
+								return UserStringConstants.DB_MSG_THEME_CREATED_SUCCESS;
 							}
 						}
 					}
@@ -265,7 +266,7 @@ public class DBManager implements QuizDataInterface {
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						connection.commit();
-						return "Theme successfully updated";
+						return UserStringConstants.DB_MSG_THEME_UPDATED_SUCCESS;
 					}
 				}
 			}
@@ -275,16 +276,16 @@ public class DBManager implements QuizDataInterface {
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Database error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_DATABASE, e.getMessage());
 		} catch (Exception e) {
 			try {
 				connection.rollback();
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 		}
-		return "Failed to save theme";
+		return UserStringConstants.DB_ERROR_THEME_SAVE_FAILED;
 	}
 
 	/**
@@ -298,7 +299,7 @@ public class DBManager implements QuizDataInterface {
 		connect();
 		ThemeDAO_MariaDB dao = themeDaoMap.get(theme);
 		if (dao == null || dao.isNew()) {
-			return "Theme not found in database";
+			return UserStringConstants.DB_ERROR_THEME_NOT_FOUND;
 		}
 		try (PreparedStatement ps = connection.prepareStatement(dao.getDeleteStatement())) {
 			ps.setInt(1, dao.getId());
@@ -306,9 +307,9 @@ public class DBManager implements QuizDataInterface {
 			if (rowsAffected > 0) {
 				themeDaoMap.remove(theme);
 				connection.commit();
-				return "Theme successfully deleted";
+				return UserStringConstants.DB_MSG_THEME_DELETED_SUCCESS;
 			} else {
-				return "Theme not found";
+				return UserStringConstants.DB_ERROR_THEME_NOT_FOUND_FOR_DELETE;
 			}
 		} catch (SQLException e) {
 			try {
@@ -316,7 +317,7 @@ public class DBManager implements QuizDataInterface {
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Database error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_DATABASE, e.getMessage());
 		}
 	}
 
@@ -365,13 +366,13 @@ public class DBManager implements QuizDataInterface {
 		try {
 			QuestionDAO_MariaDB dao = questionDaoMap.get(question);
 			if (dao == null) {
-				return "Question not associated with a theme. Use saveQuestion with theme parameter.";
+				return UserStringConstants.DB_ERROR_QUESTION_NOT_ASSOCIATED;
 			}
 			dao.setQuestionText(question.getQuestionText());
 			try {
 				dao.performValidation();
 			} catch (IllegalArgumentException ex) {
-				return "Validation failed: " + ex.getMessage();
+				return String.format(UserStringConstants.DB_ERROR_VALIDATION_FAILED, ex.getMessage());
 			}
 			if (dao.isNew()) {
 				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
@@ -383,7 +384,7 @@ public class DBManager implements QuizDataInterface {
 							if (generatedKeys.next()) {
 								dao.setId(generatedKeys.getInt(1));
 								connection.commit();
-								return "Question successfully created";
+								return UserStringConstants.DB_MSG_QUESTION_CREATED_SUCCESS;
 							}
 						}
 					}
@@ -394,7 +395,7 @@ public class DBManager implements QuizDataInterface {
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						connection.commit();
-						return "Question successfully updated";
+						return UserStringConstants.DB_MSG_QUESTION_UPDATED_SUCCESS;
 					}
 				}
 			}
@@ -404,16 +405,16 @@ public class DBManager implements QuizDataInterface {
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Database error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_DATABASE, e.getMessage());
 		} catch (Exception e) {
 			try {
 				connection.rollback();
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 		}
-		return "Failed to save question";
+		return UserStringConstants.DB_ERROR_QUESTION_SAVE_FAILED;
 	}
 
 	/**
@@ -427,7 +428,7 @@ public class DBManager implements QuizDataInterface {
 		connect();
 		ThemeDAO_MariaDB themeDao = themeDaoMap.get(theme);
 		if (themeDao == null) {
-			return "Theme not found in database";
+			return UserStringConstants.DB_ERROR_THEME_NOT_FOUND;
 		}
 		try {
 			QuestionDAO_MariaDB dao = questionDaoMap.get(question);
@@ -442,7 +443,7 @@ public class DBManager implements QuizDataInterface {
 			try {
 				dao.performValidation();
 			} catch (IllegalArgumentException ex) {
-				return "Validation failed: " + ex.getMessage();
+				return String.format(UserStringConstants.DB_ERROR_VALIDATION_FAILED, ex.getMessage());
 			}
 
 			String questionResult = null;
@@ -457,7 +458,7 @@ public class DBManager implements QuizDataInterface {
 								int newId = generatedKeys.getInt(1);
 								dao.setId(newId);
 								question.setId(newId);
-								questionResult = "Question successfully created";
+								questionResult = UserStringConstants.DB_MSG_QUESTION_CREATED_SUCCESS;
 							}
 						}
 					}
@@ -467,7 +468,7 @@ public class DBManager implements QuizDataInterface {
 					dao.setPreparedStatementParameters(ps);
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
-						questionResult = "Question successfully updated";
+						questionResult = UserStringConstants.DB_MSG_QUESTION_UPDATED_SUCCESS;
 					}
 				}
 			}
@@ -495,7 +496,7 @@ public class DBManager implements QuizDataInterface {
 				connection.commit();
 			}
 
-			return questionResult != null ? questionResult : "Failed to save question";
+			return questionResult != null ? questionResult : UserStringConstants.DB_ERROR_QUESTION_SAVE_FAILED;
 
 		} catch (SQLException e) {
 			try {
@@ -503,14 +504,14 @@ public class DBManager implements QuizDataInterface {
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Database error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_DATABASE, e.getMessage());
 		} catch (Exception e) {
 			try {
 				connection.rollback();
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 		}
 	}
 
@@ -525,7 +526,7 @@ public class DBManager implements QuizDataInterface {
 		connect();
 		QuestionDAO_MariaDB dao = questionDaoMap.get(question);
 		if (dao == null || dao.isNew()) {
-			return "Question not found in database";
+			return UserStringConstants.DB_ERROR_QUESTION_NOT_FOUND;
 		}
 		try (PreparedStatement ps = connection.prepareStatement(dao.getDeleteStatement())) {
 			ps.setInt(1, dao.getId());
@@ -533,9 +534,9 @@ public class DBManager implements QuizDataInterface {
 			if (rowsAffected > 0) {
 				questionDaoMap.remove(question);
 				connection.commit();
-				return "Question successfully deleted";
+				return UserStringConstants.DB_MSG_QUESTION_DELETED_SUCCESS;
 			} else {
-				return "Question not found";
+				return UserStringConstants.DB_ERROR_QUESTION_NOT_FOUND_FOR_DELETE;
 			}
 		} catch (SQLException e) {
 			try {
@@ -543,7 +544,7 @@ public class DBManager implements QuizDataInterface {
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Database error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_DATABASE, e.getMessage());
 		}
 	}
 
@@ -590,7 +591,7 @@ public class DBManager implements QuizDataInterface {
 		connect();
 		QuestionDAO_MariaDB questionDao = questionDaoMap.get(question);
 		if (questionDao == null) {
-			return "Question not found in database";
+			return UserStringConstants.DB_ERROR_QUESTION_NOT_FOUND;
 		}
 		try {
 			AnswerDAO_MariaDB dao = answerDaoMap.get(answer);
@@ -605,7 +606,7 @@ public class DBManager implements QuizDataInterface {
 			try {
 				dao.performValidation();
 			} catch (IllegalArgumentException ex) {
-				return "Validation failed: " + ex.getMessage();
+				return String.format(UserStringConstants.DB_ERROR_VALIDATION_FAILED, ex.getMessage());
 			}
 			if (dao.isNew()) {
 				try (PreparedStatement ps = connection.prepareStatement(dao.getInsertStatement(),
@@ -619,7 +620,7 @@ public class DBManager implements QuizDataInterface {
 								dao.setId(newId);
 								answer.setId(newId);
 								connection.commit();
-								return "Answer successfully created";
+								return UserStringConstants.DB_MSG_ANSWER_CREATED_SUCCESS;
 							}
 						}
 					}
@@ -630,7 +631,7 @@ public class DBManager implements QuizDataInterface {
 					int rowsAffected = ps.executeUpdate();
 					if (rowsAffected > 0) {
 						connection.commit();
-						return "Answer successfully updated";
+						return UserStringConstants.DB_MSG_ANSWER_UPDATED_SUCCESS;
 					}
 				}
 			}
@@ -640,16 +641,16 @@ public class DBManager implements QuizDataInterface {
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Database error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_DATABASE, e.getMessage());
 		} catch (Exception e) {
 			try {
 				connection.rollback();
 			} catch (SQLException rollbackEx) {
 
 			}
-			return "Error: " + e.getMessage();
+			return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 		}
-		return "Failed to save answer";
+		return UserStringConstants.DB_ERROR_ANSWER_SAVE_FAILED;
 	}
 
 	/**
@@ -678,9 +679,9 @@ public class DBManager implements QuizDataInterface {
 	public String testConnection() {
 		try {
 			connect();
-			return isConnected() ? "Database connection successful" : "Database connection failed";
+			return isConnected() ? UserStringConstants.DB_MSG_CONNECTION_SUCCESS : UserStringConstants.DB_MSG_CONNECTION_FAILED;
 		} catch (Exception e) {
-			return "Database connection failed: " + e.getMessage();
+			return String.format(UserStringConstants.DB_MSG_CONNECTION_FAILED_DETAILS, e.getMessage());
 		}
 	}
 
@@ -732,7 +733,7 @@ public class DBManager implements QuizDataInterface {
 	public ArrayList<String> getQuestionListEntries(String selectedThemeTitle) {
 		connect();
 		ArrayList<String> entries = new ArrayList<>();
-		if (selectedThemeTitle == null || selectedThemeTitle.equals("Alle Themen")) {
+		if (selectedThemeTitle == null || selectedThemeTitle.equals(UserStringConstants.ALL_THEMES_OPTION)) {
 			String sql = new QuestionDAO_MariaDB().getSelectStatement();
 			try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
