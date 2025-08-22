@@ -62,7 +62,7 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 			headerPanel.clearTheme();
 			metaPanel.getTitleField().setText("");
 			metaPanel.getQuestionTextArea().setText("");
-			answersPanel.clearAnswers();
+			answersPanel.prepareForNewQuestion(); // Show empty answer fields for new question
 			return;
 		}
 
@@ -106,6 +106,27 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 		for (AnswerRowPanel row : answersPanel.getAnswerRows()) {
 			row.getTextField().setEditable(editable);
 			row.getCheckBox().setEnabled(editable);
+		}
+	}
+
+	/**
+	 * Sets the panel to quiz mode where text fields are read-only but checkboxes are selectable.
+	 * 
+	 * @param quizMode true to enable quiz mode, false to disable
+	 */
+	public void setQuizMode(boolean quizMode) {
+		if (quizMode) {
+			// In quiz mode: text fields are read-only, checkboxes are enabled
+			metaPanel.getTitleField().setEditable(false);
+			metaPanel.getQuestionTextArea().setEditable(false);
+
+			for (AnswerRowPanel row : answersPanel.getAnswerRows()) {
+				row.getTextField().setEditable(false);
+				row.getCheckBox().setEnabled(true); // Enable checkboxes for user selection
+			}
+		} else {
+			// Normal mode: everything editable
+			setEditable(true);
 		}
 	}
 

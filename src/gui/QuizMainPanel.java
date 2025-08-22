@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.BorderLayout;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -12,23 +13,17 @@ import gui.subpanels.QuestionPanel;
 import gui.subpanels.QuizButtonPanel;
 import gui.subpanels.QuizInfoViewPanel;
 import persistence.mariaDB.DBManager;
+import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
+import quizlogic.dto.QuizSessionDTO;
+import quizlogic.dto.ThemeDTO;
+import quizlogic.dto.UserAnswerDTO;
 
 /**
- * Main panel for the quiz tab providing quiz gameplay interface.
- * <p>
- * This panel integrates the question display, quiz statistics, and controls for
- * navigating the quiz. Data is persisted and managed via a shared MariaDB
- * database manager. This class implements {@link QuizPanelDelegator} to handle
- * user interactions with quiz controls.
- * </p>
- * 
- * @author Christos Poulios
- * @version 1.0
- * @since 1.0
+ * Main panel for the quiz tab providing quiz gameplay interface with session
+ * tracking.
  */
 public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDelegator {
-
 	private static final long serialVersionUID = 1L;
 
 	private QuestionPanel questionPanel;
@@ -37,32 +32,31 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	private DBManager dbManager;
 	private JPanel contentPanel;
 
-	/**
-	 * Constructs the quiz main panel integrating all subcomponents and connecting
-	 * to the MariaDB persistence layer.
-	 * 
-	 * @param dbManager the MariaDB database manager for quiz data persistence
-	 */
+	// Session management
+	private ThemeDTO selectedTheme;
+	private QuizSessionDTO currentSession;
+	private QuestionDTO currentQuestion;
+
 	public QuizMainPanel(DBManager dbManager) {
 		this.dbManager = dbManager;
 		setBackground(BACKGROUND_COLOR);
 		setLayout(new BorderLayout(PANEL_MARGIN_H, PANEL_MARGIN_V));
 		setBorder(BorderFactory.createEmptyBorder(PANEL_MARGIN_V, PANEL_MARGIN_H, PANEL_MARGIN_V, PANEL_MARGIN_H));
+
 		initPanels();
-		fillWithQuestionData(dbManager.getRandomQuestion());
+		startNewSession();
+		loadNextQuestion();
 	}
 
-	/**
-	 * Initializes the child panels and their layout, including question display,
-	 * quiz info, and control buttons.
-	 */
 	private void initPanels() {
 		questionPanel = new QuestionPanel();
 		quizInfoViewPanel = new QuizInfoViewPanel(dbManager);
+
 		contentPanel = new JPanel(new java.awt.GridLayout(1, 2, PANEL_MARGIN_H, 0));
 		contentPanel.setBackground(BACKGROUND_COLOR);
 		contentPanel.add(questionPanel);
 		contentPanel.add(quizInfoViewPanel);
+
 		add(contentPanel, BorderLayout.CENTER);
 
 		buttonPanel = new QuizButtonPanel(BTN_SHOW_ANSWER, BTN_SAVE_ANSWER, BTN_NEXT_QUESTION);
@@ -70,69 +64,185 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
-	/**
-	 * Updates questionPanel with a new {@link QuestionDTO}. Shows a message in the
-	 * button panel if no question is available.
-	 * 
-	 * @param question The quiz question to display, or null to clear
-	 */
+	private void startNewSession() {
+		currentSession = new QuizSessionDTO();
+		currentSession.start();
+		System.out.println("New quiz session started");
+	}
+
+	private void loadNextQuestion() {
+		if (selectedTheme != null) {
+			currentQuestion = dbManager.getRandomQuestionFor(selectedTheme);
+		} else {
+			currentQuestion = dbManager.getRandomQuestion();
+		}
+
+		fillWithQuestionData(currentQuestion);
+	}
+
 	public void fillWithQuestionData(QuestionDTO question) {
+		this.currentQuestion = question;
+
+		// Load answers from database if question exists
+		if (question != null) {
+			List<AnswerDTO> answers = dbManager.getAnswersFor(question);
+			question.setAnswers(answers);
+		}
+
 		questionPanel.fillWithQuestionData(question);
+
 		if (question == null) {
 			buttonPanel.setMessage(UserStringConstants.MSG_NO_QUESTION_AVAILABLE);
 		} else {
 			buttonPanel.setMessage("");
+			// Enable quiz mode - text fields read-only, checkboxes enabled
+			questionPanel.setQuizMode(true);
+			// Clear any previous selections
+			clearAnswerSelections();
+		}
+	}
+
+	private void clearAnswerSelections() {
+		if (questionPanel != null && questionPanel.getAnswersPanel() != null) {
+			for (gui.subpanels.AnswerRowPanel row : questionPanel.getAnswersPanel().getAnswerRows()) {
+				row.getCheckBox().setSelected(false);
+			}
+		}
+	}
+
+	public void setSelectedTheme(ThemeDTO theme) {
+		this.selectedTheme = theme;
+		loadNextQuestion();
+	}
+
+	@Override
+	public void onShowAnswerClicked() {
+		if (currentQuestion == null)
+			return;
+
+		// Show correct answers in InfoView panel instead of highlighting
+		List<AnswerDTO> answers = currentQuestion.getAnswers();
+		if (answers != null) {
+			// Find correct answer text for InfoView
+			String correctAnswerText = "";
+			for (AnswerDTO answer : answers) {
+				if (answer.isCorrect()) {
+					correctAnswerText = answer.getAnswerText();
+					break;
+				}
+			}
+			
+			// Display correct answer in InfoView panel
+			quizInfoViewPanel.showCorrectAnswer(correctAnswerText);
+			buttonPanel.setMessage("Die korrekte Antwort wird in der Info-Ansicht angezeigt.");
+		}
+	}
+
+	@Override
+	public void onSaveAnswerClicked() {
+		if (currentQuestion == null || currentSession == null)
+			return;
+
+		// Get selected answers from UI
+		List<AnswerDTO> answers = currentQuestion.getAnswers();
+		if (answers == null || answers.isEmpty())
+			return;
+
+		// Find selected answer(s)
+		List<Integer> selectedIndices = questionPanel.getAnswersPanel().getSelectedAnswerIndices();
+		
+		if (selectedIndices.isEmpty()) {
+			buttonPanel.setMessage("Bitte wählen Sie mindestens eine Antwort aus.");
+			return;
+		}
+
+		// Check if answers are correct and provide feedback
+		boolean isCorrect = checkUserAnswers(selectedIndices, answers);
+		
+		for (Integer index : selectedIndices) {
+			if (index < answers.size()) {
+				AnswerDTO answer = answers.get(index);
+				UserAnswerDTO userAnswer = new UserAnswerDTO(currentSession.getId(), currentQuestion.getId(), answer.getId(),
+						true, answer.isCorrect());
+
+				currentSession.addUserAnswer(userAnswer);
+			}
+		}
+
+		// Show feedback to user
+		if (isCorrect) {
+			buttonPanel.setMessage("✓ Richtig! Ihre Antwort ist korrekt.");
+			quizInfoViewPanel.showAnswerFeedback(true, "Herzlichen Glückwunsch! Ihre Antwort ist richtig.");
+		} else {
+			buttonPanel.setMessage("✗ Falsch! Ihre Antwort ist nicht korrekt.");
+			quizInfoViewPanel.showAnswerFeedback(false, "Leider falsch. Versuchen Sie es beim nächsten Mal erneut.");
 		}
 	}
 
 	/**
-	 * Handler for "Show Answer" button click. Displays the correct answer for the
-	 * current question.
+	 * Checks if the user's selected answers are correct.
+	 * 
+	 * @param selectedIndices List of selected answer indices
+	 * @param answers List of all answers for the question
+	 * @return true if all selected answers are correct and no correct answers are missed
 	 */
-	@Override
-	public void onShowAnswerClicked() {
-		String correct = questionPanel.getAnswersPanel().getCorrectAnswerText();
-		buttonPanel.setMessage(String.format(UserStringConstants.MSG_CORRECT_ANSWER, correct));
+	private boolean checkUserAnswers(List<Integer> selectedIndices, List<AnswerDTO> answers) {
+		// Count correct answers in the question
+		int totalCorrectAnswers = 0;
+		int userCorrectAnswers = 0;
+		
+		for (int i = 0; i < answers.size(); i++) {
+			AnswerDTO answer = answers.get(i);
+			if (answer.isCorrect()) {
+				totalCorrectAnswers++;
+				// Check if user selected this correct answer
+				if (selectedIndices.contains(i)) {
+					userCorrectAnswers++;
+				}
+			} else {
+				// Check if user incorrectly selected a wrong answer
+				if (selectedIndices.contains(i)) {
+					return false; // User selected a wrong answer
+				}
+			}
+		}
+		
+		// User is correct if they selected all correct answers and no wrong ones
+		return userCorrectAnswers == totalCorrectAnswers && userCorrectAnswers > 0;
 	}
 
-	/**
-	 * Handler for "Save Answer" button click. Displays a confirmation message.
-	 */
-	@Override
-	public void onSaveAnswerClicked() {
-		buttonPanel.setMessage(UserStringConstants.MSG_ANSWER_SAVED);
-	}
-
-	/**
-	 * Handler for "Next Question" button click. Loads a new random question from
-	 * the database.
-	 */
 	@Override
 	public void onNextQuestionClicked() {
-		fillWithQuestionData(dbManager.getRandomQuestion());
+		loadNextQuestion();
 		buttonPanel.setMessage(UserStringConstants.MSG_NEXT_QUESTION);
 	}
 
-	/**
-	 * Handler for question selection from a list. Displays the selected question
-	 * info.
-	 * 
-	 * @param entry the selected entry text
-	 * @param index the index of the selected question
-	 */
 	@Override
 	public void onQuestionSelected(String entry, int index) {
 		buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SELECTED, entry));
 	}
 
-	/**
-	 * Handler for theme selection from a theme list. Displays the selected theme
-	 * info.
-	 * 
-	 * @param themeTitle the selected theme's title
-	 */
 	@Override
 	public void onThemeSelected(String themeTitle) {
 		buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_SELECTED, themeTitle));
+
+		// Find theme by title and set as selected
+		if (dbManager != null) {
+			List<ThemeDTO> themes = dbManager.getAllThemes();
+			for (ThemeDTO theme : themes) {
+				if (theme.getThemeTitle().equals(themeTitle)) {
+					setSelectedTheme(theme);
+					break;
+				}
+			}
+		}
+	}
+
+	public QuizSessionDTO getCurrentSession() {
+		return currentSession;
+	}
+
+	public ThemeDTO getSelectedTheme() {
+		return selectedTheme;
 	}
 }

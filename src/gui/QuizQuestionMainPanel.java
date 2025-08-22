@@ -170,44 +170,109 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	public void onQuestionSaved(String questionTitle, String themeTitle, String questionType, String answerText,
 			boolean hasCorrectAnswer) {
 		try {
+			System.out.println("=== DEBUG: onQuestionSaved START ===");
+			
 			if (!validateInput(themeTitle)) {
+				System.out.println("DEBUG: Theme validation failed");
 				return;
 			}
 			ThemeDTO targetTheme = findTheme(themeTitle);
 			if (targetTheme == null) {
+				System.out.println("DEBUG: Theme not found: " + themeTitle);
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_NOT_FOUND, themeTitle));
 				return;
 			}
+			
+			System.out.println("DEBUG: Found theme: " + targetTheme.getThemeTitle());
+			
 			QuestionDTO question = getOrCreateQuestion(targetTheme);
 			if (question == null) {
+				System.out.println("DEBUG: Failed to create/get question");
 				buttonPanel.setMessage(UserStringConstants.MSG_QUESTION_CREATE_ERROR);
 				return;
 			}
+			
+			System.out.println("DEBUG: Question ID: " + question.getId());
+			
 			updateQuestionData(question);
+			System.out.println("DEBUG: Updated question data - Title: " + question.getQuestionTitle());
+			
 			String result = dbManager.saveQuestion(question, targetTheme);
+			System.out.println("DEBUG: Save question result: " + result);
+			
 			if (result != null && result.contains("successfully")) {
+				// After saving, make sure the question has the correct ID from database
+				if (question.getId() == -1) {
+					// Question was newly created but ID not updated, try to find it
+					System.out.println("DEBUG: Question ID still -1, trying to refresh from database");
+					ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(targetTheme);
+					for (QuestionDTO dbQuestion : questionsForTheme) {
+						if (dbQuestion.getQuestionTitle().equals(question.getQuestionTitle()) && 
+							dbQuestion.getText().equals(question.getText())) {
+							question.setId(dbQuestion.getId());
+							System.out.println("DEBUG: Found question in DB with ID: " + question.getId());
+							break;
+						}
+					}
+				}
+				
+				System.out.println("DEBUG: Question ID after save: " + question.getId());
+				
+				// Create a fresh question object from database to ensure proper DAO mapping
+				QuestionDTO freshQuestion = null;
+				if (question.getId() != -1) {
+					ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(targetTheme);
+					for (QuestionDTO dbQuestion : questionsForTheme) {
+						if (dbQuestion.getId() == question.getId()) {
+							freshQuestion = dbQuestion;
+							System.out.println("DEBUG: Using fresh question object from database");
+							break;
+						}
+					}
+				}
+				
+				// Use fresh question object if available, otherwise use original
+				QuestionDTO questionForAnswers = (freshQuestion != null) ? freshQuestion : question;
+				
 				ArrayList<AnswerDTO> answers = collectAnswers(question);
+				System.out.println("DEBUG: Collected " + answers.size() + " answers");
+				
 				if (!validateAnswers(answers)) {
+					System.out.println("DEBUG: Answer validation failed");
 					return;
 				}
+				
+				System.out.println("DEBUG: Starting to save answers...");
 				boolean allAnswersSaved = true;
-				for (AnswerDTO answer : answers) {
-					String answerResult = dbManager.saveAnswer(answer, question);
+				for (int i = 0; i < answers.size(); i++) {
+					AnswerDTO answer = answers.get(i);
+					System.out.println("DEBUG: Saving answer " + (i+1) + ": '" + answer.getAnswerText() + "' (correct: " + answer.isCorrect() + ")");
+					String answerResult = dbManager.saveAnswer(answer, questionForAnswers);
+					System.out.println("DEBUG: Answer save result: " + answerResult);
+					
 					if (answerResult == null || !answerResult.contains("successfully")) {
 						allAnswersSaved = false;
+						System.out.println("DEBUG: Failed to save answer " + (i+1));
 						break;
 					}
 				}
+				
 				if (allAnswersSaved) {
+					System.out.println("DEBUG: All answers saved successfully");
 					buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVED_SUCCESS, question.getQuestionTitle()));
 					questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
 				} else {
+					System.out.println("DEBUG: Some answers failed to save");
 					buttonPanel.setMessage(UserStringConstants.MSG_QUESTION_SAVED_ANSWERS_ERROR);
 				}
 			} else {
+				System.out.println("DEBUG: Question save failed: " + result);
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVE_ERROR, (result != null ? result : "Unbekannter Fehler")));
 			}
+			System.out.println("=== DEBUG: onQuestionSaved END ===");
 		} catch (Exception e) {
+			System.out.println("DEBUG: Exception occurred: " + e.getMessage());
+			e.printStackTrace();
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVE_ERROR, e.getMessage()));
 		}
 	}
@@ -225,16 +290,29 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				buttonPanel.setMessage(UserStringConstants.MSG_PLEASE_SELECT_THEME);
 				return;
 			}
-			questionPanel.fillWithQuestionData(null);
-			questionPanel.setEditable(true);
+			// Clear selection first
 			questionListPanel.getQuestionList().clearSelection();
+			
+			// Initialize empty question data
+			questionPanel.fillWithQuestionData(null);
+			
+			// Set editable AFTER filling with data
+			questionPanel.setEditable(true);
+			
+			// Set up the new question fields
 			questionPanel.getMetaPanel().getTitleField().setText(UserStringConstants.NEW_QUESTION_TEXT);
 			questionPanel.getMetaPanel().getQuestionTextArea().setText("");
+			
+			// Ensure answer rows are properly initialized for editing
 			AnswerRowPanel[] answerRows = questionPanel.getAnswersPanel().getAnswerRows();
 			for (AnswerRowPanel row : answerRows) {
 				row.getTextField().setText("");
+				row.getTextField().setEditable(true); // Explicitly make editable
 				row.getCheckBox().setSelected(false);
+				row.getCheckBox().setEnabled(true); // Explicitly enable checkbox
+				row.setVisible(true); // Ensure row is visible
 			}
+			
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_NEW_QUESTION_FOR_THEME, themeTitle));
 		} catch (Exception e) {
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_NEW_QUESTION_CREATE_ERROR, e.getMessage()));
@@ -331,16 +409,39 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	private ArrayList<AnswerDTO> collectAnswers(QuestionDTO question) {
 		ArrayList<AnswerDTO> answers = new ArrayList<>();
 		AnswerRowPanel[] answerRows = questionPanel.getAnswersPanel().getAnswerRows();
+		
+		// Debug output
+		System.out.println("=== DEBUG: collectAnswers ===");
+		System.out.println("Number of answer rows: " + answerRows.length);
+		
 		for (int i = 0; i < answerRows.length; i++) {
-			String answerText = answerRows[i].getTextField().getText().trim();
-			if (!answerText.isEmpty()) {
-				AnswerDTO answer = new AnswerDTO();
-				answer.setId(-1);
-				answer.setAnswerText(answerText);
-				answer.setCorrect(answerRows[i].isCorrect());
-				answers.add(answer);
+			System.out.println("Row " + i + ":");
+			System.out.println("  - Visible: " + answerRows[i].isVisible());
+			System.out.println("  - Text: '" + answerRows[i].getTextField().getText() + "'");
+			System.out.println("  - Editable: " + answerRows[i].getTextField().isEditable());
+			System.out.println("  - Correct: " + answerRows[i].isCorrect());
+			
+			// Only collect answers from visible rows with non-empty text
+			if (answerRows[i].isVisible()) {
+				String answerText = answerRows[i].getTextField().getText().trim();
+				if (!answerText.isEmpty()) {
+					AnswerDTO answer = new AnswerDTO();
+					answer.setId(-1);
+					answer.setAnswerText(answerText);
+					answer.setCorrect(answerRows[i].isCorrect());
+					answers.add(answer);
+					System.out.println("  -> Added answer: " + answerText + " (correct: " + answer.isCorrect() + ")");
+				} else {
+					System.out.println("  -> Skipped: empty text");
+				}
+			} else {
+				System.out.println("  -> Skipped: not visible");
 			}
 		}
+		
+		System.out.println("Total answers collected: " + answers.size());
+		System.out.println("=== END DEBUG ===");
+		
 		return answers;
 	}
 
