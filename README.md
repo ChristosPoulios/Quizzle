@@ -12,23 +12,12 @@
 
 1. MariaDB Server starten
 2. Eine Datenbank mit dem Namen `quizzle_db` erstellen
+2. quizzle.sql ausführen (im Ordner src/persistence/mariadb/)
 3. Sicherstellen, dass die Verbindungsdaten in `config.properties` korrekt sind:
    - Host: localhost:3306
    - Datenbank: quizzle_db
    - Benutzer: root
    - Passwort: (wie in config.properties konfiguriert)
-
-### Programm ausführen
-
-#### Über die Kommandozeile:
-
-```bash
-# In das Projektverzeichnis wechseln
-cd C:\git\Quizzle
-
-# Programm mit Java ausführen
-java -cp "bin;lib/*" gui.QFrame
-```
 
 ### Hinweise
 
