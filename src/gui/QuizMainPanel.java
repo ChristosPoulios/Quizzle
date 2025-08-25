@@ -32,7 +32,6 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	private DBManager dbManager;
 	private JPanel contentPanel;
 
-	// Session management
 	private ThemeDTO selectedTheme;
 	private QuizSessionDTO currentSession;
 	private QuestionDTO currentQuestion;
@@ -51,6 +50,8 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	private void initPanels() {
 		questionPanel = new QuestionPanel();
 		quizInfoViewPanel = new QuizInfoViewPanel(dbManager);
+		
+		quizInfoViewPanel.setThemeSelectionDelegate(this::onThemeSelected);
 
 		contentPanel = new JPanel(new java.awt.GridLayout(1, 2, PANEL_MARGIN_H, 0));
 		contentPanel.setBackground(BACKGROUND_COLOR);
@@ -67,7 +68,6 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	private void startNewSession() {
 		currentSession = new QuizSessionDTO();
 		currentSession.start();
-		System.out.println("New quiz session started");
 	}
 
 	private void loadNextQuestion() {
@@ -83,7 +83,6 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	public void fillWithQuestionData(QuestionDTO question) {
 		this.currentQuestion = question;
 
-		// Load answers from database if question exists
 		if (question != null) {
 			List<AnswerDTO> answers = dbManager.getAnswersFor(question);
 			question.setAnswers(answers);
@@ -95,9 +94,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			buttonPanel.setMessage(UserStringConstants.MSG_NO_QUESTION_AVAILABLE);
 		} else {
 			buttonPanel.setMessage("");
-			// Enable quiz mode - text fields read-only, checkboxes enabled
 			questionPanel.setQuizMode(true);
-			// Clear any previous selections
 			clearAnswerSelections();
 		}
 	}
@@ -120,7 +117,6 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		if (currentQuestion == null)
 			return;
 
-		// Show correct answers in InfoView panel instead of highlighting
 		List<AnswerDTO> answers = currentQuestion.getAnswers();
 		if (answers != null) {
 			// Find correct answer text for InfoView
@@ -132,7 +128,6 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 				}
 			}
 			
-			// Display correct answer in InfoView panel
 			quizInfoViewPanel.showCorrectAnswer(correctAnswerText);
 			buttonPanel.setMessage("Die korrekte Antwort wird in der Info-Ansicht angezeigt.");
 		}
@@ -156,7 +151,6 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			return;
 		}
 
-		// Check if answers are correct and provide feedback
 		boolean isCorrect = checkUserAnswers(selectedIndices, answers);
 		
 		for (Integer index : selectedIndices) {
@@ -172,10 +166,10 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		// Show feedback to user
 		if (isCorrect) {
 			buttonPanel.setMessage("✓ Richtig! Ihre Antwort ist korrekt.");
-			quizInfoViewPanel.showAnswerFeedback(true, "Herzlichen Glückwunsch! Ihre Antwort ist richtig.");
+			quizInfoViewPanel.showAnswerFeedback(true, "Ihre Antwort ist richtig.");
 		} else {
 			buttonPanel.setMessage("✗ Falsch! Ihre Antwort ist nicht korrekt.");
-			quizInfoViewPanel.showAnswerFeedback(false, "Leider falsch. Versuchen Sie es beim nächsten Mal erneut.");
+			quizInfoViewPanel.showAnswerFeedback(false, "Leider falsch. Versuchen Sie es erneut.");
 		}
 	}
 
@@ -207,7 +201,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			}
 		}
 		
-		// User is correct if they selected all correct answers and no wrong ones
+
 		return userCorrectAnswers == totalCorrectAnswers && userCorrectAnswers > 0;
 	}
 

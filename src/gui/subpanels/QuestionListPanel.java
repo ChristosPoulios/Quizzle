@@ -2,12 +2,15 @@ package gui.subpanels;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -40,6 +43,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	private static final long serialVersionUID = 1L;
 
 	private JComboBox<String> themeComboBox;
+	private JButton switchButton;
 	private DefaultListModel<String> listModel;
 	private JList<String> questionList;
 	private JScrollPane scrollPane;
@@ -49,6 +53,8 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	private QuizQuestionDelegator delegate;
 
 	private ArrayList<QuestionDTO> currentQuestions;
+	private ArrayList<ThemeDTO> currentThemes;
+	private boolean showingThemes = false;
 
 	/**
 	 * Constructs the question list panel with database manager integration.
@@ -77,7 +83,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Creates the header panel with theme selection combo box.
+	 * Creates the header panel with theme selection combo box and switch button.
 	 */
 	private void createHeaderPanel() {
 		JPanel headerContainer = new JPanel();
@@ -103,14 +109,27 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 
 		themeComboBox.setBackground(TEXTFIELD_BACKGROUND);
 		themeComboBox.addActionListener(_ -> {
-			String selectedTheme = (String) themeComboBox.getSelectedItem();
-			if (selectedTheme != null && delegate != null) {
-				delegate.onThemeSelected(selectedTheme);
+			if (!showingThemes) {
+				String selectedTheme = (String) themeComboBox.getSelectedItem();
+				if (selectedTheme != null && delegate != null) {
+					delegate.onThemeSelected(selectedTheme);
+				}
+			}
+		});
+
+		// Create switch button
+		switchButton = new JButton(UserStringConstants.BTN_SHOW_THEMES);
+		switchButton.setPreferredSize(new Dimension(120, COMBOBOX_HEIGHT));
+		switchButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				toggleListView();
 			}
 		});
 
 		comboPanel.add(themeLabel);
 		comboPanel.add(themeComboBox);
+		comboPanel.add(switchButton);
 		headerContainer.add(comboPanel);
 		add(headerContainer);
 	}
@@ -256,5 +275,59 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 			return currentQuestions.get(index);
 		}
 		return null;
+	}
+
+	/**
+	 * Toggles between showing themes and questions in the list.
+	 */
+	private void toggleListView() {
+		showingThemes = !showingThemes;
+		
+		if (showingThemes) {
+			switchButton.setText(UserStringConstants.BTN_SHOW_QUESTIONS);
+			themeComboBox.setEnabled(false);
+			updateThemeList();
+		} else {
+			switchButton.setText(UserStringConstants.BTN_SHOW_THEMES);
+			themeComboBox.setEnabled(true);
+			String selectedTheme = (String) themeComboBox.getSelectedItem();
+			if (selectedTheme != null) {
+				updateQuestionList(selectedTheme);
+			}
+		}
+	}
+	
+	/**
+	 * Updates the list to show themes instead of questions.
+	 */
+	private void updateThemeList() {
+		listModel.clear();
+		currentThemes = dbManager.getAllThemes();
+		
+		for (ThemeDTO theme : currentThemes) {
+			listModel.addElement(theme.getThemeTitle());
+		}
+	}
+	
+	/**
+	 * Returns the ThemeDTO at the specified index when showing themes.
+	 * 
+	 * @param index The index of the theme
+	 * @return The ThemeDTO or null if index is invalid or not showing themes
+	 */
+	public ThemeDTO getThemeByIndex(int index) {
+		if (showingThemes && currentThemes != null && index >= 0 && index < currentThemes.size()) {
+			return currentThemes.get(index);
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns whether the list is currently showing themes.
+	 * 
+	 * @return true if showing themes, false if showing questions
+	 */
+	public boolean isShowingThemes() {
+		return showingThemes;
 	}
 }

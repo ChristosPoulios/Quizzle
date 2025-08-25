@@ -97,6 +97,12 @@ public interface UserStringConstants {
     
     /** Button text for next question navigation */
     String BTN_NEXT_QUESTION = "Nächste Frage";
+    
+    /** Button text for switching to theme list view */
+    String BTN_SHOW_THEMES = "Themenliste";
+    
+    /** Button text for switching to question list view */
+    String BTN_SHOW_QUESTIONS = "Fragenliste";
 
     // ========================================
     // Validation Error Messages
@@ -229,6 +235,27 @@ public interface UserStringConstants {
     
     /** Message when theme is selected */
     String MSG_THEME_SELECTED = "Thema ausgewählt: %s";
+
+    // ========================================
+    // Quiz Info View Panel Messages
+    // ========================================
+    /** Header for correct answer display */
+    String QUIZ_INFO_CORRECT_ANSWER_HEADER = "Richtige Antwort:";
+    
+    /** Fallback text when no answer is found */
+    String QUIZ_INFO_NO_ANSWER_FOUND = "Keine Antwort gefunden";
+    
+    /** Feedback message for correct answers */
+    String QUIZ_INFO_FEEDBACK_CORRECT = "✓ Richtig!";
+    
+    /** Feedback message for incorrect answers */
+    String QUIZ_INFO_FEEDBACK_INCORRECT = "✗ Falsch!";
+    
+    /** Header for quiz info panel */
+    String QUIZ_INFO_PANEL_HEADER = "Quiz Info";
+    
+    /** Welcome message for quiz info panel */
+    String QUIZ_INFO_WELCOME_MESSAGE = "Wählen Sie eine Antwort aus und klicken Sie auf 'Antwort zeigen', um die korrekte Lösung zu sehen.";
 
     // ========================================
     // Database Operation Messages
