@@ -101,6 +101,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		questionListPanel.updateQuestionList(themeTitle);
 		clearQuestionSelection();
 		enableEditingIfThemeSelected(themeTitle);
+		// Fill theme field in QuestionPanel
+		questionPanel.fillWithQuestionData(null, themeTitle);
 	}
 
 	/**
