@@ -11,7 +11,7 @@ import javax.swing.ScrollPaneConstants;
 
 import constants.GUIConstants;
 import constants.UserStringConstants;
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 import quizlogic.dto.ThemeDTO;
 
 /**
@@ -30,16 +30,15 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 	private static final long serialVersionUID = 1L;
 
 	private final JEditorPane infoPane;
-	private DBManager dbManager;
+	private QuizDataInterface dataManager;
 
 	/**
-	 * Constructs the theme info view panel with database manager integration.
+	 * Constructs the theme info view panel with data manager integration.
 	 * 
-	 * @param dbManager The MariaDB database manager for retrieving theme
-	 *                  information
+	 * @param dataManager The data manager for retrieving theme information (database or file-based)
 	 */
-	public QuizThemeInfoView(DBManager dbManager) {
-		this.dbManager = dbManager;
+	public QuizThemeInfoView(QuizDataInterface dataManager) {
+		this.dataManager = dataManager;
 		setBackground(BACKGROUND_COLOR);
 		setOpaque(false);
 		setLayout(new BorderLayout());
@@ -83,7 +82,7 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
 
 		ThemeDTO selectedTheme = null;
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeTitle().equals(actualThemeTitle)) {
 				selectedTheme = theme;
@@ -109,7 +108,7 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 			}
 			html.append("</div>");
 
-			int questionCount = dbManager.getQuestionsFor(selectedTheme).size();
+			int questionCount = dataManager.getQuestionsFor(selectedTheme).size();
 			String backgroundColor = questionCount > 0 ? "#e8f5e8" : "#ffe8e8";
 			String textColor = questionCount > 0 ? "#006600" : "#cc0000";
 
@@ -137,7 +136,7 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 		html.append("<html><body style='font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>");
 		html.append("<h2 style='font-family: Helvetica, Arial, sans-serif;'>Themenübersicht</h2>");
 
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 
 		if (themes.isEmpty()) {
 			html.append("<p style='font-style: italic; color: #666666;'>Keine Themen verfügbar.</p>");
@@ -145,7 +144,7 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 			html.append("<div style='background-color: #f9f9f9; padding: 15px; border-radius: 8px;'>");
 
 			for (ThemeDTO theme : themes) {
-				int questionCount = dbManager.getQuestionsFor(theme).size();
+				int questionCount = dataManager.getQuestionsFor(theme).size();
 
 				String backgroundColor = questionCount > 0 ? "#e8f5e8" : "#ffe8e8";
 				String textColor = questionCount > 0 ? "#006600" : "#cc0000";

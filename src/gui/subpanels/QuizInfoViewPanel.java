@@ -13,7 +13,7 @@ import javax.swing.JScrollPane;
 
 import constants.GUIConstants;
 import constants.UserStringConstants;
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 import quizlogic.dto.ThemeDTO;
 
 /**
@@ -43,11 +43,11 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Constructs the quiz info view panel with database manager integration.
+	 * Constructs the quiz info view panel with data manager integration.
 	 * 
-	 * @param dbManager The MariaDB database manager for retrieving statistics
+	 * @param dataManager The data manager for retrieving statistics (database or file-based)
 	 */
-	public QuizInfoViewPanel(DBManager dbManager) {
+	public QuizInfoViewPanel(QuizDataInterface dataManager) {
 		setBackground(BACKGROUND_COLOR);
 		setLayout(new BorderLayout());
 
@@ -61,7 +61,7 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 		themeComboBox.setEditable(false);
 		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
 
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		populateThemeComboBox(themes);
 
 		themeComboBox.addActionListener(_ -> {

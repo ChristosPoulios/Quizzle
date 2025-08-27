@@ -15,7 +15,7 @@ import javax.swing.ScrollPaneConstants;
 
 import constants.GUIConstants;
 import constants.UserStringConstants;
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 import quizlogic.dto.ThemeDTO;
 
 /**
@@ -37,7 +37,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	private JList<String> themeList;
 	private JScrollPane scrollPane;
 
-	private DBManager dbManager;
+	private QuizDataInterface dataManager;
 
 	private ThemeSelectionListener selectionListener;
 
@@ -54,12 +54,12 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Constructs the theme list panel with database manager integration.
+	 * Constructs the theme list panel with data manager integration.
 	 * 
-	 * @param dbManager The database manager for theme access
+	 * @param dataManager Data manager for retrieving themes (database or file-based)
 	 */
-	public ThemeListPanel(DBManager dbManager) {
-		this.dbManager = dbManager;
+	public ThemeListPanel(QuizDataInterface dataManager) {
+		this.dataManager = dataManager;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(BACKGROUND_COLOR);
 
@@ -131,7 +131,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 		// Remove * prefix if present
 		String actualTitle = displayTitle.startsWith("* ") ? displayTitle.substring(2) : displayTitle;
 
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeTitle().equals(actualTitle)) {
 				return theme;
@@ -146,7 +146,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	 */
 	public void updateThemeList() {
 		listModel.clear();
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 
 		ArrayList<String> themesWithoutDescription = new ArrayList<>();
 		ArrayList<String> themesWithDescription = new ArrayList<>();

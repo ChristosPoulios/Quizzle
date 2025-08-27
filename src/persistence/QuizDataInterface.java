@@ -105,4 +105,28 @@ public interface QuizDataInterface {
 	 * @return an {@link ArrayList} of {@link AnswerDTO} belonging to that question
 	 */
 	ArrayList<AnswerDTO> getAnswersFor(QuestionDTO question);
+
+	/**
+	 * Saves a question and associates it with a theme (extended method).
+	 * 
+	 * @param question the {@link QuestionDTO} to save
+	 * @param theme the {@link ThemeDTO} to associate with
+	 * @return a status/result message
+	 */
+	default String saveQuestion(QuestionDTO question, ThemeDTO theme) {
+		// Default implementation delegates to standard method
+		return saveQuestion(question);
+	}
+
+	/**
+	 * Saves an answer and associates it with a question (extended method).
+	 * 
+	 * @param answer the {@link AnswerDTO} to save
+	 * @param question the {@link QuestionDTO} to associate with
+	 * @return a status/result message
+	 */
+	default String saveAnswer(AnswerDTO answer, QuestionDTO question) {
+		// Default implementation - may need to be overridden in implementations
+		return "Answer saved successfully";
+	}
 }

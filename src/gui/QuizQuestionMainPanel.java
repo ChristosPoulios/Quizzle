@@ -14,7 +14,7 @@ import gui.subpanels.QuestionButtonPanel;
 import gui.subpanels.QuestionListPanel;
 import gui.subpanels.QuestionPanel;
 
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
@@ -24,8 +24,8 @@ import quizlogic.dto.ThemeDTO;
  * Main panel for managing quiz questions.
  * <p>
  * Coordinates between question editing, question listing, and button actions.
- * Provides a full interface for CRUD operations on quiz questions using MariaDB
- * persistence.
+ * Provides a full interface for CRUD operations on quiz questions using 
+ * the configured data storage (database or file-based with automatic fallback).
  * </p>
  * 
  * @author Christos Poulios
@@ -36,7 +36,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 
 	private static final long serialVersionUID = 1L;
 
-	private final DBManager dbManager;
+	private final QuizDataInterface dataManager;
 
 	private QuestionPanel questionPanel;
 
@@ -47,10 +47,10 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	/**
 	 * Constructs the quiz question main panel setting up UI layout and components.
 	 * 
-	 * @param dbManager Database manager for MariaDB operations
+	 * @param dataManager Data manager for storage operations (database or file-based)
 	 */
-	public QuizQuestionMainPanel(DBManager dbManager) {
-		this.dbManager = dbManager;
+	public QuizQuestionMainPanel(QuizDataInterface dataManager) {
+		this.dataManager = dataManager;
 		initializeLayout();
 		initializeComponents();
 		connectComponents();
@@ -74,7 +74,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		questionPanel.getMetaPanel().getQuestionTextArea().setBackground(BACKGROUND_COLOR);
 		questionPanel.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
-		questionListPanel = new QuestionListPanel(dbManager);
+		questionListPanel = new QuestionListPanel(dataManager);
 		questionListPanel.setPreferredSize(new java.awt.Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
 		buttonPanel = new QuestionButtonPanel(BTN_DELETE_QUESTION, BTN_SAVE_QUESTION, BTN_ADD_QUESTION);
@@ -121,7 +121,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	public void onQuestionSelected(String entry, int index) {
 		QuestionDTO question = questionListPanel.getQuestionByIndex(index);
 		if (question != null) {
-			ArrayList<AnswerDTO> answers = dbManager.getAnswersFor(question);
+			ArrayList<AnswerDTO> answers = dataManager.getAnswersFor(question);
 			question.setAnswers(answers);
 			String selectedThemeName = questionListPanel.getSelectedThemeTitle();
 			if (selectedThemeName.equals(UserStringConstants.ALL_THEMES_OPTION)) {
@@ -150,7 +150,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				buttonPanel.setMessage(UserStringConstants.MSG_QUESTION_NOT_FOUND);
 				return;
 			}
-			String result = dbManager.deleteQuestion(questionToDelete);
+			String result = dataManager.deleteQuestion(questionToDelete);
 			if (result != null && result.contains("successfully")) {
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_DELETED_SUCCESS,
 						questionToDelete.getQuestionTitle()));
@@ -212,7 +212,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				return;
 			}
 
-			String result = dbManager.saveQuestion(question, targetTheme);
+			String result = dataManager.saveQuestion(question, targetTheme);
 			ConfigManager.debugPrint("DEBUG: Save question result: " + result);
 
 			if (result != null && result.contains("successfully")) {
@@ -220,7 +220,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				if (question.getId() == -1) {
 
 					ConfigManager.debugPrint("DEBUG: Question ID still -1, trying to refresh from database");
-					ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(targetTheme);
+					ArrayList<QuestionDTO> questionsForTheme = dataManager.getQuestionsFor(targetTheme);
 					for (QuestionDTO dbQuestion : questionsForTheme) {
 						if (dbQuestion.getQuestionTitle().equals(question.getQuestionTitle())
 								&& dbQuestion.getText().equals(question.getText())) {
@@ -235,7 +235,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 
 				QuestionDTO freshQuestion = null;
 				if (question.getId() != -1) {
-					ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(targetTheme);
+					ArrayList<QuestionDTO> questionsForTheme = dataManager.getQuestionsFor(targetTheme);
 					for (QuestionDTO dbQuestion : questionsForTheme) {
 						if (dbQuestion.getId() == question.getId()) {
 							freshQuestion = dbQuestion;
@@ -252,7 +252,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 					AnswerDTO answer = answers.get(i);
 					ConfigManager.debugPrint("DEBUG: Saving answer " + (i + 1) + ": '" + answer.getAnswerText()
 							+ "' (correct: " + answer.isCorrect() + ")");
-					String answerResult = dbManager.saveAnswer(answer, questionForAnswers);
+					String answerResult = dataManager.saveAnswer(answer, questionForAnswers);
 					ConfigManager.debugPrint("DEBUG: Answer save result: " + answerResult);
 
 					if (answerResult == null || !answerResult.contains("successfully")) {
@@ -366,7 +366,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 * @return The ThemeDTO if found; null otherwise
 	 */
 	private ThemeDTO findTheme(String themeTitle) {
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeTitle().equals(themeTitle)) {
 				return theme;
@@ -486,9 +486,9 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 			if (currentTheme != null && !UserStringConstants.ALL_THEMES_OPTION.equals(currentTheme)) {
 				return currentTheme;
 			}
-			ArrayList<ThemeDTO> allThemes = dbManager.getAllThemes();
+			ArrayList<ThemeDTO> allThemes = dataManager.getAllThemes();
 			for (ThemeDTO theme : allThemes) {
-				ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(theme);
+				ArrayList<QuestionDTO> questionsForTheme = dataManager.getQuestionsFor(theme);
 				for (QuestionDTO q : questionsForTheme) {
 					if (q.getId() == question.getId()) {
 						return theme.getThemeTitle();

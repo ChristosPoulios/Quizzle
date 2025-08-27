@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 
 import constants.GUIConstants;
 import constants.UserStringConstants;
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 import quizlogic.dto.ThemeDTO;
 
 /**
@@ -34,7 +34,7 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 
 	private JComboBox<String> themeComboBox;
 	private JButton switchButton;
-	private DBManager dbManager;
+	private QuizDataInterface dataManager;
 
 	public interface ThemeSelectionListener {
 		void onThemeSelected(String themeName);
@@ -48,12 +48,12 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 	private ViewSwitchListener switchListener;
 
 	/**
-	 * Constructs the header panel with database manager integration.
+	 * Constructs the header panel with data manager integration.
 	 * 
-	 * @param dbManager The database manager for theme data access
+	 * @param dataManager The data manager for theme data access (database or file-based)
 	 */
-	public QuizHeaderPanel(DBManager dbManager) {
-		this.dbManager = dbManager;
+	public QuizHeaderPanel(QuizDataInterface dataManager) {
+		this.dataManager = dataManager;
 		initializeComponents();
 
 	}
@@ -128,7 +128,7 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 		themeComboBox.removeAllItems();
 		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
 
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		populateThemeComboBox(themes);
 	}
 

@@ -101,6 +101,7 @@ public class QuizDataManager implements QuizDataInterface {
 			return themes;
 		}
 
+		@SuppressWarnings("unused")
 		File[] files = dataDir.listFiles((dir, name) -> name.startsWith(THEME_FILE_PREFIX) && name.endsWith(FILE_EXTENSION));
 
 		if (files != null) {
@@ -129,6 +130,7 @@ public class QuizDataManager implements QuizDataInterface {
 			dataDir.mkdirs();
 		}
 
+		@SuppressWarnings("unused")
 		File[] files = dataDir.listFiles((dir, name) -> name.startsWith(THEME_FILE_PREFIX) && name.endsWith(FILE_EXTENSION));
 		int maxId = LogicConstants.MIN_VALID_ID - 1;
 
@@ -220,5 +222,116 @@ public class QuizDataManager implements QuizDataInterface {
 	public String deleteQuestion(QuestionDTO question) {
 		// Basic implementation - in a real scenario this would delete from storage
 		return "Question deleted successfully";
+	}
+	
+	/**
+	 * Saves a question and associates it with a theme (extended method for compatibility).
+	 * 
+	 * @param question the question to save
+	 * @param theme the theme to associate with
+	 * @return result message
+	 */
+	public String saveQuestion(QuestionDTO question, ThemeDTO theme) {
+		try {
+			// Ensure theme has a questions list
+			if (theme.getQuestions() == null) {
+				theme.setQuestions(new ArrayList<>());
+			}
+			
+			// Check if question already exists in theme
+			boolean exists = false;
+			for (QuestionDTO existingQ : theme.getQuestions()) {
+				if (existingQ.getId() == question.getId()) {
+					// Update existing question
+					existingQ.setQuestionTitle(question.getQuestionTitle());
+					existingQ.setQuestionText(question.getQuestionText());
+					existingQ.setAnswers(question.getAnswers());
+					exists = true;
+					ConfigManager.debugPrint("DEBUG: Updated existing question: " + question.getQuestionTitle());
+					break;
+				}
+			}
+			
+			if (!exists) {
+				// Add new question
+				if (question.getId() == LogicConstants.INVALID_ID) {
+					// Generate new ID for question
+					int maxId = 0;
+					for (QuestionDTO q : theme.getQuestions()) {
+						if (q.getId() > maxId) {
+							maxId = q.getId();
+						}
+					}
+					question.setId(maxId + 1);
+					ConfigManager.debugPrint("DEBUG: Assigned new question ID: " + question.getId());
+				}
+				theme.getQuestions().add(question);
+				ConfigManager.debugPrint("DEBUG: Added new question: " + question.getQuestionTitle());
+			}
+			
+			// Save the theme with updated questions
+			String result = saveTheme(theme);
+			if (result != null && result.contains("successfully")) {
+				return "Question saved successfully";
+			} else {
+				return "Error saving question: " + result;
+			}
+			
+		} catch (Exception e) {
+			ConfigManager.debugPrint("DEBUG: Error saving question: " + e.getMessage());
+			return "Error saving question: " + e.getMessage();
+		}
+	}
+	
+	/**
+	 * Saves an answer and associates it with a question (extended method for compatibility).
+	 * 
+	 * @param answer the answer to save
+	 * @param question the question to associate with
+	 * @return result message
+	 */
+	public String saveAnswer(AnswerDTO answer, QuestionDTO question) {
+		try {
+			// Ensure question has an answers list
+			if (question.getAnswers() == null) {
+				question.setAnswers(new ArrayList<>());
+			}
+			
+			// Check if answer already exists
+			boolean exists = false;
+			for (AnswerDTO existingA : question.getAnswers()) {
+				if (existingA.getId() == answer.getId()) {
+					// Update existing answer
+					existingA.setAnswerText(answer.getAnswerText());
+					existingA.setCorrect(answer.isCorrect());
+					exists = true;
+					ConfigManager.debugPrint("DEBUG: Updated existing answer: " + answer.getAnswerText());
+					break;
+				}
+			}
+			
+			if (!exists) {
+				// Add new answer
+				if (answer.getId() == LogicConstants.INVALID_ID) {
+					// Generate new ID for answer
+					int maxId = 0;
+					for (AnswerDTO a : question.getAnswers()) {
+						if (a.getId() > maxId) {
+							maxId = a.getId();
+						}
+					}
+					answer.setId(maxId + 1);
+					ConfigManager.debugPrint("DEBUG: Assigned new answer ID: " + answer.getId());
+				}
+				question.getAnswers().add(answer);
+				ConfigManager.debugPrint("DEBUG: Added new answer: " + answer.getAnswerText());
+			}
+			
+			return "Answer saved successfully";
+			
+		} catch (Exception e) {
+			ConfigManager.debugPrint("DEBUG: Error saving answer: " + e.getMessage());
+			return "Error saving answer: " + e.getMessage();
+		}
 	}
 }

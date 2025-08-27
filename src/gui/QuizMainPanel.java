@@ -13,7 +13,7 @@ import gui.interfaces.QuizPanelDelegator;
 import gui.subpanels.QuestionPanel;
 import gui.subpanels.QuizButtonPanel;
 import gui.subpanels.QuizInfoViewPanel;
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.QuizSessionDTO;
@@ -22,7 +22,7 @@ import quizlogic.dto.UserAnswerDTO;
 
 /**
  * Main panel for the quiz tab providing quiz gameplay interface with session
- * tracking.
+ * tracking and automatic fallback data storage support.
  */
 public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDelegator {
 	private static final long serialVersionUID = 1L;
@@ -31,15 +31,15 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	private QuestionPanel questionPanel;
 	private QuizInfoViewPanel quizInfoViewPanel;
 	private QuizButtonPanel buttonPanel;
-	private DBManager dbManager;
+	private QuizDataInterface dataManager;
 
 	/** State */
 	private ThemeDTO selectedTheme;
 	private QuizSessionDTO currentSession;
 	private QuestionDTO currentQuestion;
 
-	public QuizMainPanel(DBManager dbManager) {
-		this.dbManager = dbManager;
+	public QuizMainPanel(QuizDataInterface dataManager) {
+		this.dataManager = dataManager;
 		setBackground(BACKGROUND_COLOR);
 		setLayout(new BorderLayout(PANEL_MARGIN_H, PANEL_MARGIN_V));
 
@@ -52,7 +52,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		questionPanel = new QuestionPanel();
 		questionPanel.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
-		quizInfoViewPanel = new QuizInfoViewPanel(dbManager);
+		quizInfoViewPanel = new QuizInfoViewPanel(dataManager);
 		quizInfoViewPanel.setPreferredSize(new java.awt.Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
 		quizInfoViewPanel.setThemeSelectionDelegate(this::onThemeSelected);
@@ -73,9 +73,9 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 
 	private void loadNextQuestion() {
 		if (selectedTheme != null) {
-			currentQuestion = dbManager.getRandomQuestionFor(selectedTheme);
+			currentQuestion = dataManager.getRandomQuestionFor(selectedTheme);
 		} else {
-			currentQuestion = dbManager.getRandomQuestion();
+			currentQuestion = dataManager.getRandomQuestion();
 		}
 
 		fillWithQuestionData(currentQuestion);
@@ -86,7 +86,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		this.currentQuestion = question;
 
 		if (question != null) {
-			List<AnswerDTO> answers = dbManager.getAnswersFor(question);
+			List<AnswerDTO> answers = dataManager.getAnswersFor(question);
 			question.setAnswers(answers);
 		}
 
@@ -249,8 +249,8 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			// Strip the "*" prefix if present for themes without descriptions
 			String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
 
-			if (dbManager != null) {
-				List<ThemeDTO> themes = dbManager.getAllThemes();
+			if (dataManager != null) {
+				List<ThemeDTO> themes = dataManager.getAllThemes();
 				for (ThemeDTO theme : themes) {
 					if (theme.getThemeTitle().equals(actualThemeTitle)) {
 						setSelectedTheme(theme);

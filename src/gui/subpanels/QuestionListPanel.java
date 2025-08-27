@@ -14,7 +14,7 @@ import javax.swing.ScrollPaneConstants;
 import constants.GUIConstants;
 import constants.UserStringConstants;
 import gui.interfaces.QuizQuestionDelegator;
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
 
@@ -41,7 +41,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	private JScrollPane scrollPane;
 	private QuizThemeInfoView themeInfoView;
 
-	private DBManager dbManager;
+	private QuizDataInterface dataManager;
 
 	private QuizQuestionDelegator delegate;
 
@@ -49,12 +49,12 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	private boolean showingThemes = false;
 
 	/**
-	 * Constructs the question list panel with database manager integration.
+	 * Constructs the question list panel with data manager integration.
 	 * 
-	 * @param dbManager The database manager for question data access
+	 * @param dataManager Data manager for retrieving questions (database or file-based)
 	 */
-	public QuestionListPanel(DBManager dbManager) {
-		this.dbManager = dbManager;
+	public QuestionListPanel(QuizDataInterface dataManager) {
+		this.dataManager = dataManager;
 		this.currentQuestions = new ArrayList<>();
 		setLayout(new BorderLayout());
 		setBackground(BACKGROUND_COLOR);
@@ -82,7 +82,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	 * Creates the header panel with theme selection and switch functionality.
 	 */
 	private void createHeaderPanel() {
-		headerPanel = new QuizHeaderPanel(dbManager);
+		headerPanel = new QuizHeaderPanel(dataManager);
 
 		headerPanel.setThemeSelectionListener(selectedTheme -> {
 			if (showingThemes) {
@@ -133,7 +133,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	 * Creates the theme info view component.
 	 */
 	private void createThemeInfoView() {
-		themeInfoView = new QuizThemeInfoView(dbManager);
+		themeInfoView = new QuizThemeInfoView(dataManager);
 	}
 
 	/**
@@ -146,15 +146,15 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		currentQuestions.clear();
 
 		if (UserStringConstants.ALL_THEMES_OPTION.equals(selectedThemeTitle)) {
-			ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+			ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 			for (ThemeDTO theme : themes) {
-				ArrayList<QuestionDTO> questions = dbManager.getQuestionsFor(theme);
+				ArrayList<QuestionDTO> questions = dataManager.getQuestionsFor(theme);
 				currentQuestions.addAll(questions);
 			}
 		} else {
 			ThemeDTO selectedTheme = findThemeByTitle(selectedThemeTitle);
 			if (selectedTheme != null) {
-				currentQuestions = dbManager.getQuestionsFor(selectedTheme);
+				currentQuestions = dataManager.getQuestionsFor(selectedTheme);
 			}
 		}
 
@@ -187,7 +187,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	 * @return The ThemeDTO or null if not found
 	 */
 	private ThemeDTO findThemeByTitle(String title) {
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeTitle().equals(title)) {
 				return theme;

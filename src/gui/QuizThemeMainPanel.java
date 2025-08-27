@@ -14,7 +14,7 @@ import gui.subpanels.ThemeButtonPanel;
 import gui.subpanels.ThemeListPanel;
 import gui.subpanels.ThemePanel;
 
-import persistence.mariaDB.DBManager;
+import persistence.QuizDataInterface;
 
 import quizlogic.dto.ThemeDTO;
 
@@ -22,7 +22,7 @@ import quizlogic.dto.ThemeDTO;
  * Main panel for managing quiz themes including selection and CRUD operations.
  * <p>
  * Provides functionality to create, edit, list, and delete quiz themes.
- * Integrates MariaDB persistence via {@link DBManager}.
+ * Integrates with configurable data storage (database or file-based with automatic fallback).
  * </p>
  * 
  * @author Christos Poulios
@@ -36,7 +36,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 	private ThemeListPanel themeListPanel;
 	private ThemePanel themePanel;
 	private ThemeButtonPanel buttonPanel;
-	private DBManager dbManager;
+	private QuizDataInterface dataManager;
 	private ThemeChangeListener themeChangeListener;
 
 	/**
@@ -52,10 +52,10 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 	/**
 	 * Constructs the quiz theme main panel with theme selection support.
 	 * 
-	 * @param dbManager the database manager for MariaDB operations
+	 * @param dataManager the data manager for storage operations (database or file-based)
 	 */
-	public QuizThemeMainPanel(DBManager dbManager) {
-		this.dbManager = dbManager;
+	public QuizThemeMainPanel(QuizDataInterface dataManager) {
+		this.dataManager = dataManager;
 
 		setLayout(new BorderLayout(PANEL_MARGIN_H, PANEL_MARGIN_V));
 		setBackground(BACKGROUND_COLOR);
@@ -63,7 +63,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		themePanel = new ThemePanel();
 		themePanel.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
-		themeListPanel = new ThemeListPanel(dbManager);
+		themeListPanel = new ThemeListPanel(dataManager);
 		themeListPanel.setPreferredSize(new java.awt.Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
 		buttonPanel = new ThemeButtonPanel(BTN_DELETE_THEME, BTN_SAVE_THEME, BTN_ADD_THEME);
@@ -136,7 +136,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 			}
 		}
 
-		ArrayList<ThemeDTO> allThemes = dbManager.getAllThemes();
+		ArrayList<ThemeDTO> allThemes = dataManager.getAllThemes();
 		ThemeDTO existingTheme = null;
 		for (ThemeDTO theme : allThemes) {
 			if (theme.getThemeTitle().equals(title)) {
@@ -159,7 +159,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 			themeToSave.setQuestions(new ArrayList<>());
 		}
 
-		String result = dbManager.saveTheme(themeToSave);
+		String result = dataManager.saveTheme(themeToSave);
 		if (result != null && result.toLowerCase().contains("successfully")) {
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_CREATED_SUCCESS, title));
 
@@ -194,7 +194,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 				JOptionPane.QUESTION_MESSAGE);
 
 		if (confirm == JOptionPane.YES_OPTION) {
-			String result = dbManager.deleteTheme(selectedTheme);
+			String result = dataManager.deleteTheme(selectedTheme);
 			if (result != null && result.toLowerCase().contains("successfully")) {
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETED_SUCCESS, selectedTitle));
 				themePanel.clearFields();
