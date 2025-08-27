@@ -98,7 +98,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		themeLabel.setBorder(BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_RIGHT, BORDER_BOTTOM, BORDER_RIGHT));
 
 		themeComboBox = new JComboBox<>();
-		themeComboBox.setPreferredSize(new Dimension(THEME_LIST_WIDTH, COMBOBOX_HEIGHT));
+		themeComboBox.setPreferredSize(new Dimension(COMBOBOX_WIDTH, COMBOBOX_HEIGHT));
 		themeComboBox.setEditable(false);
 		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
 

@@ -106,6 +106,9 @@ public interface GUIConstants extends UserStringConstants {
 
 	/** Height of theme lists in pixels */
 	int THEME_LIST_HEIGHT = 383;
+	
+	/** Width of the ComboBoxes in pixels */
+	int COMBOBOX_WIDTH = 250;
 
 	/** Height of combo boxes in pixels */
 	int COMBOBOX_HEIGHT = 30;
