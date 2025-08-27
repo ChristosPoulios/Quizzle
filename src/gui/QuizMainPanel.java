@@ -133,6 +133,11 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			String feedbackMsg = String.format(UserStringConstants.QUIZ_INFO_FEEDBACK_SHOW_ALL_CORRECT, correctAnswerText);
 			buttonPanel.setMessage(feedbackMsg);
 			quizInfoViewPanel.showAnswerFeedback(true, feedbackMsg);
+			
+			// Disable "Antwort zeigen" and "Antwort speichern" buttons, keep "Nächste Frage" active
+			buttonPanel.getButton1().setEnabled(false); // Antwort zeigen
+			buttonPanel.getButton2().setEnabled(false); // Antwort speichern
+			buttonPanel.getButton3().setEnabled(true);  // Nächste Frage (ensure it stays active)
 		}
 	}
 
@@ -212,6 +217,11 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	public void onNextQuestionClicked() {
 		loadNextQuestion();
 		buttonPanel.setMessage(UserStringConstants.MSG_NEXT_QUESTION);
+		
+		// Re-enable all buttons for the new question
+		buttonPanel.getButton1().setEnabled(true); // Antwort zeigen
+		buttonPanel.getButton2().setEnabled(true); // Antwort speichern
+		buttonPanel.getButton3().setEnabled(true); // Nächste Frage
 	}
 
 	@Override
