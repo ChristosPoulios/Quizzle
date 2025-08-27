@@ -19,6 +19,7 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 	private static final long serialVersionUID = 1L;
 
 	private final AnswerRowPanel[] answerRows = new AnswerRowPanel[GUIConstants.ANSWERS_COUNT];
+	private boolean showingCorrectAnswers = false;
 
 	public AnswersPanel() {
 		setBackground(BACKGROUND_COLOR);
@@ -42,13 +43,19 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 	}
 
 	public void setAnswers(List<AnswerDTO> answers) {
+		setAnswers(answers, false); // Default to not showing correct answers
+	}
+
+	public void setAnswers(List<AnswerDTO> answers, boolean showCorrectAnswers) {
 		clearAnswers();
+		this.showingCorrectAnswers = showCorrectAnswers;
 		if (answers == null)
 			return;
 
 		for (int i = 0; i < Math.min(answers.size(), answerRows.length); i++) {
 			AnswerDTO answer = answers.get(i);
-			answerRows[i].setAnswer(answer.getAnswerText(), false); // Don't show correct answer initially
+			// Show correct answers only if in edit mode (QuizFragen tab)
+			answerRows[i].setAnswer(answer.getAnswerText(), showCorrectAnswers ? answer.isCorrect() : false);
 			answerRows[i].setVisible(true); // Make sure the row is visible
 		}
 

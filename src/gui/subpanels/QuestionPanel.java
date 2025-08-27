@@ -58,6 +58,8 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 	 * @param question The quiz question to display
 	 */
 	public void fillWithQuestionData(QuestionDTO question) {
+		setCurrentQuestion(question); // Track the current question
+		
 		if (question == null) {
 			headerPanel.clearTheme();
 			metaPanel.getTitleField().setText("");
@@ -74,7 +76,8 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 
 		metaPanel.setTitle(question.getQuestionTitle());
 		metaPanel.setQuestionText(question.getText());
-		answersPanel.setAnswers(question.getAnswers());
+		// Show correct answers in edit mode (QuizFragen tab), hide in quiz mode (Quiz tab)
+		answersPanel.setAnswers(question.getAnswers(), true); // Show correct answers for editing
 		revalidate();
 		repaint();
 	}
@@ -116,7 +119,7 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 	 */
 	public void setQuizMode(boolean quizMode) {
 		if (quizMode) {
-			// In quiz mode: text fields are read-only, checkboxes are enabled
+			// In quiz mode: text fields are read-only, checkboxes are enabled, hide correct answers
 			metaPanel.getTitleField().setEditable(false);
 			metaPanel.getQuestionTextArea().setEditable(false);
 
@@ -124,10 +127,28 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 				row.getTextField().setEditable(false);
 				row.getCheckBox().setEnabled(true); // Enable checkboxes for user selection
 			}
+			
+			// Re-set answers without showing correct answers for quiz mode
+			if (getCurrentQuestion() != null && getCurrentQuestion().getAnswers() != null) {
+				answersPanel.setAnswers(getCurrentQuestion().getAnswers(), false);
+			}
 		} else {
-			// Normal mode: everything editable
+			// Normal mode: everything editable, show correct answers
 			setEditable(true);
+			if (getCurrentQuestion() != null && getCurrentQuestion().getAnswers() != null) {
+				answersPanel.setAnswers(getCurrentQuestion().getAnswers(), true);
+			}
 		}
+	}
+
+	private QuestionDTO currentQuestion;
+
+	private QuestionDTO getCurrentQuestion() {
+		return currentQuestion;
+	}
+
+	private void setCurrentQuestion(QuestionDTO question) {
+		this.currentQuestion = question;
 	}
 
 	/**
