@@ -161,7 +161,8 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		String result = dbManager.saveTheme(themeToSave);
 		if (result != null && result.toLowerCase().contains("successfully")) {
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_CREATED_SUCCESS, title));
-			themePanel.clearFields();
+			// Keep fields filled with the saved theme data instead of clearing them
+			themePanel.fillFields(title, description);
 			themeListPanel.updateThemeList();
 			notifyThemeChanged();
 		} else {
