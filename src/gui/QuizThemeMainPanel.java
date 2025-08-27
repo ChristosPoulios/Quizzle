@@ -120,13 +120,31 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 			return;
 		}
 
-		ThemeDTO newTheme = new ThemeDTO();
-		newTheme.setId(-1);
-		newTheme.setThemeTitle(title);
-		newTheme.setThemeDescription(description);
-		newTheme.setQuestions(new ArrayList<>());
+		// Check if theme with this title already exists
+		ArrayList<ThemeDTO> allThemes = dbManager.getAllThemes();
+		ThemeDTO existingTheme = null;
+		for (ThemeDTO theme : allThemes) {
+			if (theme.getThemeTitle().equals(title)) {
+				existingTheme = theme;
+				break;
+			}
+		}
 
-		String result = dbManager.saveTheme(newTheme);
+		ThemeDTO themeToSave;
+		if (existingTheme != null) {
+			// Update existing theme's description
+			existingTheme.setThemeDescription(description);
+			themeToSave = existingTheme;
+		} else {
+			// Create new theme
+			themeToSave = new ThemeDTO();
+			themeToSave.setId(-1);
+			themeToSave.setThemeTitle(title);
+			themeToSave.setThemeDescription(description);
+			themeToSave.setQuestions(new ArrayList<>());
+		}
+
+		String result = dbManager.saveTheme(themeToSave);
 		if (result != null && result.toLowerCase().contains("successfully")) {
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_CREATED_SUCCESS, title));
 			themePanel.clearFields();
