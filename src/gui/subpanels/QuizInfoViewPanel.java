@@ -160,7 +160,7 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 	/**
 	 * Shows a welcome message in the info panel.
 	 */
-	private void showWelcomeMessage() {
+	public void showWelcomeMessage() {
 		StringBuilder html = new StringBuilder();
 		html.append("<html><body style='font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>");
 		html.append("<h2 style='font-family: Helvetica, Arial, sans-serif;'>")
@@ -170,6 +170,16 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 		html.append("</body></html>");
 
 		infoPane.setText(html.toString());
+		infoPane.setCaretPosition(0);
+	}
+
+	/**
+	 * Sets the answer text directly in the info panel.
+	 * 
+	 * @param correctAnswerText The answer text to display
+	 */
+	public void setAnswerText(String correctAnswerText) {
+		infoPane.setText(correctAnswerText);
 		infoPane.setCaretPosition(0);
 	}
 }

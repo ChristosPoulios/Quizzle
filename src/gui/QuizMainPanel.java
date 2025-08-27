@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -78,6 +79,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		}
 
 		fillWithQuestionData(currentQuestion);
+		quizInfoViewPanel.showWelcomeMessage();
 	}
 
 	public void fillWithQuestionData(QuestionDTO question) {
@@ -119,17 +121,18 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 
 		List<AnswerDTO> answers = currentQuestion.getAnswers();
 		if (answers != null) {
-			// Find correct answer text for InfoView
-			String correctAnswerText = "";
+			// Collect all correct answers
+			List<String> correctAnswers = new ArrayList<>();
 			for (AnswerDTO answer : answers) {
 				if (answer.isCorrect()) {
-					correctAnswerText = answer.getAnswerText();
-					break;
+					correctAnswers.add(answer.getAnswerText());
 				}
 			}
-			
-			quizInfoViewPanel.showCorrectAnswer(correctAnswerText);
-			buttonPanel.setMessage("Die korrekte Antwort wird in der Info-Ansicht angezeigt.");
+			String correctAnswerText = String.join(", ", correctAnswers);
+			quizInfoViewPanel.setAnswerText(correctAnswerText);
+			String feedbackMsg = String.format(UserStringConstants.QUIZ_INFO_FEEDBACK_SHOW_ALL_CORRECT, correctAnswerText);
+			buttonPanel.setMessage(feedbackMsg);
+			quizInfoViewPanel.showAnswerFeedback(true, feedbackMsg);
 		}
 	}
 

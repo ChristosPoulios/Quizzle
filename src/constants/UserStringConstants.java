@@ -256,6 +256,9 @@ public interface UserStringConstants {
     
     /** Welcome message for quiz info panel */
     String QUIZ_INFO_WELCOME_MESSAGE = "Wählen Sie eine Antwort aus und klicken Sie auf 'Antwort zeigen', um die korrekte Lösung zu sehen.";
+    
+    /** Feedback message for showing all correct answers */
+    String QUIZ_INFO_FEEDBACK_SHOW_ALL_CORRECT = "✓ Die korrekten Antworten sind: %s";
 
     // ========================================
     // Database Operation Messages
