@@ -199,6 +199,12 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 			updateQuestionData(question);
 			System.out.println("DEBUG: Updated question data - Title: " + question.getQuestionTitle());
 			
+			ArrayList<AnswerDTO> answers = collectAnswers(question);
+			if (!validateAnswers(answers)) {
+				System.out.println("DEBUG: Answer validation failed - not saving question");
+				return;
+			}
+			
 			String result = dbManager.saveQuestion(question, targetTheme);
 			System.out.println("DEBUG: Save question result: " + result);
 			
@@ -236,15 +242,6 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				// Use fresh question object if available, otherwise use original
 				QuestionDTO questionForAnswers = (freshQuestion != null) ? freshQuestion : question;
 				
-				ArrayList<AnswerDTO> answers = collectAnswers(question);
-				System.out.println("DEBUG: Collected " + answers.size() + " answers");
-				
-				if (!validateAnswers(answers)) {
-					System.out.println("DEBUG: Answer validation failed");
-					return;
-				}
-				
-				System.out.println("DEBUG: Starting to save answers...");
 				boolean allAnswersSaved = true;
 				for (int i = 0; i < answers.size(); i++) {
 					AnswerDTO answer = answers.get(i);
