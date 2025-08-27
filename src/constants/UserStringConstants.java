@@ -147,7 +147,7 @@ public interface UserStringConstants {
     String MSG_PLEASE_SELECT_THEME_TO_DELETE = "Bitte ein Thema zum Löschen auswählen";
     
     /** Confirmation dialog for theme deletion */
-    String MSG_CONFIRM_DELETE_THEME = "Sind Sie sicher, dass Sie das Thema '%s' löschen möchten?\\n\\n⚠️ Diese Aktion kann nicht rückgängig gemacht werden!";
+    String MSG_CONFIRM_DELETE_THEME = "Sind Sie sicher, dass Sie das Thema '%s' löschen möchten?\n\n⚠️ Diese Aktion kann nicht rückgängig gemacht werden!";
     
     /** Title for theme deletion confirmation dialog */
     String DIALOG_TITLE_CONFIRM_DELETE_THEME = "Thema löschen bestätigen";
