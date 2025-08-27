@@ -4,6 +4,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import constants.GUIConstants;
+import constants.ThemeManager;
 import constants.UserStringConstants;
 import gui.subpanels.TabPane;
 import persistence.mariaDB.DBManager;
@@ -115,6 +116,8 @@ public class QFrame extends JFrame implements GUIConstants {
 	 * @param args Command line arguments (not used)
 	 */
 	public static void main(String[] args) {
+		ThemeManager.applyTheme();
+
 		new QFrame();
 	}
 }

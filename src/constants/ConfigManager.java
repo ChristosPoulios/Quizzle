@@ -12,8 +12,9 @@ import java.util.Properties;
  * This class manages loading and saving configuration from/to external files.
  * It supports both properties files and provides fallback to default values.
  * <p>
- * The configuration file is stored in the application's directory as 'config.properties'.
- * If no configuration file exists, default values are used and a new file is created.
+ * The configuration file is stored in the application's directory as
+ * 'config.properties'. If no configuration file exists, default values are used
+ * and a new file is created.
  * 
  * @author Christos Poulios
  * @version 1.0
@@ -23,16 +24,16 @@ public class ConfigManager {
 
 	/** Singleton instance */
 	private static ConfigManager instance;
-	
+
 	/** Properties object to store configuration */
 	private Properties properties;
-	
+
 	/** Default configuration file name */
 	private static final String CONFIG_FILE_NAME = "config.properties";
-	
+
 	/** Path to the configuration file */
 	private Path configFilePath;
-	
+
 	/** Configuration keys */
 	public static final String DB_URL = "database.url";
 	public static final String DB_USER = "database.user";
@@ -43,8 +44,7 @@ public class ConfigManager {
 	public static final String WINDOW_WIDTH = "window.width";
 	public static final String WINDOW_HEIGHT = "window.height";
 	public static final String WINDOW_MAXIMIZED = "window.maximized";
-	public static final String THEME_DEFAULT = "theme.default";
-	
+
 	/**
 	 * Private constructor for singleton pattern.
 	 */
@@ -53,7 +53,7 @@ public class ConfigManager {
 		configFilePath = Paths.get(CONFIG_FILE_NAME);
 		loadConfiguration();
 	}
-	
+
 	/**
 	 * Returns the singleton instance of ConfigManager.
 	 * 
@@ -65,10 +65,10 @@ public class ConfigManager {
 		}
 		return instance;
 	}
-	
+
 	/**
-	 * Loads configuration from the properties file.
-	 * If the file doesn't exist, creates it with default values.
+	 * Loads configuration from the properties file. If the file doesn't exist,
+	 * creates it with default values.
 	 */
 	private void loadConfiguration() {
 		try {
@@ -87,7 +87,7 @@ public class ConfigManager {
 			setDefaultValues();
 		}
 	}
-	
+
 	/**
 	 * Sets default configuration values.
 	 */
@@ -96,17 +96,15 @@ public class ConfigManager {
 		properties.setProperty(DB_USER, "user");
 		properties.setProperty(DB_PASSWORD, "password");
 		properties.setProperty(DB_DRIVER, "org.mariadb.jdbc.Driver");
-		
+
 		properties.setProperty(APP_TITLE, "Quizzle");
 		properties.setProperty(APP_VERSION, "1.0");
-		
+
 		properties.setProperty(WINDOW_WIDTH, "850");
 		properties.setProperty(WINDOW_HEIGHT, "650");
 		properties.setProperty(WINDOW_MAXIMIZED, "false");
-		
-		properties.setProperty(THEME_DEFAULT, "System");
 	}
-	
+
 	/**
 	 * Saves the current configuration to the properties file.
 	 * 
@@ -122,7 +120,7 @@ public class ConfigManager {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Gets a string property value.
 	 * 
@@ -132,32 +130,32 @@ public class ConfigManager {
 	public String getProperty(String key) {
 		return properties.getProperty(key);
 	}
-	
+
 	/**
 	 * Gets a string property value with a default fallback.
 	 * 
-	 * @param key the property key
+	 * @param key          the property key
 	 * @param defaultValue the default value if key is not found
 	 * @return the property value or default value
 	 */
 	public String getProperty(String key, String defaultValue) {
 		return properties.getProperty(key, defaultValue);
 	}
-	
+
 	/**
 	 * Sets a property value.
 	 * 
-	 * @param key the property key
+	 * @param key   the property key
 	 * @param value the property value
 	 */
 	public void setProperty(String key, String value) {
 		properties.setProperty(key, value);
 	}
-	
+
 	/**
 	 * Gets an integer property value.
 	 * 
-	 * @param key the property key
+	 * @param key          the property key
 	 * @param defaultValue the default value if key is not found or invalid
 	 * @return the integer property value
 	 */
@@ -169,21 +167,21 @@ public class ConfigManager {
 			return defaultValue;
 		}
 	}
-	
+
 	/**
 	 * Sets an integer property value.
 	 * 
-	 * @param key the property key
+	 * @param key   the property key
 	 * @param value the integer value
 	 */
 	public void setIntProperty(String key, int value) {
 		properties.setProperty(key, String.valueOf(value));
 	}
-	
+
 	/**
 	 * Gets a boolean property value.
 	 * 
-	 * @param key the property key
+	 * @param key          the property key
 	 * @param defaultValue the default value if key is not found
 	 * @return the boolean property value
 	 */
@@ -191,17 +189,17 @@ public class ConfigManager {
 		String value = properties.getProperty(key);
 		return value != null ? Boolean.parseBoolean(value) : defaultValue;
 	}
-	
+
 	/**
 	 * Sets a boolean property value.
 	 * 
-	 * @param key the property key
+	 * @param key   the property key
 	 * @param value the boolean value
 	 */
 	public void setBooleanProperty(String key, boolean value) {
 		properties.setProperty(key, String.valueOf(value));
 	}
-	
+
 	/**
 	 * Removes a property.
 	 * 
@@ -211,7 +209,7 @@ public class ConfigManager {
 	public String removeProperty(String key) {
 		return (String) properties.remove(key);
 	}
-	
+
 	/**
 	 * Checks if a property exists.
 	 * 
@@ -221,7 +219,7 @@ public class ConfigManager {
 	public boolean hasProperty(String key) {
 		return properties.containsKey(key);
 	}
-	
+
 	/**
 	 * Reloads configuration from file.
 	 */
@@ -229,7 +227,7 @@ public class ConfigManager {
 		properties.clear();
 		loadConfiguration();
 	}
-	
+
 	/**
 	 * Resets configuration to default values.
 	 */
@@ -237,97 +235,109 @@ public class ConfigManager {
 		properties.clear();
 		setDefaultValues();
 	}
-		
+
 	/**
 	 * Gets the database URL.
+	 * 
 	 * @return database URL
 	 */
 	public String getDatabaseUrl() {
 		return getProperty(DB_URL);
 	}
-	
+
 	/**
 	 * Gets the database user.
+	 * 
 	 * @return database user
 	 */
 	public String getDatabaseUser() {
 		return getProperty(DB_USER);
 	}
-	
+
 	/**
 	 * Gets the database password.
+	 * 
 	 * @return database password
 	 */
 	public String getDatabasePassword() {
 		return getProperty(DB_PASSWORD);
 	}
-	
+
 	/**
 	 * Gets the database driver class name.
+	 * 
 	 * @return database driver class name
 	 */
 	public String getDatabaseDriver() {
 		return getProperty(DB_DRIVER);
 	}
-	
+
 	/**
 	 * Gets the application title.
+	 * 
 	 * @return application title
 	 */
 	public String getApplicationTitle() {
 		return getProperty(APP_TITLE);
 	}
-	
+
 	/**
 	 * Gets the application version.
+	 * 
 	 * @return application version
 	 */
 	public String getApplicationVersion() {
 		return getProperty(APP_VERSION);
 	}
-	
+
 	/**
 	 * Gets the window width.
+	 * 
 	 * @return window width
 	 */
 	public int getWindowWidth() {
 		return getIntProperty(WINDOW_WIDTH, 850);
 	}
-	
+
 	/**
 	 * Sets the window width.
+	 * 
 	 * @param width window width
 	 */
 	public void setWindowWidth(int width) {
 		setIntProperty(WINDOW_WIDTH, width);
 	}
-	
+
 	/**
 	 * Gets the window height.
+	 * 
 	 * @return window height
 	 */
 	public int getWindowHeight() {
 		return getIntProperty(WINDOW_HEIGHT, 650);
 	}
-	
+
 	/**
 	 * Sets the window height.
+	 * 
 	 * @param height window height
 	 */
 	public void setWindowHeight(int height) {
 		setIntProperty(WINDOW_HEIGHT, height);
 	}
-	
+
 	/**
 	 * Checks if the window should be maximized.
+	 * 
 	 * @return true if maximized, false otherwise
 	 */
 	public boolean isWindowMaximized() {
 		return getBooleanProperty(WINDOW_MAXIMIZED, false);
 	}
-	
+
 	/**
 	 * Sets whether the window should be maximized.
+	 * 
 	 * @param maximized true to maximize, false otherwise
 	 */
 	public void setWindowMaximized(boolean maximized) {

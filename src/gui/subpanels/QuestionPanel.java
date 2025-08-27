@@ -24,10 +24,13 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 
 	private static final long serialVersionUID = 1L;
 
+	/** The header panel displaying the theme name. */
 	private final ThemeHeaderPanel headerPanel;
 
+	/** The meta information panel for question title and text. */
 	private final QuestionMetaPanel metaPanel;
 
+	/** The answers panel displaying possible answers. */
 	private final AnswersPanel answersPanel;
 
 	/**
@@ -46,10 +49,17 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 		centerPanel.setBackground(BACKGROUND_COLOR);
 
 		centerPanel.add(metaPanel);
+
+		centerPanel.add(javax.swing.Box.createVerticalStrut(VERTICAL_STRUT_LARGE));
 		centerPanel.add(answersPanel);
 
 		add(headerPanel, BorderLayout.NORTH);
 		add(centerPanel, BorderLayout.CENTER);
+
+		setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMaximumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMinimumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - PANEL_MARGIN_OFFSET,
+				MAIN_CONTENT_HEIGHT - PANEL_MARGIN_OFFSET));
 	}
 
 	/**
@@ -58,13 +68,13 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 	 * @param question The quiz question to display
 	 */
 	public void fillWithQuestionData(QuestionDTO question) {
-		setCurrentQuestion(question); // Track the current question
-		
+		setCurrentQuestion(question);
+
 		if (question == null) {
 			headerPanel.clearTheme();
 			metaPanel.getTitleField().setText("");
 			metaPanel.getQuestionTextArea().setText("");
-			answersPanel.prepareForNewQuestion(); // Show empty answer fields for new question
+			answersPanel.prepareForNewQuestion();
 			return;
 		}
 
@@ -76,8 +86,8 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 
 		metaPanel.setTitle(question.getQuestionTitle());
 		metaPanel.setQuestionText(question.getText());
-		// Show correct answers in edit mode (QuizFragen tab), hide in quiz mode (Quiz tab)
-		answersPanel.setAnswers(question.getAnswers(), true); // Show correct answers for editing
+
+		answersPanel.setAnswers(question.getAnswers(), true);
 		revalidate();
 		repaint();
 	}
@@ -113,27 +123,27 @@ public class QuestionPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Sets the panel to quiz mode where text fields are read-only but checkboxes are selectable.
+	 * Sets the panel to quiz mode where text fields are read-only but checkboxes
+	 * are selectable.
 	 * 
 	 * @param quizMode true to enable quiz mode, false to disable
 	 */
 	public void setQuizMode(boolean quizMode) {
 		if (quizMode) {
-			// In quiz mode: text fields are read-only, checkboxes are enabled, hide correct answers
+
 			metaPanel.getTitleField().setEditable(false);
 			metaPanel.getQuestionTextArea().setEditable(false);
 
 			for (AnswerRowPanel row : answersPanel.getAnswerRows()) {
 				row.getTextField().setEditable(false);
-				row.getCheckBox().setEnabled(true); // Enable checkboxes for user selection
+				row.getCheckBox().setEnabled(true);
 			}
-			
-			// Re-set answers without showing correct answers for quiz mode
+
 			if (getCurrentQuestion() != null && getCurrentQuestion().getAnswers() != null) {
 				answersPanel.setAnswers(getCurrentQuestion().getAnswers(), false);
 			}
 		} else {
-			// Normal mode: everything editable, show correct answers
+
 			setEditable(true);
 			if (getCurrentQuestion() != null && getCurrentQuestion().getAnswers() != null) {
 				answersPanel.setAnswers(getCurrentQuestion().getAnswers(), true);

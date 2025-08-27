@@ -1,6 +1,5 @@
 package gui.subpanels;
 
-import java.awt.FlowLayout;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -19,52 +18,68 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 	private static final long serialVersionUID = 1L;
 
 	private final AnswerRowPanel[] answerRows = new AnswerRowPanel[GUIConstants.ANSWERS_COUNT];
-	private boolean showingCorrectAnswers = false;
 
 	public AnswersPanel() {
 		setBackground(BACKGROUND_COLOR);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-		// Header
-		JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, PANEL_MARGIN_H, 0));
+		JPanel headerPanel = new JPanel();
+		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
 		headerPanel.setBackground(BACKGROUND_COLOR);
+
+		headerPanel.add(javax.swing.Box.createHorizontalStrut(PANEL_MARGIN_H));
+
 		JLabel answerLabel = new JLabel(GUIConstants.POSSIBLE_ANSWERS_LABEL);
-		answerLabel.setPreferredSize(new java.awt.Dimension(ANSWER_LABEL_WIDTH, ANSWER_LABEL_HEIGHT));
-		JLabel correctLabel = new JLabel(GUIConstants.ANSWER_LABEL);
+		answerLabel.setFont(answerLabel.getFont().deriveFont(java.awt.Font.BOLD));
 		headerPanel.add(answerLabel);
+
+		headerPanel.add(javax.swing.Box.createHorizontalStrut(HORIZONTAL_STRUT_VERY_LARGE));
+
+		JLabel correctLabel = new JLabel(GUIConstants.ANSWER_LABEL);
+		correctLabel.setFont(correctLabel.getFont().deriveFont(java.awt.Font.BOLD));
 		headerPanel.add(correctLabel);
+
+		headerPanel.add(javax.swing.Box.createHorizontalStrut(HORIZONTAL_STRUT_LARGE));
+
+		headerPanel.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, ANSWER_LABEL_HEIGHT + 2));
+
 		add(headerPanel);
 
-		// Answer rows
+		add(javax.swing.Box.createVerticalStrut(VERTICAL_STRUT_MEDIUM));
+
 		for (int i = 0; i < GUIConstants.ANSWERS_COUNT; i++) {
 			answerRows[i] = new AnswerRowPanel(i + 1);
 			add(answerRows[i]);
+
+			if (i < GUIConstants.ANSWERS_COUNT - 1) {
+				add(javax.swing.Box.createVerticalStrut(VERTICAL_STRUT_SMALL));
+			}
 		}
+
+		setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 20, 280));
+		setMaximumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, 320));
 	}
 
 	public void setAnswers(List<AnswerDTO> answers) {
-		setAnswers(answers, false); // Default to not showing correct answers
+		setAnswers(answers, false);
 	}
 
 	public void setAnswers(List<AnswerDTO> answers, boolean showCorrectAnswers) {
 		clearAnswers();
-		this.showingCorrectAnswers = showCorrectAnswers;
 		if (answers == null)
 			return;
 
 		for (int i = 0; i < Math.min(answers.size(), answerRows.length); i++) {
 			AnswerDTO answer = answers.get(i);
-			// Show correct answers only if in edit mode (QuizFragen tab)
+
 			answerRows[i].setAnswer(answer.getAnswerText(), showCorrectAnswers ? answer.isCorrect() : false);
-			answerRows[i].setVisible(true); // Make sure the row is visible
+			answerRows[i].setVisible(true);
 		}
 
-		// Hide unused rows
 		for (int i = answers.size(); i < answerRows.length; i++) {
 			answerRows[i].setVisible(false);
 		}
-		
-		// Ensure panel is refreshed
+
 		revalidate();
 		repaint();
 	}
@@ -77,21 +92,21 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Prepares the panel for creating a new question by showing empty answer fields.
+	 * Prepares the panel for creating a new question by showing empty answer
+	 * fields.
 	 */
 	public void prepareForNewQuestion() {
 		for (int i = 0; i < answerRows.length; i++) {
 			answerRows[i].setAnswer("", false);
-			answerRows[i].setVisible(true); // Show all rows for new question creation
+			answerRows[i].setVisible(true);
 		}
-		
-		// Ensure panel is refreshed
+
 		revalidate();
 		repaint();
 	}
 
 	public String getCorrectAnswerText() {
-		// Find the first correct answer to display
+
 		for (AnswerRowPanel row : answerRows) {
 			if (row.isVisible() && row.isCorrect()) {
 				return row.getAnswerText();

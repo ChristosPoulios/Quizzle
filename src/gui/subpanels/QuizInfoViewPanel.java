@@ -3,6 +3,7 @@ package gui.subpanels;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -55,15 +56,13 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 		infoPane.setEditable(false);
 
 		themeComboBox = new JComboBox<>();
-		themeComboBox.setPreferredSize(new Dimension(THEME_LIST_WIDTH, COMBOBOX_HEIGHT));
+		themeComboBox.setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH - QUIZ_INFO_COMBO_OFFSET, COMBOBOX_HEIGHT));
 		themeComboBox.setBackground(TEXTFIELD_BACKGROUND);
 		themeComboBox.setEditable(false);
 		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
 
 		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
-		for (ThemeDTO theme : themes) {
-			themeComboBox.addItem(theme.getThemeTitle());
-		}
+		populateThemeComboBox(themes);
 
 		themeComboBox.addActionListener(_ -> {
 			String selectedTheme = (String) themeComboBox.getSelectedItem();
@@ -72,16 +71,27 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 			}
 		});
 
-		JPanel headerPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+		JPanel headerPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER));
 		headerPanel.setBackground(BACKGROUND_COLOR);
 		headerPanel.setBorder(
 				BorderFactory.createEmptyBorder(PANEL_MARGIN_V, PANEL_MARGIN_H, PANEL_MARGIN_V, PANEL_MARGIN_H));
-		headerPanel.add(new javax.swing.JLabel(UserStringConstants.THEME_LABEL));
 		headerPanel.add(themeComboBox);
 
 		JScrollPane scrollPane = new JScrollPane(infoPane);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+		scrollPane.getVerticalScrollBar().setUnitIncrement(SCROLL_UNIT_INCREMENT);
+		scrollPane.getHorizontalScrollBar().setUnitIncrement(SCROLL_UNIT_INCREMENT);
+
 		add(headerPanel, BorderLayout.NORTH);
 		add(scrollPane, BorderLayout.CENTER);
+
+		setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMaximumSize(new Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMinimumSize(
+				new Dimension(RIGHT_PANEL_WIDTH - PANEL_MARGIN_OFFSET, MAIN_CONTENT_HEIGHT - PANEL_MARGIN_OFFSET));
+
 		showWelcomeMessage();
 	}
 
@@ -101,8 +111,43 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 	 */
 	public void updateThemeComboBox(ArrayList<ThemeDTO> themes) {
 		themeComboBox.removeAllItems();
+		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
+		populateThemeComboBox(themes);
+	}
+
+	/**
+	 * Populates the theme combo box with sorted themes.
+	 * Themes without descriptions are marked with "*" and listed first,
+	 * then themes with descriptions, both groups sorted alphabetically.
+	 * 
+	 * @param themes The list of theme DTOs to populate the combo box
+	 */
+	private void populateThemeComboBox(ArrayList<ThemeDTO> themes) {
+		// Separate themes with and without descriptions
+		ArrayList<ThemeDTO> themesWithoutDescription = new ArrayList<>();
+		ArrayList<ThemeDTO> themesWithDescription = new ArrayList<>();
+		
 		for (ThemeDTO theme : themes) {
-			themeComboBox.addItem(theme.getTitle());
+			if (theme.getThemeDescription() == null || theme.getThemeDescription().trim().isEmpty()) {
+				themesWithoutDescription.add(theme);
+			} else {
+				themesWithDescription.add(theme);
+			}
+		}
+		
+		// Sort both lists alphabetically by title
+		Comparator<ThemeDTO> titleComparator = Comparator.comparing(ThemeDTO::getThemeTitle);
+		themesWithoutDescription.sort(titleComparator);
+		themesWithDescription.sort(titleComparator);
+		
+		// Add themes without description first (marked with *)
+		for (ThemeDTO theme : themesWithoutDescription) {
+			themeComboBox.addItem("* " + theme.getThemeTitle());
+		}
+		
+		// Add themes with description
+		for (ThemeDTO theme : themesWithDescription) {
+			themeComboBox.addItem(theme.getThemeTitle());
 		}
 	}
 
@@ -114,7 +159,8 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 	public void showCorrectAnswer(String correctAnswer) {
 		StringBuilder html = new StringBuilder();
 		html.append("<html><body style='font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>");
-		html.append("<h2 style='color: green; font-family: Helvetica, Arial, sans-serif;'>")
+		html.append(
+				"<h2 style='color: green; font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: bold;'>")
 				.append(UserStringConstants.QUIZ_INFO_CORRECT_ANSWER_HEADER).append("</h2>");
 		html.append(
 				"<p style='font-family: Helvetica, Arial, sans-serif; font-size: 16px; background-color: #e8f5e8; padding: 10px; border-radius: 5px;'>");
@@ -138,12 +184,14 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 		html.append("<html><body style='font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>");
 
 		if (isCorrect) {
-			html.append("<h2 style='color: green; font-family: Helvetica, Arial, sans-serif;'>")
+			html.append(
+					"<h2 style='color: green; font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: bold;'>")
 					.append(UserStringConstants.QUIZ_INFO_FEEDBACK_CORRECT).append("</h2>");
 			html.append("<p style='font-family: Helvetica, Arial, sans-serif; font-size: 16px; "
 					+ "background-color: #e8f5e8; padding: 10px; border-radius: 5px; color: green;'>");
 		} else {
-			html.append("<h2 style='color: red; font-family: Helvetica, Arial, sans-serif;'>")
+			html.append(
+					"<h2 style='color: red; font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: bold;'>")
 					.append(UserStringConstants.QUIZ_INFO_FEEDBACK_INCORRECT).append("</h2>");
 			html.append("<p style='font-family: Helvetica, Arial, sans-serif; font-size: 16px; "
 					+ "background-color: #ffe8e8; padding: 10px; border-radius: 5px; color: red;'>");
@@ -163,7 +211,7 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 	public void showWelcomeMessage() {
 		StringBuilder html = new StringBuilder();
 		html.append("<html><body style='font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>");
-		html.append("<h2 style='font-family: Helvetica, Arial, sans-serif;'>")
+		html.append("<h2 style='font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: bold;'>")
 				.append(UserStringConstants.QUIZ_INFO_PANEL_HEADER).append("</h2>");
 		html.append("<p style='font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>")
 				.append(UserStringConstants.QUIZ_INFO_WELCOME_MESSAGE).append("</p>");

@@ -56,11 +56,15 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 	public QuizThemeMainPanel(DBManager dbManager) {
 		this.dbManager = dbManager;
 
-		setLayout(new BorderLayout());
+		setLayout(new BorderLayout(PANEL_MARGIN_H, PANEL_MARGIN_V));
 		setBackground(BACKGROUND_COLOR);
 
 		themePanel = new ThemePanel();
+		themePanel.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+
 		themeListPanel = new ThemeListPanel(dbManager);
+		themeListPanel.setPreferredSize(new java.awt.Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+
 		buttonPanel = new ThemeButtonPanel(BTN_DELETE_THEME, BTN_SAVE_THEME, BTN_ADD_THEME);
 
 		buttonPanel.setDelegate(this);
@@ -120,21 +124,17 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 			return;
 		}
 
-		// Check if description is empty and show confirmation dialog
 		if (description == null || description.trim().isEmpty()) {
-			int result = JOptionPane.showConfirmDialog(this,
-				UserStringConstants.MSG_CONFIRM_SAVE_WITHOUT_DESCRIPTION,
-				UserStringConstants.DIALOG_TITLE_CONFIRM_SAVE_WITHOUT_DESCRIPTION,
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.QUESTION_MESSAGE);
-			
+			int result = JOptionPane.showConfirmDialog(this, UserStringConstants.MSG_CONFIRM_SAVE_WITHOUT_DESCRIPTION,
+					UserStringConstants.DIALOG_TITLE_CONFIRM_SAVE_WITHOUT_DESCRIPTION, JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE);
+
 			if (result != JOptionPane.OK_OPTION) {
 				buttonPanel.setMessage(UserStringConstants.MSG_SAVE_CANCELLED);
 				return;
 			}
 		}
 
-		// Check if theme with this title already exists
 		ArrayList<ThemeDTO> allThemes = dbManager.getAllThemes();
 		ThemeDTO existingTheme = null;
 		for (ThemeDTO theme : allThemes) {
@@ -146,11 +146,11 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 
 		ThemeDTO themeToSave;
 		if (existingTheme != null) {
-			// Update existing theme's description
+
 			existingTheme.setThemeDescription(description);
 			themeToSave = existingTheme;
 		} else {
-			// Create new theme
+
 			themeToSave = new ThemeDTO();
 			themeToSave.setId(-1);
 			themeToSave.setThemeTitle(title);
@@ -161,12 +161,13 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 		String result = dbManager.saveTheme(themeToSave);
 		if (result != null && result.toLowerCase().contains("successfully")) {
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_CREATED_SUCCESS, title));
-			// Keep fields filled with the saved theme data instead of clearing them
+
 			themePanel.fillFields(title, description);
 			themeListPanel.updateThemeList();
 			notifyThemeChanged();
 		} else {
-			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETE_ERROR, (result != null ? result : "Unbekannter Fehler")));
+			buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETE_ERROR,
+					(result != null ? result : "Unbekannter Fehler")));
 		}
 	}
 
@@ -188,7 +189,8 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 
 		int confirm = JOptionPane.showConfirmDialog(this,
 				String.format(UserStringConstants.MSG_CONFIRM_DELETE_THEME, selectedTitle),
-				UserStringConstants.DIALOG_TITLE_CONFIRM_DELETE_THEME, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+				UserStringConstants.DIALOG_TITLE_CONFIRM_DELETE_THEME, JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
 
 		if (confirm == JOptionPane.YES_OPTION) {
 			String result = dbManager.deleteTheme(selectedTheme);
@@ -200,7 +202,8 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 				notifyThemeChanged();
 				System.out.println("DEBUG: Theme '" + selectedTitle + "' erfolgreich gelöscht");
 			} else {
-				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETE_ERROR, (result != null ? result : "Unbekannter Fehler")));
+				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETE_ERROR,
+						(result != null ? result : "Unbekannter Fehler")));
 				System.err.println("ERROR: Fehler beim Löschen: " + result);
 			}
 		} else {

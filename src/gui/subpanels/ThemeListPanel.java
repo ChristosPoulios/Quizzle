@@ -110,10 +110,15 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 		scrollPane = new JScrollPane(themeList);
 		scrollPane.setBackground(BACKGROUND_COLOR);
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setPreferredSize(new Dimension(THEME_LIST_WIDTH, THEME_LIST_HEIGHT));
+		scrollPane.setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH, THEME_LIST_HEIGHT));
 
 		add(scrollPane);
 		add(Box.createVerticalGlue());
+
+		setPreferredSize(new Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMaximumSize(new Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMinimumSize(
+				new Dimension(RIGHT_PANEL_WIDTH - PANEL_MARGIN_OFFSET, MAIN_CONTENT_HEIGHT - PANEL_MARGIN_OFFSET));
 	}
 
 	/**
@@ -125,7 +130,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	private ThemeDTO findThemeByTitle(String displayTitle) {
 		// Remove * prefix if present
 		String actualTitle = displayTitle.startsWith("* ") ? displayTitle.substring(2) : displayTitle;
-		
+
 		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeTitle().equals(actualTitle)) {
@@ -136,33 +141,30 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Updates the theme list from the database with custom sorting.
-	 * Themes without description are marked with * and sorted first.
+	 * Updates the theme list from the database with custom sorting. Themes without
+	 * description are marked with * and sorted first.
 	 */
 	public void updateThemeList() {
 		listModel.clear();
 		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
-		
-		// Separate themes into two groups and sort each alphabetically
+
 		ArrayList<String> themesWithoutDescription = new ArrayList<>();
 		ArrayList<String> themesWithDescription = new ArrayList<>();
-		
+
 		for (ThemeDTO theme : themes) {
 			String title = theme.getThemeTitle();
 			String description = theme.getThemeDescription();
-			
+
 			if (description == null || description.trim().isEmpty()) {
 				themesWithoutDescription.add("* " + title);
 			} else {
 				themesWithDescription.add(title);
 			}
 		}
-		
-		// Sort both groups alphabetically
+
 		themesWithoutDescription.sort(String.CASE_INSENSITIVE_ORDER);
 		themesWithDescription.sort(String.CASE_INSENSITIVE_ORDER);
-		
-		// Add starred themes first, then regular themes
+
 		for (String theme : themesWithoutDescription) {
 			listModel.addElement(theme);
 		}

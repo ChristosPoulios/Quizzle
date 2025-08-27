@@ -1,7 +1,8 @@
 package gui.subpanels;
 
-import java.awt.FlowLayout;
+import java.awt.Component;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -38,29 +39,39 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 		setBackground(BACKGROUND_COLOR);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		titlePanel.setBackground(BACKGROUND_COLOR);
 		JLabel titleLabel = new JLabel(QUESTION_TITLE_LABEL);
+		titleLabel.setFont(titleLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		add(titleLabel);
+
 		titleField = new JTextField("", TEXTFIELD_COLUMNS);
 		titleField.setEditable(false);
-		titlePanel.add(titleLabel);
-		titlePanel.add(titleField);
+		titleField
+				.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 100, titleField.getPreferredSize().height));
+		titleField.setMaximumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 100, titleField.getPreferredSize().height));
+		titleField.setAlignmentX(Component.CENTER_ALIGNMENT);
+		add(titleField);
 
-		JPanel questionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		questionPanel.setBackground(BACKGROUND_COLOR);
+		add(Box.createVerticalStrut(VERTICAL_STRUT_MEDIUM));
+
 		JLabel questionLabel = new JLabel(QUESTION_TEXT_LABEL);
+		questionLabel.setFont(questionLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		questionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		add(questionLabel);
+
 		questionTextArea = new JTextArea("", QUESTIONAREA_ROWS, QUESTIONAREA_COLUMNS);
 		questionTextArea.setBackground(QUESTION_TEXT_AREA);
 		questionTextArea.setLineWrap(true);
 		questionTextArea.setWrapStyleWord(true);
 		questionTextArea.setEditable(false);
 		JScrollPane scrollPane = new JScrollPane(questionTextArea);
+		scrollPane.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 80, 120));
+		scrollPane.setMaximumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 80, 120));
+		scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
+		add(scrollPane);
 
-		questionPanel.add(questionLabel);
-		questionPanel.add(scrollPane);
-
-		add(titlePanel);
-		add(questionPanel);
+		setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 20, 180));
+		setMaximumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, 200));
 	}
 
 	/**

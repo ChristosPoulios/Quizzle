@@ -71,8 +71,10 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		questionPanel = new QuestionPanel();
 		questionPanel.setEditable(true);
 		questionPanel.getMetaPanel().getQuestionTextArea().setBackground(BACKGROUND_COLOR);
+		questionPanel.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
 		questionListPanel = new QuestionListPanel(dbManager);
+		questionListPanel.setPreferredSize(new java.awt.Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
 
 		buttonPanel = new QuestionButtonPanel(BTN_DELETE_QUESTION, BTN_SAVE_QUESTION, BTN_ADD_QUESTION);
 	}
@@ -98,11 +100,13 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 */
 	@Override
 	public void onThemeSelected(String themeTitle) {
-		questionListPanel.updateQuestionList(themeTitle);
+		// Strip the "*" prefix if present for themes without descriptions
+		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
+		
+		questionListPanel.updateQuestionList(actualThemeTitle);
 		clearQuestionSelection();
-		enableEditingIfThemeSelected(themeTitle);
-		// Fill theme field in QuestionPanel
-		questionPanel.fillWithQuestionData(null, themeTitle);
+		enableEditingIfThemeSelected(actualThemeTitle);
+		questionPanel.fillWithQuestionData(null, actualThemeTitle);
 	}
 
 	/**
@@ -147,11 +151,13 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 			}
 			String result = dbManager.deleteQuestion(questionToDelete);
 			if (result != null && result.contains("successfully")) {
-				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_DELETED_SUCCESS, questionToDelete.getQuestionTitle()));
+				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_DELETED_SUCCESS,
+						questionToDelete.getQuestionTitle()));
 				clearQuestionSelection();
 				questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
 			} else {
-				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_DELETE_ERROR, (result != null ? result : "Unbekannter Fehler")));
+				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_DELETE_ERROR,
+						(result != null ? result : "Unbekannter Fehler")));
 			}
 		} catch (Exception e) {
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_DELETE_EXCEPTION, e.getMessage()));
@@ -173,7 +179,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 			boolean hasCorrectAnswer) {
 		try {
 			System.out.println("=== DEBUG: onQuestionSaved START ===");
-			
+
 			if (!validateInput(themeTitle)) {
 				System.out.println("DEBUG: Theme validation failed");
 				return;
@@ -184,49 +190,48 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_NOT_FOUND, themeTitle));
 				return;
 			}
-			
+
 			System.out.println("DEBUG: Found theme: " + targetTheme.getThemeTitle());
-			
+
 			QuestionDTO question = getOrCreateQuestion(targetTheme);
 			if (question == null) {
 				System.out.println("DEBUG: Failed to create/get question");
 				buttonPanel.setMessage(UserStringConstants.MSG_QUESTION_CREATE_ERROR);
 				return;
 			}
-			
+
 			System.out.println("DEBUG: Question ID: " + question.getId());
-			
+
 			updateQuestionData(question);
 			System.out.println("DEBUG: Updated question data - Title: " + question.getQuestionTitle());
-			
+
 			ArrayList<AnswerDTO> answers = collectAnswers(question);
 			if (!validateAnswers(answers)) {
 				System.out.println("DEBUG: Answer validation failed - not saving question");
 				return;
 			}
-			
+
 			String result = dbManager.saveQuestion(question, targetTheme);
 			System.out.println("DEBUG: Save question result: " + result);
-			
+
 			if (result != null && result.contains("successfully")) {
-				// After saving, make sure the question has the correct ID from database
+
 				if (question.getId() == -1) {
-					// Question was newly created but ID not updated, try to find it
+
 					System.out.println("DEBUG: Question ID still -1, trying to refresh from database");
 					ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(targetTheme);
 					for (QuestionDTO dbQuestion : questionsForTheme) {
-						if (dbQuestion.getQuestionTitle().equals(question.getQuestionTitle()) && 
-							dbQuestion.getText().equals(question.getText())) {
+						if (dbQuestion.getQuestionTitle().equals(question.getQuestionTitle())
+								&& dbQuestion.getText().equals(question.getText())) {
 							question.setId(dbQuestion.getId());
 							System.out.println("DEBUG: Found question in DB with ID: " + question.getId());
 							break;
 						}
 					}
 				}
-				
+
 				System.out.println("DEBUG: Question ID after save: " + question.getId());
-				
-				// Create a fresh question object from database to ensure proper DAO mapping
+
 				QuestionDTO freshQuestion = null;
 				if (question.getId() != -1) {
 					ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(targetTheme);
@@ -238,27 +243,28 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 						}
 					}
 				}
-				
-				// Use fresh question object if available, otherwise use original
+
 				QuestionDTO questionForAnswers = (freshQuestion != null) ? freshQuestion : question;
-				
+
 				boolean allAnswersSaved = true;
 				for (int i = 0; i < answers.size(); i++) {
 					AnswerDTO answer = answers.get(i);
-					System.out.println("DEBUG: Saving answer " + (i+1) + ": '" + answer.getAnswerText() + "' (correct: " + answer.isCorrect() + ")");
+					System.out.println("DEBUG: Saving answer " + (i + 1) + ": '" + answer.getAnswerText()
+							+ "' (correct: " + answer.isCorrect() + ")");
 					String answerResult = dbManager.saveAnswer(answer, questionForAnswers);
 					System.out.println("DEBUG: Answer save result: " + answerResult);
-					
+
 					if (answerResult == null || !answerResult.contains("successfully")) {
 						allAnswersSaved = false;
-						System.out.println("DEBUG: Failed to save answer " + (i+1));
+						System.out.println("DEBUG: Failed to save answer " + (i + 1));
 						break;
 					}
 				}
-				
+
 				if (allAnswersSaved) {
 					System.out.println("DEBUG: All answers saved successfully");
-					buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVED_SUCCESS, question.getQuestionTitle()));
+					buttonPanel.setMessage(
+							String.format(UserStringConstants.MSG_QUESTION_SAVED_SUCCESS, question.getQuestionTitle()));
 					questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
 				} else {
 					System.out.println("DEBUG: Some answers failed to save");
@@ -266,7 +272,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				}
 			} else {
 				System.out.println("DEBUG: Question save failed: " + result);
-				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVE_ERROR, (result != null ? result : "Unbekannter Fehler")));
+				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVE_ERROR,
+						(result != null ? result : "Unbekannter Fehler")));
 			}
 			System.out.println("=== DEBUG: onQuestionSaved END ===");
 		} catch (Exception e) {
@@ -289,29 +296,25 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				buttonPanel.setMessage(UserStringConstants.MSG_PLEASE_SELECT_THEME);
 				return;
 			}
-			// Clear selection first
+
 			questionListPanel.getQuestionList().clearSelection();
-			
-			// Initialize empty question data
+
 			questionPanel.fillWithQuestionData(null);
-			
-			// Set editable AFTER filling with data
+
 			questionPanel.setEditable(true);
-			
-			// Set up the new question fields
+
 			questionPanel.getMetaPanel().getTitleField().setText(UserStringConstants.NEW_QUESTION_TEXT);
 			questionPanel.getMetaPanel().getQuestionTextArea().setText("");
-			
-			// Ensure answer rows are properly initialized for editing
+
 			AnswerRowPanel[] answerRows = questionPanel.getAnswersPanel().getAnswerRows();
 			for (AnswerRowPanel row : answerRows) {
 				row.getTextField().setText("");
-				row.getTextField().setEditable(true); // Explicitly make editable
+				row.getTextField().setEditable(true);
 				row.getCheckBox().setSelected(false);
-				row.getCheckBox().setEnabled(true); // Explicitly enable checkbox
-				row.setVisible(true); // Ensure row is visible
+				row.getCheckBox().setEnabled(true);
+				row.setVisible(true);
 			}
-			
+
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_NEW_QUESTION_FOR_THEME, themeTitle));
 		} catch (Exception e) {
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_NEW_QUESTION_CREATE_ERROR, e.getMessage()));
@@ -347,7 +350,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 * @return true if valid, false otherwise
 	 */
 	private boolean validateInput(String themeTitle) {
-		if (themeTitle == null || themeTitle.trim().isEmpty() || themeTitle.equals(UserStringConstants.ALL_THEMES_OPTION)) {
+		if (themeTitle == null || themeTitle.trim().isEmpty()
+				|| themeTitle.equals(UserStringConstants.ALL_THEMES_OPTION)) {
 			buttonPanel.setMessage(UserStringConstants.MSG_PLEASE_SELECT_VALID_THEME);
 			return false;
 		}
@@ -408,19 +412,17 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	private ArrayList<AnswerDTO> collectAnswers(QuestionDTO question) {
 		ArrayList<AnswerDTO> answers = new ArrayList<>();
 		AnswerRowPanel[] answerRows = questionPanel.getAnswersPanel().getAnswerRows();
-		
-		// Debug output
+
 		System.out.println("=== DEBUG: collectAnswers ===");
 		System.out.println("Number of answer rows: " + answerRows.length);
-		
+
 		for (int i = 0; i < answerRows.length; i++) {
 			System.out.println("Row " + i + ":");
 			System.out.println("  - Visible: " + answerRows[i].isVisible());
 			System.out.println("  - Text: '" + answerRows[i].getTextField().getText() + "'");
 			System.out.println("  - Editable: " + answerRows[i].getTextField().isEditable());
 			System.out.println("  - Correct: " + answerRows[i].isCorrect());
-			
-			// Only collect answers from visible rows with non-empty text
+
 			if (answerRows[i].isVisible()) {
 				String answerText = answerRows[i].getTextField().getText().trim();
 				if (!answerText.isEmpty()) {
@@ -437,10 +439,10 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				System.out.println("  -> Skipped: not visible");
 			}
 		}
-		
+
 		System.out.println("Total answers collected: " + answers.size());
 		System.out.println("=== END DEBUG ===");
-		
+
 		return answers;
 	}
 

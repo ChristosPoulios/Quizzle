@@ -9,6 +9,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import constants.GUIConstants;
+import constants.LogicConstants;
 import constants.UserStringConstants;
 import persistence.QuizDataInterface;
 import quizlogic.dto.AnswerDTO;
@@ -112,7 +114,7 @@ public class QuizDataManager implements QuizDataInterface {
 		ArrayList<ThemeDTO> themes = getAllThemes();
 
 		if (themeTitle == null || themeTitle.equals("Alle Themen")) {
-			int questionCounter = 1;
+			int questionCounter = LogicConstants.QUESTION_COUNTER_START;
 			for (ThemeDTO theme : themes) {
 				if (theme.getQuestions() != null) {
 					for (QuestionDTO q : theme.getQuestions()) {
@@ -127,7 +129,7 @@ public class QuizDataManager implements QuizDataInterface {
 				if (theme.getThemeTitle().equals(themeTitle) && theme.getQuestions() != null) {
 					for (int i = 0; i < theme.getQuestions().size(); i++) {
 						QuestionDTO q = theme.getQuestions().get(i);
-						String displayText = formatQuestionDisplay(q, i + 1);
+						String displayText = formatQuestionDisplay(q, i + LogicConstants.QUESTION_COUNTER_START);
 						entries.add(displayText);
 					}
 					break;
@@ -147,16 +149,19 @@ public class QuizDataManager implements QuizDataInterface {
 	 */
 	private String formatQuestionDisplay(QuestionDTO question, int number) {
 		if (question == null) {
-			return "Frage " + number + ": [Keine Daten]";
+			return LogicConstants.DEFAULT_QUESTION_TITLE_PREFIX + number + ": [Keine Daten]";
 		}
 		String title = question.getQuestionTitle();
 		String text = question.getQuestionText();
-		String displayTitle = (title != null && !title.trim().isEmpty()) ? title : "Frage " + number;
+		String displayTitle = (title != null && !title.trim().isEmpty()) ? title
+				: LogicConstants.DEFAULT_QUESTION_TITLE_PREFIX + number;
 		if (text != null && !text.trim().isEmpty()) {
-			String preview = text.length() > 50 ? text.substring(0, 47) + "..." : text;
+			String preview = text.length() > GUIConstants.TEXT_PREVIEW_MAX_LENGTH
+					? text.substring(0, GUIConstants.TEXT_PREVIEW_TRUNCATE_LENGTH) + GUIConstants.TEXT_TRUNCATE_SUFFIX
+					: text;
 			return displayTitle + ": " + preview;
 		} else {
-			return displayTitle + ": [Kein Fragetext]";
+			return displayTitle + ": " + LogicConstants.DEFAULT_QUESTION_NO_TEXT;
 		}
 	}
 
@@ -186,11 +191,11 @@ public class QuizDataManager implements QuizDataInterface {
 	 */
 	private void createAnswersFor(QuestionDTO question) {
 		ArrayList<AnswerDTO> answers = new ArrayList<>();
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < LogicConstants.DEFAULT_ANSWERS_PER_QUESTION; i++) {
 			AnswerDTO answer = new AnswerDTO();
 			answer.setId(i);
-			answer.setAnswerText("Antwort " + (i + 1));
-			answer.setCorrect(i == 0);
+			answer.setAnswerText(LogicConstants.DEFAULT_ANSWER_TEXT_PREFIX + (i + LogicConstants.ID_INCREMENT));
+			answer.setCorrect(i == LogicConstants.DEFAULT_CORRECT_ANSWER_INDEX);
 			answer.setQuestionId(question.getId());
 			answers.add(answer);
 		}
@@ -208,7 +213,7 @@ public class QuizDataManager implements QuizDataInterface {
 	@Override
 	public String saveTheme(ThemeDTO theme) {
 		try {
-			if (theme.getId() == -1) {
+			if (theme.getId() == LogicConstants.INVALID_ID) {
 				int newId = createNewThemeId();
 				theme.setId(newId);
 				System.out.println("DEBUG: New Theme ID assigned: " + newId);
@@ -266,7 +271,7 @@ public class QuizDataManager implements QuizDataInterface {
 	 * @return the next available theme ID
 	 */
 	private int createNewThemeId() {
-		int maxId = 0;
+		int maxId = LogicConstants.MIN_VALID_ID;
 		File folder = new File(FOLDER);
 		if (folder.exists() && folder.isDirectory()) {
 			@SuppressWarnings("unused")
@@ -286,7 +291,7 @@ public class QuizDataManager implements QuizDataInterface {
 				}
 			}
 		}
-		int newId = maxId + 1;
+		int newId = maxId + LogicConstants.ID_INCREMENT;
 		System.out.println("DEBUG: New ID will be: " + newId);
 		return newId;
 	}
@@ -348,7 +353,7 @@ public class QuizDataManager implements QuizDataInterface {
 	@Override
 	public String deleteTheme(ThemeDTO theme) {
 		try {
-			if (theme == null || theme.getId() <= 0) {
+			if (theme == null || theme.getId() <= LogicConstants.MIN_VALID_ID) {
 				return "Invalid Theme";
 			}
 			String filename = FOLDER + "/" + THEME_PREFIX + theme.getId() + EXTENSION;

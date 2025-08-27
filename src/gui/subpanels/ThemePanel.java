@@ -43,37 +43,47 @@ public class ThemePanel extends JPanel implements GUIConstants {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(PANEL_MARGIN_V, PANEL_MARGIN_H, PANEL_MARGIN_V, PANEL_MARGIN_H));
 
+		JPanel headerPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER));
+		headerPanel.setBackground(BACKGROUND_COLOR);
+		headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, THEME_HEADER_PANEL_HEIGHT));
+
 		JLabel header = new JLabel(UserStringConstants.NEW_THEME_HEADER);
 		header.setFont(TITLE_FONT);
-		header.setAlignmentX(Component.LEFT_ALIGNMENT);
-		add(header);
+		headerPanel.add(header);
+
+		add(headerPanel);
 
 		add(Box.createVerticalStrut(VERTICAL_STRUT_MEDIUM));
 
 		titleLabel = new JLabel(UserStringConstants.THEME_TITLE_LABEL);
-		titleLabel.setFont(DEFAULT_FONT);
-		titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		titleLabel.setFont(titleLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(titleLabel);
 
 		titleField = new JTextField("", TEXTFIELD_COLUMNS);
 		titleField.setMaximumSize(new Dimension(Integer.MAX_VALUE, titleField.getPreferredSize().height));
-		titleField.setAlignmentX(Component.LEFT_ALIGNMENT);
+		titleField.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(titleField);
 
 		add(Box.createVerticalStrut(GAP_BETWEEN_INPUTS));
 
 		infoLabel = new JLabel(UserStringConstants.THEME_INFO_LABEL);
-		infoLabel.setFont(DEFAULT_FONT);
-		infoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		infoLabel.setFont(infoLabel.getFont().deriveFont(java.awt.Font.BOLD));
+		infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(infoLabel);
 
 		infoArea = new JTextArea("", QUESTIONAREA_ROWS, QUESTIONAREA_COLUMNS);
 		infoArea.setLineWrap(true);
 		infoArea.setWrapStyleWord(true);
 		JScrollPane scrollPane = new JScrollPane(infoArea);
-		scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
-		scrollPane.setPreferredSize(new Dimension(THEME_TEXTAREA_WIDTH, THEME_TEXTAREA_HEIGHT));
+		scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
+		scrollPane.setPreferredSize(new Dimension(LEFT_PANEL_WIDTH - PANEL_SIZE_OFFSET_SMALL, THEME_TEXTAREA_HEIGHT));
 		add(scrollPane);
+
+		setPreferredSize(new Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMaximumSize(new Dimension(LEFT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT));
+		setMinimumSize(new Dimension(LEFT_PANEL_WIDTH - PANEL_SIZE_OFFSET_LARGE,
+				MAIN_CONTENT_HEIGHT - PANEL_SIZE_OFFSET_LARGE));
 	}
 
 	/**

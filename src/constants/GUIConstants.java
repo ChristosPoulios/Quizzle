@@ -28,6 +28,13 @@ public interface GUIConstants extends UserStringConstants {
 	/** Height of the main application window in pixels */
 	int FRAME_HEIGHT = 650;
 
+	/**
+	 * Configuration keys for window settings - should match ConfigManager constants
+	 */
+	String WINDOW_WIDTH_CONFIG = "window.width";
+	String WINDOW_HEIGHT_CONFIG = "window.height";
+	String WINDOW_MAXIMIZED_CONFIG = "window.maximized";
+
 	/** Horizontal margin spacing for panels in pixels */
 	int PANEL_MARGIN_H = 10;
 
@@ -43,28 +50,52 @@ public interface GUIConstants extends UserStringConstants {
 	// Colors and fonts used in the GUI
 
 	/** Default background color for panels and components */
-	Color BACKGROUND_COLOR = Color.WHITE;
+	Color BACKGROUND_COLOR = new Color(248, 250, 252);
 
 	/** Background color for theme-related panels */
-	Color THEME_PANEL_COLOR = new Color(245, 245, 245);
+	Color THEME_PANEL_COLOR = Color.WHITE;
 
 	/** Background color for buttons */
-	Color BUTTON_COLOR = new Color(240, 240, 240);
+	Color BUTTON_COLOR = new Color(236, 242, 248);
 
-	/** Color for text labels */
-	Color LABEL_COLOR = Color.BLACK;
+	/** Hover color for buttons */
+	Color BUTTON_HOVER_COLOR = new Color(219, 234, 254);
 
-	/** Background color for text fields */
+	/** Active/pressed button color */
+	Color BUTTON_ACTIVE_COLOR = new Color(191, 219, 254);
+
+	/** Color for text labels - dark gray */
+	Color LABEL_COLOR = new Color(55, 65, 81);
+
+	/** Background color for text fields - white with subtle border */
 	Color TEXTFIELD_BACKGROUND = Color.WHITE;
 
-	/** Border color for text fields */
-	Color TEXTFIELD_BORDER_COLOR = Color.GRAY;
+	/** Border color for text fields - soft gray-blue */
+	Color TEXTFIELD_BORDER_COLOR = new Color(209, 213, 219);
 
-	/** Color for checkboxes */
-	Color CHECKBOX_COLOR = Color.BLACK;
+	/** Focus border color for text fields - blue */
+	Color TEXTFIELD_FOCUS_BORDER_COLOR = new Color(59, 130, 246);
 
-	/** Background color for question text areas */
-	Color QUESTION_TEXT_AREA = new Color(240, 240, 240);
+	/** Color for checkboxes - blue */
+	Color CHECKBOX_COLOR = new Color(59, 130, 246);
+
+	/** Background color for question text areas - very light gray */
+	Color QUESTION_TEXT_AREA = new Color(249, 250, 251);
+
+	/** Header background color - slightly darker than main background */
+	Color HEADER_BACKGROUND_COLOR = new Color(243, 244, 246);
+
+	/** Border color for panels - subtle gray */
+	Color PANEL_BORDER_COLOR = new Color(229, 231, 235);
+
+	/** Success color - soft green */
+	Color SUCCESS_COLOR = new Color(34, 197, 94);
+
+	/** Error color - soft red */
+	Color ERROR_COLOR = new Color(239, 68, 68);
+
+	/** Warning color - soft orange */
+	Color WARNING_COLOR = new Color(245, 158, 11);
 
 	/** Default font used throughout the application */
 	Font DEFAULT_FONT = new Font("Helvetica", Font.PLAIN, 15);
@@ -94,19 +125,31 @@ public interface GUIConstants extends UserStringConstants {
 
 	/** Large vertical spacing between components */
 	int VERTICAL_STRUT_LARGE = 35;
+	
+	/** Small horizontal spacing between components */
+	int HORIZONTAL_STRUT_SMALL = 10;
+	
+	/** Medium horizontal spacing between components */
+	int HORIZONTAL_STRUT_MEDIUM = 16;
+	
+	/** Large horizontal spacing between components */
+	int HORIZONTAL_STRUT_LARGE = 35;
+	
+	/** Very large horizontal spacing between components */
+	int HORIZONTAL_STRUT_VERY_LARGE = 233;
 
 	/** Width of theme text areas in pixels */
 	int THEME_TEXTAREA_WIDTH = 400;
 
 	/** Height of theme text areas in pixels */
-	int THEME_TEXTAREA_HEIGHT = 120;
+	int THEME_TEXTAREA_HEIGHT = 130;
 
 	/** Width of theme lists in pixels */
 	int THEME_LIST_WIDTH = 300;
 
 	/** Height of theme lists in pixels */
-	int THEME_LIST_HEIGHT = 383;
-	
+	int THEME_LIST_HEIGHT = 387;
+
 	/** Width of the ComboBoxes in pixels */
 	int COMBOBOX_WIDTH = 250;
 
@@ -123,7 +166,7 @@ public interface GUIConstants extends UserStringConstants {
 	int QUESTION_LIST_WIDTH = 400;
 
 	/** Height of question lists in pixels */
-	int QUESTION_LIST_HEIGHT = 350;
+	int QUESTION_LIST_HEIGHT = 387;
 
 	/** Minimum width of question lists in pixels */
 	int QUESTION_LIST_MIN_WIDTH = 300;
@@ -133,6 +176,15 @@ public interface GUIConstants extends UserStringConstants {
 
 	/** Length at which question text gets truncated */
 	int QUESTION_TEXT_TRUNCATE_LENGTH = 47;
+
+	/** Maximum length for text preview display */
+	int TEXT_PREVIEW_MAX_LENGTH = 50;
+
+	/** Truncation point for text preview (leaves room for "...") */
+	int TEXT_PREVIEW_TRUNCATE_LENGTH = 47;
+
+	/** Suffix for truncated text */
+	String TEXT_TRUNCATE_SUFFIX = "...";
 
 	/** Width of answer labels in pixels */
 	int ANSWER_LABEL_WIDTH = 300;
@@ -173,8 +225,60 @@ public interface GUIConstants extends UserStringConstants {
 	int QUESTIONAREA_COLUMNS = 25;
 
 	/** Offset for checkbox labels in pixels */
-	int CHECKBOX_LABEL_OFFSET = 105;
+	int CHECKBOX_LABEL_OFFSET = 225;
 
 	/** Number of answer options available per question */
 	int ANSWERS_COUNT = 4;
+
+	// Unified panel sizes for consistent layout across all tabs
+
+	/** Standard width for left panels (question/theme editing panels) */
+	int LEFT_PANEL_WIDTH = 400;
+
+	/** Standard width for right panels (lists and info views) */
+	int RIGHT_PANEL_WIDTH = 400;
+
+	/** Standard height for main content panels */
+	int MAIN_CONTENT_HEIGHT = 450;
+
+	// Magic numbers from GUI components
+	/** Panel margin offset for minimum size calculations */
+	int PANEL_MARGIN_OFFSET = 50;
+
+	/** Header panel height */
+	int HEADER_PANEL_HEIGHT = 80;
+
+	/** Label panel maximum height */
+	int LABEL_PANEL_MAX_HEIGHT = 30;
+
+	/** Controls panel maximum height */
+	int CONTROLS_PANEL_MAX_HEIGHT = 40;
+
+	/** Theme combo box width in header */
+	int HEADER_THEME_COMBO_WIDTH = 200;
+
+	/** Standard component height for combo boxes and buttons */
+	int STANDARD_COMPONENT_HEIGHT = 30;
+
+	/** Quiz info combo box width offset */
+	int QUIZ_INFO_COMBO_OFFSET = 100;
+
+	/** Scroll bar unit increment for smooth scrolling */
+	int SCROLL_UNIT_INCREMENT = 16;
+
+	/** Flow layout horizontal gap */
+	int FLOW_LAYOUT_HGAP = 10;
+
+	/** Flow layout vertical gap */
+	int FLOW_LAYOUT_VGAP = 5;
+
+	// Additional constants for ThemePanel
+	/** Theme header panel height */
+	int THEME_HEADER_PANEL_HEIGHT = 40;
+
+	/** Small panel size offset for calculations */
+	int PANEL_SIZE_OFFSET_SMALL = 20;
+
+	/** Large panel size offset for calculations */
+	int PANEL_SIZE_OFFSET_LARGE = 50;
 }

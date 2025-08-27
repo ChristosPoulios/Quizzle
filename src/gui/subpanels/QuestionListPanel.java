@@ -1,18 +1,10 @@
 package gui.subpanels;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -20,40 +12,40 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
 import constants.GUIConstants;
+import constants.UserStringConstants;
 import gui.interfaces.QuizQuestionDelegator;
 import persistence.mariaDB.DBManager;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
-import constants.UserStringConstants;
 
 /**
  * Panel displaying a list of questions with theme filtering and persistent data
  * integration.
  * <p>
  * Provides UI for theme selection and browsing questions, with connection to
- * MariaDB to fetch question data.
+ * MariaDB to fetch question data. Now uses QuizThemeInfoView for theme
+ * information display instead of a simple list.
  * </p>
  * 
  * @author Christos Poulios
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public class QuestionListPanel extends JPanel implements GUIConstants {
 
 	private static final long serialVersionUID = 1L;
 
-	private JComboBox<String> themeComboBox;
-	private JButton switchButton;
+	private QuizHeaderPanel headerPanel;
 	private DefaultListModel<String> listModel;
 	private JList<String> questionList;
 	private JScrollPane scrollPane;
+	private QuizThemeInfoView themeInfoView;
 
 	private DBManager dbManager;
 
 	private QuizQuestionDelegator delegate;
 
 	private ArrayList<QuestionDTO> currentQuestions;
-	private ArrayList<ThemeDTO> currentThemes;
 	private boolean showingThemes = false;
 
 	/**
@@ -64,12 +56,16 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	public QuestionListPanel(DBManager dbManager) {
 		this.dbManager = dbManager;
 		this.currentQuestions = new ArrayList<>();
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setLayout(new BorderLayout());
 		setBackground(BACKGROUND_COLOR);
+
 		createHeaderPanel();
-		add(Box.createRigidArea(new Dimension(0, QUESTION_LIST_RIGID_AREA_HEIGHT)));
 		createQuestionList();
-		add(Box.createVerticalGlue());
+		createThemeInfoView();
+
+		add(headerPanel, BorderLayout.NORTH);
+		add(scrollPane, BorderLayout.CENTER);
+
 		updateQuestionList(UserStringConstants.ALL_THEMES_OPTION);
 	}
 
@@ -83,55 +79,27 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Creates the header panel with theme selection combo box and switch button.
+	 * Creates the header panel with theme selection and switch functionality.
 	 */
 	private void createHeaderPanel() {
-		JPanel headerContainer = new JPanel();
-		headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
-		headerContainer.setBackground(BACKGROUND_COLOR);
+		headerPanel = new QuizHeaderPanel(dbManager);
 
-		JPanel comboPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, PANEL_MARGIN_H, 0));
-		comboPanel.setBackground(BACKGROUND_COLOR);
+		headerPanel.setThemeSelectionListener(selectedTheme -> {
+			if (showingThemes) {
 
-		JLabel themeLabel = new JLabel(QUESTIONLIST_LABEL);
-		themeLabel.setFont(TITLE_FONT);
-		themeLabel.setBorder(BorderFactory.createEmptyBorder(BORDER_TOP, BORDER_RIGHT, BORDER_BOTTOM, BORDER_RIGHT));
+				themeInfoView.showThemeInfo(selectedTheme);
+			}
 
-		themeComboBox = new JComboBox<>();
-		themeComboBox.setPreferredSize(new Dimension(COMBOBOX_WIDTH, COMBOBOX_HEIGHT));
-		themeComboBox.setEditable(false);
-		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
-
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
-		for (ThemeDTO theme : themes) {
-			themeComboBox.addItem(theme.getThemeTitle());
-		}
-
-		themeComboBox.setBackground(TEXTFIELD_BACKGROUND);
-		themeComboBox.addActionListener(_ -> {
-			if (!showingThemes) {
-				String selectedTheme = (String) themeComboBox.getSelectedItem();
-				if (selectedTheme != null && delegate != null) {
-					delegate.onThemeSelected(selectedTheme);
-				}
+			if (delegate != null) {
+				delegate.onThemeSelected(selectedTheme);
 			}
 		});
 
-		// Create switch button
-		switchButton = new JButton(UserStringConstants.BTN_SHOW_THEMES);
-		switchButton.setPreferredSize(new Dimension(120, COMBOBOX_HEIGHT));
-		switchButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				toggleListView();
-			}
+		headerPanel.setViewSwitchListener(() -> {
+			toggleListView();
 		});
 
-		comboPanel.add(themeLabel);
-		comboPanel.add(themeComboBox);
-		comboPanel.add(switchButton);
-		headerContainer.add(comboPanel);
-		add(headerContainer);
+		headerPanel.setSwitchButtonText(UserStringConstants.BTN_SHOW_THEMES);
 	}
 
 	/**
@@ -155,12 +123,17 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		scrollPane.setBackground(BACKGROUND_COLOR);
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-		Dimension listSize = new Dimension(QUESTION_LIST_WIDTH, QUESTION_LIST_HEIGHT);
+		Dimension listSize = new Dimension(RIGHT_PANEL_WIDTH, MAIN_CONTENT_HEIGHT - 100);
 		scrollPane.setPreferredSize(listSize);
 		scrollPane.setMaximumSize(listSize);
-		scrollPane.setMinimumSize(new Dimension(QUESTION_LIST_MIN_WIDTH, QUESTION_LIST_HEIGHT));
+		scrollPane.setMinimumSize(new Dimension(RIGHT_PANEL_WIDTH - 100, MAIN_CONTENT_HEIGHT - 100));
+	}
 
-		add(scrollPane);
+	/**
+	 * Creates the theme info view component.
+	 */
+	private void createThemeInfoView() {
+		themeInfoView = new QuizThemeInfoView(dbManager);
 	}
 
 	/**
@@ -196,30 +169,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 			listModel.addElement(displayText);
 		}
 
-		updateThemeComboBox();
-	}
-
-	/**
-	 * Updates the theme combo box with current themes from database.
-	 */
-	private void updateThemeComboBox() {
-		String currentSelection = (String) themeComboBox.getSelectedItem();
-		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
-
-		themeComboBox.removeAllItems();
-		themeComboBox.addItem(UserStringConstants.ALL_THEMES_OPTION);
-		for (ThemeDTO theme : themes) {
-			themeComboBox.addItem(theme.getThemeTitle());
-		}
-
-		if (currentSelection != null) {
-			for (int i = 0; i < themeComboBox.getItemCount(); i++) {
-				if (currentSelection.equals(themeComboBox.getItemAt(i))) {
-					themeComboBox.setSelectedIndex(i);
-					break;
-				}
-			}
-		}
+		headerPanel.refreshThemes();
 	}
 
 	/**
@@ -227,7 +177,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	 * themes have changed.
 	 */
 	public void refreshThemeComboBox() {
-		updateThemeComboBox();
+		headerPanel.refreshThemes();
 	}
 
 	/**
@@ -261,7 +211,7 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	 * @return The selected theme title
 	 */
 	public String getSelectedThemeTitle() {
-		return (String) themeComboBox.getSelectedItem();
+		return headerPanel.getSelectedTheme();
 	}
 
 	/**
@@ -278,52 +228,43 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Toggles between showing themes and questions in the list.
+	 * Toggles between showing themes and questions in the display area.
 	 */
 	private void toggleListView() {
 		showingThemes = !showingThemes;
-		
+
 		if (showingThemes) {
-			switchButton.setText(UserStringConstants.BTN_SHOW_QUESTIONS);
-			themeComboBox.setEnabled(false);
-			updateThemeList();
+			// Switch to theme info view
+			headerPanel.setSwitchButtonText(UserStringConstants.BTN_SHOW_QUESTIONS);
+			remove(scrollPane);
+			add(themeInfoView, BorderLayout.CENTER);
+
+			// Show info for currently selected theme
+			String selectedTheme = headerPanel.getSelectedTheme();
+			if (selectedTheme != null) {
+				themeInfoView.showThemeInfo(selectedTheme);
+			} else {
+				themeInfoView.showWelcomeMessage();
+			}
 		} else {
-			switchButton.setText(UserStringConstants.BTN_SHOW_THEMES);
-			themeComboBox.setEnabled(true);
-			String selectedTheme = (String) themeComboBox.getSelectedItem();
+			// Switch back to questions list
+			headerPanel.setSwitchButtonText(UserStringConstants.BTN_SHOW_THEMES);
+			remove(themeInfoView);
+			add(scrollPane, BorderLayout.CENTER);
+
+			// Update question list for current theme
+			String selectedTheme = headerPanel.getSelectedTheme();
 			if (selectedTheme != null) {
 				updateQuestionList(selectedTheme);
 			}
 		}
+
+		revalidate();
+		repaint();
 	}
-	
+
 	/**
-	 * Updates the list to show themes instead of questions.
-	 */
-	private void updateThemeList() {
-		listModel.clear();
-		currentThemes = dbManager.getAllThemes();
-		
-		for (ThemeDTO theme : currentThemes) {
-			listModel.addElement(theme.getThemeTitle());
-		}
-	}
-	
-	/**
-	 * Returns the ThemeDTO at the specified index when showing themes.
-	 * 
-	 * @param index The index of the theme
-	 * @return The ThemeDTO or null if index is invalid or not showing themes
-	 */
-	public ThemeDTO getThemeByIndex(int index) {
-		if (showingThemes && currentThemes != null && index >= 0 && index < currentThemes.size()) {
-			return currentThemes.get(index);
-		}
-		return null;
-	}
-	
-	/**
-	 * Returns whether the list is currently showing themes.
+	 * Returns whether the panel is currently showing themes.
 	 * 
 	 * @return true if showing themes, false if showing questions
 	 */

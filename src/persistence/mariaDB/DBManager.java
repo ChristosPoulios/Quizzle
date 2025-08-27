@@ -97,11 +97,8 @@ public class DBManager implements QuizDataInterface {
 		try {
 			if (connection == null || connection.isClosed()) {
 				Class.forName(configManager.getDatabaseDriver());
-				connection = DriverManager.getConnection(
-					configManager.getDatabaseUrl(),
-					configManager.getDatabaseUser(),
-					configManager.getDatabasePassword()
-				);
+				connection = DriverManager.getConnection(configManager.getDatabaseUrl(),
+						configManager.getDatabaseUser(), configManager.getDatabasePassword());
 				connection.setAutoCommit(false);
 			}
 		} catch (Exception e) {
@@ -679,7 +676,8 @@ public class DBManager implements QuizDataInterface {
 	public String testConnection() {
 		try {
 			connect();
-			return isConnected() ? UserStringConstants.DB_MSG_CONNECTION_SUCCESS : UserStringConstants.DB_MSG_CONNECTION_FAILED;
+			return isConnected() ? UserStringConstants.DB_MSG_CONNECTION_SUCCESS
+					: UserStringConstants.DB_MSG_CONNECTION_FAILED;
 		} catch (Exception e) {
 			return String.format(UserStringConstants.DB_MSG_CONNECTION_FAILED_DETAILS, e.getMessage());
 		}
