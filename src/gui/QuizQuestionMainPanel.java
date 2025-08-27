@@ -366,9 +366,12 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 * @return The ThemeDTO if found; null otherwise
 	 */
 	private ThemeDTO findTheme(String themeTitle) {
+		// Remove * prefix if present to get the actual theme title
+		String actualTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
+		
 		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
-			if (theme.getThemeTitle().equals(themeTitle)) {
+			if (theme.getThemeTitle().equals(actualTitle)) {
 				return theme;
 			}
 		}

@@ -214,14 +214,125 @@ public class QuizDataManager implements QuizDataInterface {
 
 	@Override
 	public String saveQuestion(QuestionDTO question) {
-		// Basic implementation - in a real scenario this would save to storage
-		return "Question saved successfully";
+		// Find all themes and try to update the question in the appropriate theme
+		try {
+			for (ThemeDTO theme : getAllThemes()) {
+				if (theme.getQuestions() != null) {
+					for (QuestionDTO existingQ : theme.getQuestions()) {
+						if (existingQ.getId() == question.getId()) {
+							// Update existing question
+							existingQ.setQuestionTitle(question.getQuestionTitle());
+							existingQ.setQuestionText(question.getQuestionText());
+							existingQ.setAnswers(question.getAnswers());
+							
+							// Save the updated theme
+							String saveResult = saveTheme(theme);
+							ConfigManager.debugPrint("DEBUG: Updated question in theme: " + saveResult);
+							return "Question updated successfully";
+						}
+					}
+				}
+			}
+			
+			// If we get here, the question wasn't found - it might be a new question
+			ConfigManager.debugPrint("DEBUG: Question with ID " + question.getId() + " not found for update");
+			return "Error: Question not found. Use saveQuestion(question, theme) for new questions.";
+			
+		} catch (Exception e) {
+			ConfigManager.debugPrint("DEBUG: Error saving question: " + e.getMessage());
+			return "Error saving question: " + e.getMessage();
+		}
 	}
 
 	@Override
 	public String deleteQuestion(QuestionDTO question) {
-		// Basic implementation - in a real scenario this would delete from storage
-		return "Question deleted successfully";
+		try {
+			// Find the theme that contains this question
+			for (ThemeDTO theme : getAllThemes()) {
+				if (theme.getQuestions() != null) {
+					boolean questionFound = false;
+					// Remove the question from the theme's question list
+					theme.getQuestions().removeIf(q -> {
+						if (q.getId() == question.getId()) {
+							ConfigManager.debugPrint("DEBUG: Found and removing question: " + q.getQuestionTitle());
+							return true;
+						}
+						return false;
+					});
+					
+					// Check if question was found and removed
+					for (QuestionDTO q : theme.getQuestions()) {
+						if (q.getId() == question.getId()) {
+							questionFound = false;
+							break;
+						} else {
+							questionFound = true;
+						}
+					}
+					
+					if (questionFound || theme.getQuestions().stream().noneMatch(q -> q.getId() == question.getId())) {
+						// Save the updated theme
+						String saveResult = saveTheme(theme);
+						ConfigManager.debugPrint("DEBUG: Saved theme after question deletion: " + saveResult);
+						return "Question and all associated answers deleted successfully";
+					}
+				}
+			}
+			
+			// If we get here, the question wasn't found in any theme
+			ConfigManager.debugPrint("DEBUG: Question with ID " + question.getId() + " not found in any theme");
+			return "Error: Question not found in any theme";
+			
+		} catch (Exception e) {
+			ConfigManager.debugPrint("DEBUG: Error deleting question: " + e.getMessage());
+			return "Error deleting question: " + e.getMessage();
+		}
+	}
+	
+	/**
+	 * Deletes an answer from a question (extended method for compatibility).
+	 * 
+	 * @param answer the answer to delete
+	 * @param question the question containing the answer
+	 * @return result message
+	 */
+	public String deleteAnswer(AnswerDTO answer, QuestionDTO question) {
+		try {
+			// Remove the answer from the question's answer list
+			if (question.getAnswers() != null) {
+				boolean removed = question.getAnswers().removeIf(a -> a.getId() == answer.getId());
+				
+				if (removed) {
+					ConfigManager.debugPrint("DEBUG: Removed answer: " + answer.getAnswerText());
+					
+					// Find the theme that contains this question and save it
+					for (ThemeDTO theme : getAllThemes()) {
+						if (theme.getQuestions() != null) {
+							for (QuestionDTO q : theme.getQuestions()) {
+								if (q.getId() == question.getId()) {
+									// Update the question in the theme
+									q.setAnswers(question.getAnswers());
+									// Save the updated theme
+									String saveResult = saveTheme(theme);
+									ConfigManager.debugPrint("DEBUG: Saved theme after answer deletion: " + saveResult);
+									return "Answer deleted successfully";
+								}
+							}
+						}
+					}
+					
+					return "Error: Question not found in any theme";
+				} else {
+					return "Error: Answer not found";
+				}
+			} else {
+				return "Error: Question has no answers";
+			}
+			
+		} catch (Exception e) {
+			ConfigManager.debugPrint("DEBUG: Error deleting answer: " + e.getMessage());
+			return "Error deleting answer: " + e.getMessage();
+		}
 	}
 	
 	/**
@@ -327,7 +438,25 @@ public class QuizDataManager implements QuizDataInterface {
 				ConfigManager.debugPrint("DEBUG: Added new answer: " + answer.getAnswerText());
 			}
 			
-			return "Answer saved successfully";
+			// Find the theme that contains this question and save it
+			for (ThemeDTO theme : getAllThemes()) {
+				if (theme.getQuestions() != null) {
+					for (QuestionDTO q : theme.getQuestions()) {
+						if (q.getId() == question.getId()) {
+							// Update the question in the theme
+							q.setAnswers(question.getAnswers());
+							// Save the updated theme
+							String saveResult = saveTheme(theme);
+							ConfigManager.debugPrint("DEBUG: Saved theme after answer update: " + saveResult);
+							return "Answer saved successfully";
+						}
+					}
+				}
+			}
+			
+			// If we get here, the question wasn't found in any theme
+			ConfigManager.debugPrint("DEBUG: Question with ID " + question.getId() + " not found in any theme");
+			return "Error: Question not found in any theme";
 			
 		} catch (Exception e) {
 			ConfigManager.debugPrint("DEBUG: Error saving answer: " + e.getMessage());

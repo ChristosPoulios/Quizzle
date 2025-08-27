@@ -205,12 +205,17 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Returns the title of the currently selected theme.
+	 * Returns the title of the currently selected theme (without * prefix).
 	 * 
-	 * @return The title string or null if none selected
+	 * @return The actual theme title string or null if none selected
 	 */
 	public String getSelectedThemeTitle() {
-		return themeList.getSelectedValue();
+		String selectedTitle = themeList.getSelectedValue();
+		if (selectedTitle != null) {
+			// Remove * prefix if present to get the actual theme title
+			return selectedTitle.startsWith("* ") ? selectedTitle.substring(2) : selectedTitle;
+		}
+		return null;
 	}
 
 	/**
