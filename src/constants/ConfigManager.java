@@ -44,6 +44,7 @@ public class ConfigManager {
 	public static final String WINDOW_WIDTH = "window.width";
 	public static final String WINDOW_HEIGHT = "window.height";
 	public static final String WINDOW_MAXIMIZED = "window.maximized";
+	public static final String DEBUG_MODE = "debug.enabled";
 
 	/**
 	 * Private constructor for singleton pattern.
@@ -103,6 +104,9 @@ public class ConfigManager {
 		properties.setProperty(WINDOW_WIDTH, "850");
 		properties.setProperty(WINDOW_HEIGHT, "650");
 		properties.setProperty(WINDOW_MAXIMIZED, "false");
+		
+		// Debug mode disabled by default
+		properties.setProperty(DEBUG_MODE, "false");
 	}
 
 	/**
@@ -342,5 +346,34 @@ public class ConfigManager {
 	 */
 	public void setWindowMaximized(boolean maximized) {
 		setBooleanProperty(WINDOW_MAXIMIZED, maximized);
+	}
+
+	/**
+	 * Checks if debug mode is enabled.
+	 * 
+	 * @return true if debug mode is enabled, false otherwise
+	 */
+	public boolean isDebugMode() {
+		return getBooleanProperty(DEBUG_MODE, false);
+	}
+
+	/**
+	 * Sets debug mode enabled or disabled.
+	 * 
+	 * @param enabled true to enable debug mode, false to disable
+	 */
+	public void setDebugMode(boolean enabled) {
+		setBooleanProperty(DEBUG_MODE, enabled);
+	}
+
+	/**
+	 * Prints debug message to console only if debug mode is enabled.
+	 * 
+	 * @param message the debug message to print
+	 */
+	public static void debugPrint(String message) {
+		if (getInstance().isDebugMode()) {
+			System.out.println(message);
+		}
 	}
 }

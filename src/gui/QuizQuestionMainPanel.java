@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
+import constants.ConfigManager;
 import constants.GUIConstants;
 import constants.UserStringConstants;
 import gui.interfaces.QuizQuestionDelegator;
@@ -178,59 +179,59 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	public void onQuestionSaved(String questionTitle, String themeTitle, String questionType, String answerText,
 			boolean hasCorrectAnswer) {
 		try {
-			System.out.println("=== DEBUG: onQuestionSaved START ===");
+			ConfigManager.debugPrint("=== DEBUG: onQuestionSaved START ===");
 
 			if (!validateInput(themeTitle)) {
-				System.out.println("DEBUG: Theme validation failed");
+				ConfigManager.debugPrint("DEBUG: Theme validation failed");
 				return;
 			}
 			ThemeDTO targetTheme = findTheme(themeTitle);
 			if (targetTheme == null) {
-				System.out.println("DEBUG: Theme not found: " + themeTitle);
+				ConfigManager.debugPrint("DEBUG: Theme not found: " + themeTitle);
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_NOT_FOUND, themeTitle));
 				return;
 			}
 
-			System.out.println("DEBUG: Found theme: " + targetTheme.getThemeTitle());
+			ConfigManager.debugPrint("DEBUG: Found theme: " + targetTheme.getThemeTitle());
 
 			QuestionDTO question = getOrCreateQuestion(targetTheme);
 			if (question == null) {
-				System.out.println("DEBUG: Failed to create/get question");
+				ConfigManager.debugPrint("DEBUG: Failed to create/get question");
 				buttonPanel.setMessage(UserStringConstants.MSG_QUESTION_CREATE_ERROR);
 				return;
 			}
 
-			System.out.println("DEBUG: Question ID: " + question.getId());
+			ConfigManager.debugPrint("DEBUG: Question ID: " + question.getId());
 
 			updateQuestionData(question);
-			System.out.println("DEBUG: Updated question data - Title: " + question.getQuestionTitle());
+			ConfigManager.debugPrint("DEBUG: Updated question data - Title: " + question.getQuestionTitle());
 
 			ArrayList<AnswerDTO> answers = collectAnswers(question);
 			if (!validateAnswers(answers)) {
-				System.out.println("DEBUG: Answer validation failed - not saving question");
+				ConfigManager.debugPrint("DEBUG: Answer validation failed - not saving question");
 				return;
 			}
 
 			String result = dbManager.saveQuestion(question, targetTheme);
-			System.out.println("DEBUG: Save question result: " + result);
+			ConfigManager.debugPrint("DEBUG: Save question result: " + result);
 
 			if (result != null && result.contains("successfully")) {
 
 				if (question.getId() == -1) {
 
-					System.out.println("DEBUG: Question ID still -1, trying to refresh from database");
+					ConfigManager.debugPrint("DEBUG: Question ID still -1, trying to refresh from database");
 					ArrayList<QuestionDTO> questionsForTheme = dbManager.getQuestionsFor(targetTheme);
 					for (QuestionDTO dbQuestion : questionsForTheme) {
 						if (dbQuestion.getQuestionTitle().equals(question.getQuestionTitle())
 								&& dbQuestion.getText().equals(question.getText())) {
 							question.setId(dbQuestion.getId());
-							System.out.println("DEBUG: Found question in DB with ID: " + question.getId());
+							ConfigManager.debugPrint("DEBUG: Found question in DB with ID: " + question.getId());
 							break;
 						}
 					}
 				}
 
-				System.out.println("DEBUG: Question ID after save: " + question.getId());
+				ConfigManager.debugPrint("DEBUG: Question ID after save: " + question.getId());
 
 				QuestionDTO freshQuestion = null;
 				if (question.getId() != -1) {
@@ -238,7 +239,7 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 					for (QuestionDTO dbQuestion : questionsForTheme) {
 						if (dbQuestion.getId() == question.getId()) {
 							freshQuestion = dbQuestion;
-							System.out.println("DEBUG: Using fresh question object from database");
+							ConfigManager.debugPrint("DEBUG: Using fresh question object from database");
 							break;
 						}
 					}
@@ -249,35 +250,35 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				boolean allAnswersSaved = true;
 				for (int i = 0; i < answers.size(); i++) {
 					AnswerDTO answer = answers.get(i);
-					System.out.println("DEBUG: Saving answer " + (i + 1) + ": '" + answer.getAnswerText()
+					ConfigManager.debugPrint("DEBUG: Saving answer " + (i + 1) + ": '" + answer.getAnswerText()
 							+ "' (correct: " + answer.isCorrect() + ")");
 					String answerResult = dbManager.saveAnswer(answer, questionForAnswers);
-					System.out.println("DEBUG: Answer save result: " + answerResult);
+					ConfigManager.debugPrint("DEBUG: Answer save result: " + answerResult);
 
 					if (answerResult == null || !answerResult.contains("successfully")) {
 						allAnswersSaved = false;
-						System.out.println("DEBUG: Failed to save answer " + (i + 1));
+						ConfigManager.debugPrint("DEBUG: Failed to save answer " + (i + 1));
 						break;
 					}
 				}
 
 				if (allAnswersSaved) {
-					System.out.println("DEBUG: All answers saved successfully");
+					ConfigManager.debugPrint("DEBUG: All answers saved successfully");
 					buttonPanel.setMessage(
 							String.format(UserStringConstants.MSG_QUESTION_SAVED_SUCCESS, question.getQuestionTitle()));
 					questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
 				} else {
-					System.out.println("DEBUG: Some answers failed to save");
+					ConfigManager.debugPrint("DEBUG: Some answers failed to save");
 					buttonPanel.setMessage(UserStringConstants.MSG_QUESTION_SAVED_ANSWERS_ERROR);
 				}
 			} else {
-				System.out.println("DEBUG: Question save failed: " + result);
+				ConfigManager.debugPrint("DEBUG: Question save failed: " + result);
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVE_ERROR,
 						(result != null ? result : "Unbekannter Fehler")));
 			}
-			System.out.println("=== DEBUG: onQuestionSaved END ===");
+			ConfigManager.debugPrint("=== DEBUG: onQuestionSaved END ===");
 		} catch (Exception e) {
-			System.out.println("DEBUG: Exception occurred: " + e.getMessage());
+			ConfigManager.debugPrint("DEBUG: Exception occurred: " + e.getMessage());
 			e.printStackTrace();
 			buttonPanel.setMessage(String.format(UserStringConstants.MSG_QUESTION_SAVE_ERROR, e.getMessage()));
 		}
@@ -413,15 +414,15 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 		ArrayList<AnswerDTO> answers = new ArrayList<>();
 		AnswerRowPanel[] answerRows = questionPanel.getAnswersPanel().getAnswerRows();
 
-		System.out.println("=== DEBUG: collectAnswers ===");
-		System.out.println("Number of answer rows: " + answerRows.length);
+		ConfigManager.debugPrint("=== DEBUG: collectAnswers ===");
+		ConfigManager.debugPrint("Number of answer rows: " + answerRows.length);
 
 		for (int i = 0; i < answerRows.length; i++) {
-			System.out.println("Row " + i + ":");
-			System.out.println("  - Visible: " + answerRows[i].isVisible());
-			System.out.println("  - Text: '" + answerRows[i].getTextField().getText() + "'");
-			System.out.println("  - Editable: " + answerRows[i].getTextField().isEditable());
-			System.out.println("  - Correct: " + answerRows[i].isCorrect());
+			ConfigManager.debugPrint("Row " + i + ":");
+			ConfigManager.debugPrint("  - Visible: " + answerRows[i].isVisible());
+			ConfigManager.debugPrint("  - Text: '" + answerRows[i].getTextField().getText() + "'");
+			ConfigManager.debugPrint("  - Editable: " + answerRows[i].getTextField().isEditable());
+			ConfigManager.debugPrint("  - Correct: " + answerRows[i].isCorrect());
 
 			if (answerRows[i].isVisible()) {
 				String answerText = answerRows[i].getTextField().getText().trim();
@@ -431,17 +432,17 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 					answer.setAnswerText(answerText);
 					answer.setCorrect(answerRows[i].isCorrect());
 					answers.add(answer);
-					System.out.println("  -> Added answer: " + answerText + " (correct: " + answer.isCorrect() + ")");
+					ConfigManager.debugPrint("  -> Added answer: " + answerText + " (correct: " + answer.isCorrect() + ")");
 				} else {
-					System.out.println("  -> Skipped: empty text");
+					ConfigManager.debugPrint("  -> Skipped: empty text");
 				}
 			} else {
-				System.out.println("  -> Skipped: not visible");
+				ConfigManager.debugPrint("  -> Skipped: not visible");
 			}
 		}
 
-		System.out.println("Total answers collected: " + answers.size());
-		System.out.println("=== END DEBUG ===");
+		ConfigManager.debugPrint("Total answers collected: " + answers.size());
+		ConfigManager.debugPrint("=== END DEBUG ===");
 
 		return answers;
 	}

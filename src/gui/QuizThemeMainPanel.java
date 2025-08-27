@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import constants.ConfigManager;
 import constants.GUIConstants;
 import constants.UserStringConstants;
 import gui.interfaces.QuizThemeDelegator;
@@ -71,7 +72,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 
 		themeListPanel.setSelectionListener(selectedTheme -> {
 			themePanel.fillFields(selectedTheme.getThemeTitle(), selectedTheme.getThemeDescription());
-			System.out.println("Theme selected: " + selectedTheme.getThemeTitle());
+			ConfigManager.debugPrint("Theme selected: " + selectedTheme.getThemeTitle());
 		});
 
 		add(themePanel, BorderLayout.WEST);
@@ -200,7 +201,7 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 				themeListPanel.clearSelection();
 				themeListPanel.updateThemeList();
 				notifyThemeChanged();
-				System.out.println("DEBUG: Theme '" + selectedTitle + "' erfolgreich gelöscht");
+				ConfigManager.debugPrint("DEBUG: Theme '" + selectedTitle + "' erfolgreich gelöscht");
 			} else {
 				buttonPanel.setMessage(String.format(UserStringConstants.MSG_THEME_DELETE_ERROR,
 						(result != null ? result : "Unbekannter Fehler")));
