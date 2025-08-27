@@ -161,6 +161,15 @@ public interface UserStringConstants {
     /** Message when theme deletion is cancelled */
     String MSG_DELETE_CANCELLED = "Löschen abgebrochen";
     
+    /** Message when save is cancelled */
+    String MSG_SAVE_CANCELLED = "Speichern abgebrochen";
+    
+    /** Confirmation message for saving theme without description */
+    String MSG_CONFIRM_SAVE_WITHOUT_DESCRIPTION = "Sie haben keine Beschreibung für das Thema eingegeben.\n\nMöchten Sie das Thema trotzdem speichern?";
+    
+    /** Title for save without description confirmation dialog */
+    String DIALOG_TITLE_CONFIRM_SAVE_WITHOUT_DESCRIPTION = "Thema ohne Beschreibung speichern";
+    
     /** Message when theme is not found */
     String MSG_THEME_NOT_FOUND = "Thema nicht gefunden: %s";
 

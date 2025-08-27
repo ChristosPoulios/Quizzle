@@ -117,15 +117,18 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Finds a theme by its title.
+	 * Finds a theme by its title (handles titles with * prefix).
 	 * 
-	 * @param title The title of the theme to find
+	 * @param displayTitle The display title from the list (may include *)
 	 * @return The matching ThemeDTO or null if not found
 	 */
-	private ThemeDTO findThemeByTitle(String title) {
+	private ThemeDTO findThemeByTitle(String displayTitle) {
+		// Remove * prefix if present
+		String actualTitle = displayTitle.startsWith("* ") ? displayTitle.substring(2) : displayTitle;
+		
 		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
-			if (theme.getThemeTitle().equals(title)) {
+			if (theme.getThemeTitle().equals(actualTitle)) {
 				return theme;
 			}
 		}
@@ -133,13 +136,38 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Updates the theme list from the database.
+	 * Updates the theme list from the database with custom sorting.
+	 * Themes without description are marked with * and sorted first.
 	 */
 	public void updateThemeList() {
 		listModel.clear();
 		ArrayList<ThemeDTO> themes = dbManager.getAllThemes();
+		
+		// Separate themes into two groups and sort each alphabetically
+		ArrayList<String> themesWithoutDescription = new ArrayList<>();
+		ArrayList<String> themesWithDescription = new ArrayList<>();
+		
 		for (ThemeDTO theme : themes) {
-			listModel.addElement(theme.getThemeTitle());
+			String title = theme.getThemeTitle();
+			String description = theme.getThemeDescription();
+			
+			if (description == null || description.trim().isEmpty()) {
+				themesWithoutDescription.add("* " + title);
+			} else {
+				themesWithDescription.add(title);
+			}
+		}
+		
+		// Sort both groups alphabetically
+		themesWithoutDescription.sort(String.CASE_INSENSITIVE_ORDER);
+		themesWithDescription.sort(String.CASE_INSENSITIVE_ORDER);
+		
+		// Add starred themes first, then regular themes
+		for (String theme : themesWithoutDescription) {
+			listModel.addElement(theme);
+		}
+		for (String theme : themesWithDescription) {
+			listModel.addElement(theme);
 		}
 	}
 

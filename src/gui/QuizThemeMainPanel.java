@@ -120,6 +120,20 @@ public class QuizThemeMainPanel extends JPanel implements GUIConstants, QuizThem
 			return;
 		}
 
+		// Check if description is empty and show confirmation dialog
+		if (description == null || description.trim().isEmpty()) {
+			int result = JOptionPane.showConfirmDialog(this,
+				UserStringConstants.MSG_CONFIRM_SAVE_WITHOUT_DESCRIPTION,
+				UserStringConstants.DIALOG_TITLE_CONFIRM_SAVE_WITHOUT_DESCRIPTION,
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
+			
+			if (result != JOptionPane.OK_OPTION) {
+				buttonPanel.setMessage(UserStringConstants.MSG_SAVE_CANCELLED);
+				return;
+			}
+		}
+
 		// Check if theme with this title already exists
 		ArrayList<ThemeDTO> allThemes = dbManager.getAllThemes();
 		ThemeDTO existingTheme = null;
