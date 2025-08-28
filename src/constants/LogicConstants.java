@@ -10,7 +10,7 @@ package constants;
  */
 public interface LogicConstants {
 
-	// Default answer configuration
+
 	/** Default number of answers per question */
 	int DEFAULT_ANSWERS_PER_QUESTION = 4;
 
@@ -20,7 +20,7 @@ public interface LogicConstants {
 	/** Starting counter value for questions */
 	int QUESTION_COUNTER_START = 1;
 
-	// ID and validation constants
+
 	/** Invalid ID indicator */
 	int INVALID_ID = -1;
 
@@ -29,14 +29,7 @@ public interface LogicConstants {
 
 	/** ID increment value for new entities */
 	int ID_INCREMENT = 1;
-
-	// Default text values
-	/** Default answer text prefix */
-	String DEFAULT_ANSWER_TEXT_PREFIX = "Antwort ";
-
-	/** Default fallback text for questions without title */
-	String DEFAULT_QUESTION_TITLE_PREFIX = "Frage ";
-
-	/** Default text for questions without content */
-	String DEFAULT_QUESTION_NO_TEXT = "[Kein Fragetext]";
+	
+	/** Length of the theme prefix "* " used for themes without descriptions */
+	int THEME_PREFIX_LENGTH = 2;
 }

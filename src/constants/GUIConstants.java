@@ -98,7 +98,7 @@ public interface GUIConstants extends UserStringConstants {
 	Color WARNING_COLOR = new Color(245, 158, 11);
 
 	/** Default font used throughout the application */
-	Font DEFAULT_FONT = new Font("Helvetica", Font.PLAIN, 15);
+	Font DEFAULT_FONT = new Font("Helvetica", Font.PLAIN, 18);
 
 	/** Font for theme labels with bold styling */
 	Font THEME_LABEL_FONT = new Font("Helvetica", Font.BOLD, 20);
@@ -107,13 +107,13 @@ public interface GUIConstants extends UserStringConstants {
 	Font TITLE_FONT = new Font("Helvetica", Font.BOLD, 18);
 
 	/** Font for buttons with bold styling */
-	Font BUTTON_FONT = new Font("Helvetica", Font.BOLD, 15);
+	Font BUTTON_FONT = new Font("Helvetica", Font.BOLD, 18);
 
 	/** Font for tab headers with bold styling */
-	Font TAB_FONT = new Font("Helvetica", Font.BOLD, 15);
+	Font TAB_FONT = new Font("Helvetica", Font.BOLD, 18);
 
 	/** Font for correct answer labels with italic styling */
-	Font CORRECT_LABEL_FONT = new Font("Helvetica", Font.ITALIC, 13);
+	Font CORRECT_LABEL_FONT = new Font("Helvetica", Font.ITALIC, 18);
 
 	// Sizes for various components
 
@@ -259,6 +259,9 @@ public interface GUIConstants extends UserStringConstants {
 
 	/** Standard component height for combo boxes and buttons */
 	int STANDARD_COMPONENT_HEIGHT = 30;
+
+	/** Standard button width for switch/toggle buttons */
+	int STANDARD_BUTTON_WIDTH = 120;
 
 	/** Quiz info combo box width offset */
 	int QUIZ_INFO_COMBO_OFFSET = 100;

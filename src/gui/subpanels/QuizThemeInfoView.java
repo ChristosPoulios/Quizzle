@@ -10,6 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
 import constants.GUIConstants;
+import constants.LogicConstants;
 import constants.UserStringConstants;
 import persistence.QuizDataInterface;
 import quizlogic.dto.ThemeDTO;
@@ -79,7 +80,7 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 		}
 
 		// Strip the "*" prefix if present for themes without descriptions
-		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
+		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
 
 		ThemeDTO selectedTheme = null;
 		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();

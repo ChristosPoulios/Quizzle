@@ -102,7 +102,7 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 		});
 
 		switchButton = new JButton("Themeninfo");
-		switchButton.setPreferredSize(new Dimension(120, STANDARD_COMPONENT_HEIGHT));
+		switchButton.setPreferredSize(new Dimension(STANDARD_BUTTON_WIDTH, STANDARD_COMPONENT_HEIGHT));
 		switchButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

@@ -45,7 +45,8 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 	/**
 	 * Constructs the quiz info view panel with data manager integration.
 	 * 
-	 * @param dataManager The data manager for retrieving statistics (database or file-based)
+	 * @param dataManager The data manager for retrieving statistics (database or
+	 *                    file-based)
 	 */
 	public QuizInfoViewPanel(QuizDataInterface dataManager) {
 		setBackground(BACKGROUND_COLOR);
@@ -116,17 +117,29 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Populates the theme combo box with sorted themes.
-	 * Themes without descriptions are marked with "*" and listed first,
-	 * then themes with descriptions, both groups sorted alphabetically.
+	 * Refreshes the theme combo box by fetching current themes from the data
+	 * manager. This method should be called when themes are added or questions are
+	 * created.
+	 * 
+	 * @param dataManager The data manager to fetch fresh theme data
+	 */
+	public void refreshThemeComboBox(QuizDataInterface dataManager) {
+		ArrayList<ThemeDTO> currentThemes = dataManager.getAllThemes();
+		updateThemeComboBox(currentThemes);
+	}
+
+	/**
+	 * Populates the theme combo box with sorted themes. Themes without descriptions
+	 * are marked with "*" and listed first, then themes with descriptions, both
+	 * groups sorted alphabetically.
 	 * 
 	 * @param themes The list of theme DTOs to populate the combo box
 	 */
 	private void populateThemeComboBox(ArrayList<ThemeDTO> themes) {
-		// Separate themes with and without descriptions
+
 		ArrayList<ThemeDTO> themesWithoutDescription = new ArrayList<>();
 		ArrayList<ThemeDTO> themesWithDescription = new ArrayList<>();
-		
+
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeDescription() == null || theme.getThemeDescription().trim().isEmpty()) {
 				themesWithoutDescription.add(theme);
@@ -134,18 +147,15 @@ public class QuizInfoViewPanel extends JPanel implements GUIConstants {
 				themesWithDescription.add(theme);
 			}
 		}
-		
-		// Sort both lists alphabetically by title
+
 		Comparator<ThemeDTO> titleComparator = Comparator.comparing(ThemeDTO::getThemeTitle);
 		themesWithoutDescription.sort(titleComparator);
 		themesWithDescription.sort(titleComparator);
-		
-		// Add themes without description first (marked with *)
+
 		for (ThemeDTO theme : themesWithoutDescription) {
 			themeComboBox.addItem("* " + theme.getThemeTitle());
 		}
-		
-		// Add themes with description
+
 		for (ThemeDTO theme : themesWithDescription) {
 			themeComboBox.addItem(theme.getThemeTitle());
 		}

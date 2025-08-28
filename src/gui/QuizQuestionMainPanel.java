@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 
 import constants.ConfigManager;
 import constants.GUIConstants;
+import constants.LogicConstants;
 import constants.UserStringConstants;
 import gui.interfaces.QuizQuestionDelegator;
 import gui.subpanels.AnswerRowPanel;
@@ -24,8 +25,8 @@ import quizlogic.dto.ThemeDTO;
  * Main panel for managing quiz questions.
  * <p>
  * Coordinates between question editing, question listing, and button actions.
- * Provides a full interface for CRUD operations on quiz questions using 
- * the configured data storage (database or file-based with automatic fallback).
+ * Provides a full interface for CRUD operations on quiz questions using the
+ * configured data storage (database or file-based with automatic fallback).
  * </p>
  * 
  * @author Christos Poulios
@@ -44,16 +45,28 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 
 	private QuestionButtonPanel buttonPanel;
 
+	private QFrame parentFrame;
+
 	/**
 	 * Constructs the quiz question main panel setting up UI layout and components.
 	 * 
-	 * @param dataManager Data manager for storage operations (database or file-based)
+	 * @param dataManager Data manager for storage operations (database or
+	 *                    file-based)
 	 */
 	public QuizQuestionMainPanel(QuizDataInterface dataManager) {
 		this.dataManager = dataManager;
 		initializeLayout();
 		initializeComponents();
 		connectComponents();
+	}
+
+	/**
+	 * Sets the parent frame reference for notifying about question saves.
+	 * 
+	 * @param parentFrame The parent QFrame instance
+	 */
+	public void setParentFrame(QFrame parentFrame) {
+		this.parentFrame = parentFrame;
 	}
 
 	/**
@@ -101,9 +114,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 */
 	@Override
 	public void onThemeSelected(String themeTitle) {
-		// Strip the "*" prefix if present for themes without descriptions
-		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
-		
+		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
+
 		questionListPanel.updateQuestionList(actualThemeTitle);
 		clearQuestionSelection();
 		enableEditingIfThemeSelected(actualThemeTitle);
@@ -267,6 +279,10 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 					buttonPanel.setMessage(
 							String.format(UserStringConstants.MSG_QUESTION_SAVED_SUCCESS, question.getQuestionTitle()));
 					questionListPanel.updateQuestionList(questionListPanel.getSelectedThemeTitle());
+
+					if (parentFrame != null) {
+						parentFrame.onQuestionSaved();
+					}
 				} else {
 					ConfigManager.debugPrint("DEBUG: Some answers failed to save");
 					buttonPanel.setMessage(UserStringConstants.MSG_QUESTION_SAVED_ANSWERS_ERROR);
@@ -367,8 +383,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 */
 	private ThemeDTO findTheme(String themeTitle) {
 		// Remove * prefix if present to get the actual theme title
-		String actualTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
-		
+		String actualTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
+
 		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeTitle().equals(actualTitle)) {
@@ -435,7 +451,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 					answer.setAnswerText(answerText);
 					answer.setCorrect(answerRows[i].isCorrect());
 					answers.add(answer);
-					ConfigManager.debugPrint("  -> Added answer: " + answerText + " (correct: " + answer.isCorrect() + ")");
+					ConfigManager
+							.debugPrint("  -> Added answer: " + answerText + " (correct: " + answer.isCorrect() + ")");
 				} else {
 					ConfigManager.debugPrint("  -> Skipped: empty text");
 				}

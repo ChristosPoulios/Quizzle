@@ -247,7 +247,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			setSelectedTheme(null);
 		} else {
 			// Strip the "*" prefix if present for themes without descriptions
-			String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(2) : themeTitle;
+			String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
 
 			if (dataManager != null) {
 				List<ThemeDTO> themes = dataManager.getAllThemes();
@@ -258,6 +258,16 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Refreshes the theme combo box in the quiz info view panel.
+	 * This should be called when new themes are created or questions are added.
+	 */
+	public void refreshThemeComboBox() {
+		if (quizInfoViewPanel != null) {
+			quizInfoViewPanel.refreshThemeComboBox(dataManager);
 		}
 	}
 

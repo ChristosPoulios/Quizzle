@@ -14,6 +14,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
 import constants.GUIConstants;
+import constants.LogicConstants;
 import constants.UserStringConstants;
 import persistence.QuizDataInterface;
 import quizlogic.dto.ThemeDTO;
@@ -129,7 +130,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	 */
 	private ThemeDTO findThemeByTitle(String displayTitle) {
 		// Remove * prefix if present
-		String actualTitle = displayTitle.startsWith("* ") ? displayTitle.substring(2) : displayTitle;
+		String actualTitle = displayTitle.startsWith("* ") ? displayTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : displayTitle;
 
 		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
@@ -213,7 +214,7 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 		String selectedTitle = themeList.getSelectedValue();
 		if (selectedTitle != null) {
 			// Remove * prefix if present to get the actual theme title
-			return selectedTitle.startsWith("* ") ? selectedTitle.substring(2) : selectedTitle;
+			return selectedTitle.startsWith("* ") ? selectedTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : selectedTitle;
 		}
 		return null;
 	}

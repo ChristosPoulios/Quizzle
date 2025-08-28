@@ -57,15 +57,12 @@ public class QFrame extends JFrame implements GUIConstants {
 		setBounds(FRAME_X, FRAME_Y, FRAME_WIDTH, FRAME_HEIGHT);
 		setResizable(false);
 
-		// Initialize smart data manager with automatic fallback
 		dataManager = DataManager.getInstance();
 
-		// Show storage method information
 		String storageMethod = dataManager.getStorageMethodDescription();
 		System.out.println("Using storage method: " + storageMethod);
 
 		if (!dataManager.isUsingDatabase()) {
-			// Show detailed error message like the original implementation
 			System.err.println("Database connection failed. The application will continue but database functionality will not work.");
 			System.err.println("Please ensure:");
 			System.err.println("1. MariaDB server is running");
@@ -84,10 +81,12 @@ public class QFrame extends JFrame implements GUIConstants {
 					javax.swing.JOptionPane.WARNING_MESSAGE);
 		}
 
-		// Initialize panels with the data manager
+
 		themeMainPanel = new QuizThemeMainPanel(dataManager);
 		questionMainPanel = new QuizQuestionMainPanel(dataManager);
 		quizMainPanel = new QuizMainPanel(dataManager);
+
+		questionMainPanel.setParentFrame(this);
 
 		themeMainPanel.setThemeChangeListener(this::onThemeChanged);
 
@@ -99,7 +98,6 @@ public class QFrame extends JFrame implements GUIConstants {
 
 		add(tabPane);
 
-		// Add shutdown hook to properly close data connections
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			if (dataManager != null) {
 				dataManager.close();
@@ -116,6 +114,20 @@ public class QFrame extends JFrame implements GUIConstants {
 	private void onThemeChanged() {
 		if (questionMainPanel != null) {
 			questionMainPanel.refreshThemeList();
+		}
+
+		if (quizMainPanel != null) {
+			quizMainPanel.refreshThemeComboBox();
+		}
+	}
+
+	/**
+	 * Handles question save notifications by refreshing the quiz panel's theme combobox.
+	 * This ensures that themes without descriptions appear in the combobox after questions are added.
+	 */
+	public void onQuestionSaved() {
+		if (quizMainPanel != null) {
+			quizMainPanel.refreshThemeComboBox();
 		}
 	}
 
