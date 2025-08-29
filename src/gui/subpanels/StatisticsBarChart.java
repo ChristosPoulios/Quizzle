@@ -85,6 +85,7 @@ public class StatisticsBarChart extends JPanel implements GUIConstants {
 	 */
 	private void drawChart(Graphics2D g2d, int totalAnswers) {
 		int width = getWidth();
+		@SuppressWarnings("unused")
 		int height = getHeight();
 
 		g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));

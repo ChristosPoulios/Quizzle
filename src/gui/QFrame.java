@@ -2,6 +2,7 @@ package gui;
 
 import javax.swing.JFrame;
 
+import constants.ConfigManager;
 import constants.GUIConstants;
 import constants.ThemeManager;
 import constants.UserStringConstants;
@@ -62,7 +63,7 @@ public class QFrame extends JFrame implements GUIConstants {
 		dataManager = DataManager.getInstance();
 
 		String storageMethod = dataManager.getStorageMethodDescription();
-		System.out.println("Using storage method: " + storageMethod);
+		ConfigManager.debugPrint("Using storage method: " + storageMethod);
 
 		if (!dataManager.isUsingDatabase()) {
 			System.err.println(
@@ -104,7 +105,7 @@ public class QFrame extends JFrame implements GUIConstants {
 
 			if (dataManager != null) {
 				dataManager.close();
-				System.out.println("Data storage connections closed");
+				ConfigManager.debugPrint("Data storage connections closed");
 			}
 		}));
 
@@ -159,7 +160,7 @@ public class QFrame extends JFrame implements GUIConstants {
 
 					String result = dataManager.saveQuizSession(currentSession);
 					if (result == null) {
-						System.out.println("Current quiz session saved successfully on exit.");
+						ConfigManager.debugPrint("Current quiz session saved successfully on exit.");
 					} else {
 						System.err.println("Failed to save current session: " + result);
 					}

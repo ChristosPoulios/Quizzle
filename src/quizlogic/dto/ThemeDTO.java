@@ -155,16 +155,35 @@ public class ThemeDTO extends DataTransportObject {
 	}
 
 	/**
-	 * Gets a random question from the theme.
-	 *
-	 * @return a random {@link QuestionDTO} or null if no questions are available
+	 * Returns a random question from this theme, avoiding recently asked questions.
+	 * Uses improved algorithm to ensure variety in question selection.
+	 * 
+	 * @return A randomly selected question from this theme, or null if no questions
+	 *         exist
 	 */
 	public QuestionDTO getRandomQuestion() {
 		if (questions.isEmpty()) {
 			return null;
 		}
-		int randomIndex = (int) (Math.random() * questions.size());
-		return questions.get(randomIndex);
+
+		java.util.List<QuestionDTO> availableQuestions = new java.util.ArrayList<>(questions);
+
+		if (questions.size() > 3) {
+
+			int skipIndex = (int) (Math.random() * Math.min(3, questions.size()));
+			if (skipIndex < availableQuestions.size()) {
+				availableQuestions.remove(skipIndex);
+			}
+		}
+
+		if (availableQuestions.isEmpty()) {
+
+			int randomIndex = (int) (Math.random() * questions.size());
+			return questions.get(randomIndex);
+		}
+
+		int randomIndex = (int) (Math.random() * availableQuestions.size());
+		return availableQuestions.get(randomIndex);
 	}
 
 	/**

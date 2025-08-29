@@ -12,7 +12,7 @@ eine Datei-basierte Speicherung,
 
 ## Voraussetzungen
 
-- Java Development Kit (JDK) 8 oder neuer  
+- Java Development Kit (JDK) 24 oder neuer  
 - MariaDB-Server (installiert und gestartet)  
 
 ## Setup und Installation

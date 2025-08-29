@@ -64,7 +64,7 @@ public class ThemeManager {
 			System.err.println("Failed to apply theme '" + themeName + "': " + e.getMessage());
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-				System.out.println("Applied system default Look and Feel as fallback.");
+				ConfigManager.debugPrint("Applied system default Look and Feel as fallback.");
 				return true;
 			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 					| UnsupportedLookAndFeelException fallbackException) {
@@ -84,7 +84,7 @@ public class ThemeManager {
 			for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 				if ("Nimbus".equals(info.getName())) {
 					UIManager.setLookAndFeel(info.getClassName());
-					System.out.println("Applied Nimbus Look and Feel successfully.");
+					ConfigManager.debugPrint("Applied Nimbus Look and Feel successfully.");
 					return true;
 				}
 			}
@@ -105,7 +105,7 @@ public class ThemeManager {
 	private static boolean setSystemLookAndFeel() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			System.out.println("Applied System Look and Feel successfully.");
+			ConfigManager.debugPrint("Applied System Look and Feel successfully.");
 			return true;
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e) {
@@ -122,7 +122,7 @@ public class ThemeManager {
 	private static boolean setMetalLookAndFeel() {
 		try {
 			UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-			System.out.println("Applied Metal Look and Feel successfully.");
+			ConfigManager.debugPrint("Applied Metal Look and Feel successfully.");
 			return true;
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e) {
@@ -139,7 +139,7 @@ public class ThemeManager {
 	private static boolean setMotifLookAndFeel() {
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-			System.out.println("Applied Motif Look and Feel successfully.");
+			ConfigManager.debugPrint("Applied Motif Look and Feel successfully.");
 			return true;
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e) {
@@ -156,7 +156,7 @@ public class ThemeManager {
 	private static boolean setWindowsLookAndFeel() {
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-			System.out.println("Applied Windows Look and Feel successfully.");
+			ConfigManager.debugPrint("Applied Windows Look and Feel successfully.");
 			return true;
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e) {

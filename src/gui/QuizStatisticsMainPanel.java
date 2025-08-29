@@ -25,7 +25,8 @@ import quizlogic.dto.UserAnswerDTO;
 /**
  * Main panel for displaying quiz statistics and performance analytics.
  * <p>
- * This panel provides comprehensive statistical analysis of quiz performance, including:
+ * This panel provides comprehensive statistical analysis of quiz performance,
+ * including:
  * <ul>
  * <li>Current session statistics (correct/incorrect answers, success rate)</li>
  * <li>Historical quiz session data and trends</li>
@@ -34,14 +35,16 @@ import quizlogic.dto.UserAnswerDTO;
  * <li>Performance metrics over time</li>
  * </ul>
  * <p>
- * The panel integrates with the configured data storage backend (MariaDB database
- * or file-based serialization with automatic fallback) to retrieve and analyze
- * quiz session data from any available storage mechanism.
+ * The panel integrates with the configured data storage backend (MariaDB
+ * database or file-based serialization with automatic fallback) to retrieve and
+ * analyze quiz session data from any available storage mechanism.
  * <p>
  * <strong>Key Components:</strong>
  * <ul>
- * <li>{@link StatisticsBarChart} - Visual representation of performance metrics</li>
- * <li>{@link SessionsTrendChart} - Trend analysis of quiz sessions over time</li>
+ * <li>{@link StatisticsBarChart} - Visual representation of performance
+ * metrics</li>
+ * <li>{@link SessionsTrendChart} - Trend analysis of quiz sessions over
+ * time</li>
  * <li>Current session summary with real-time updates</li>
  * <li>Historical data analysis and comparison tools</li>
  * </ul>
@@ -56,8 +59,8 @@ import quizlogic.dto.UserAnswerDTO;
  * </ul>
  * <p>
  * The panel automatically refreshes statistics when quiz sessions are updated
- * and provides both numerical and visual representations of performance data
- * to help users track their learning progress.
+ * and provides both numerical and visual representations of performance data to
+ * help users track their learning progress.
  * 
  * @author Christos Poulios
  * @version 1.0
@@ -109,7 +112,7 @@ public class QuizStatisticsMainPanel extends JPanel implements GUIConstants {
 	}
 
 	private void initComponents() {
-		// Header
+
 		JLabel headerLabel = new JLabel(UserStringConstants.STATISTICS_HEADER, SwingConstants.CENTER);
 		headerLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
 		headerLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 30, 0));
@@ -272,7 +275,7 @@ public class QuizStatisticsMainPanel extends JPanel implements GUIConstants {
 
 		recentSessionsArea = new JTextArea(12, 30);
 		recentSessionsArea.setEditable(false);
-		recentSessionsArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+		recentSessionsArea.setFont(new Font("Helvetica", Font.BOLD, 14));
 		recentSessionsArea.setBackground(BACKGROUND_COLOR);
 
 		JScrollPane scrollPane = new JScrollPane(recentSessionsArea);
@@ -402,8 +405,8 @@ public class QuizStatisticsMainPanel extends JPanel implements GUIConstants {
 	 */
 	private void updateRecentSessionsList(List<QuizSessionDTO> allSessions) {
 		StringBuilder recentText = new StringBuilder();
-		recentText.append(String.format("%-20s %-8s %-8s %-8s%n", "Datum", "Fragen", "Richtig", "Rate"));
-		recentText.append("─".repeat(50)).append("\n");
+		recentText.append(String.format("%-25s %-12s %-12s %-12s%n", "Datum", "Fragen", "Richtig", "Rate"));
+		recentText.append("─".repeat(70)).append("\n");
 
 		List<QuizSessionDTO> recentSessions = dataManager.getRecentQuizSessions(10);
 
@@ -414,7 +417,7 @@ public class QuizStatisticsMainPanel extends JPanel implements GUIConstants {
 				double rate = questions > 0 ? (double) correct / questions * 100 : 0;
 
 				String dateStr = session.getTimestamp().toString().substring(0, 19);
-				recentText.append(String.format("%-20s %-8d %-8d %6.1f%%%n", dateStr, questions, correct, rate));
+				recentText.append(String.format("%-25s %-12d %-12d %8.1f%%%n", dateStr, questions, correct, rate));
 			}
 		}
 

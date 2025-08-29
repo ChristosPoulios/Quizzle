@@ -125,6 +125,9 @@ public interface GUIConstants extends UserStringConstants {
 
 	/** Large vertical spacing between components */
 	int VERTICAL_STRUT_LARGE = 35;
+
+	/** Very large vertical spacing between components */
+	int VERTICAL_STRUT_VERY_LARGE = 50;
 	
 	/** Small horizontal spacing between components */
 	int HORIZONTAL_STRUT_SMALL = 10;
@@ -241,7 +244,6 @@ public interface GUIConstants extends UserStringConstants {
 	/** Standard height for main content panels */
 	int MAIN_CONTENT_HEIGHT = 450;
 
-	// Magic numbers from GUI components
 	/** Panel margin offset for minimum size calculations */
 	int PANEL_MARGIN_OFFSET = 50;
 
@@ -275,7 +277,6 @@ public interface GUIConstants extends UserStringConstants {
 	/** Flow layout vertical gap */
 	int FLOW_LAYOUT_VGAP = 5;
 
-	// Additional constants for ThemePanel
 	/** Theme header panel height */
 	int THEME_HEADER_PANEL_HEIGHT = 40;
 

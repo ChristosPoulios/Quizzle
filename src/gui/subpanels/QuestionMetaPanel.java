@@ -39,6 +39,8 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 		setBackground(BACKGROUND_COLOR);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+		add(Box.createVerticalStrut(VERTICAL_STRUT_MEDIUM));
+
 		JLabel titleLabel = new JLabel(QUESTION_TITLE_LABEL);
 		titleLabel.setFont(titleLabel.getFont().deriveFont(java.awt.Font.BOLD));
 		titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -52,7 +54,7 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 		titleField.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(titleField);
 
-		add(Box.createVerticalStrut(VERTICAL_STRUT_MEDIUM));
+		add(Box.createVerticalStrut(VERTICAL_STRUT_VERY_LARGE));
 
 		JLabel questionLabel = new JLabel(QUESTION_TEXT_LABEL);
 		questionLabel.setFont(questionLabel.getFont().deriveFont(java.awt.Font.BOLD));

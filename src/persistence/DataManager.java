@@ -65,7 +65,7 @@ public class DataManager implements QuizDataInterface {
 			if (dbManager.isConnected()) {
 				usingDatabase = true;
 				ConfigManager.debugPrint("DEBUG: Using MariaDB database for data storage");
-				System.out.println("Database connection established successfully - using MariaDB storage");
+				ConfigManager.debugPrint("Database connection established successfully - using MariaDB storage");
 				return;
 			}
 		} catch (Exception e) {
@@ -77,7 +77,7 @@ public class DataManager implements QuizDataInterface {
 			serializationManager = new QuizDataManager();
 			usingDatabase = false;
 			ConfigManager.debugPrint("DEBUG: Using file-based serialization storage");
-			System.out.println("Using file-based storage (serialization)");
+			ConfigManager.debugPrint("Using file-based storage (serialization)");
 		} catch (Exception e) {
 			ConfigManager.debugPrint("DEBUG: Serialization initialization failed: " + e.getMessage());
 			System.err.println("ERROR: Both database and file storage initialization failed!");
@@ -122,7 +122,7 @@ public class DataManager implements QuizDataInterface {
 			if (dbManager.isConnected()) {
 				usingDatabase = true;
 				ConfigManager.debugPrint("DEBUG: Successfully reconnected to database");
-				System.out.println("Successfully reconnected to database");
+				ConfigManager.debugPrint("Successfully reconnected to database");
 				return true;
 			}
 		} catch (Exception e) {

@@ -16,6 +16,7 @@ import persistence.QuizDataInterface;
 import persistence.mariaDB.dao.AnswerDAO_MariaDB;
 import persistence.mariaDB.dao.QuestionDAO_MariaDB;
 import persistence.mariaDB.dao.ThemeDAO_MariaDB;
+import quizlogic.QuestionSessionManager;
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
@@ -67,6 +68,9 @@ public class DBManager implements QuizDataInterface {
 
 	/** Map of AnswerDTO to AnswerDAO_MariaDB for caching */
 	private Map<AnswerDTO, AnswerDAO_MariaDB> answerDaoMap = new HashMap<>();
+
+	/** Question session manager to avoid repetitive questions */
+	private QuestionSessionManager questionSessionManager = new QuestionSessionManager();
 
 	/**
 	 * Private constructor (singleton). Use {@link #getInstance()} to access the
@@ -136,30 +140,40 @@ public class DBManager implements QuizDataInterface {
 	}
 
 	/**
-	 * Retrieves a random question from the database.
+	 * Retrieves a random question from all themes in the database, avoiding
+	 * recently asked questions. Uses improved algorithm to ensure variety in
+	 * question selection.
 	 *
 	 * @return a random {@link QuestionDTO} or null if no questions exist
 	 */
 	@Override
 	public QuestionDTO getRandomQuestion() {
 		connect();
-		String sql = "SELECT id, title, text, theme_id FROM Questions ORDER BY RAND() LIMIT 1";
+
+		String sql = "SELECT id, title, text, theme_id FROM Questions";
+		java.util.List<QuestionDTO> allQuestions = new java.util.ArrayList<>();
+
 		try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-			if (rs.next()) {
+
+			while (rs.next()) {
 				QuestionDAO_MariaDB dao = new QuestionDAO_MariaDB();
 				dao.fromResultSet(rs);
 				QuestionDTO dto = dao.forTransport();
 				questionDaoMap.put(dto, dao);
-				return dto;
+				allQuestions.add(dto);
 			}
+
+			return questionSessionManager.getRandomQuestionWithVariety(allQuestions);
+
 		} catch (SQLException e) {
 			throw new RuntimeException("Failed to get random question", e);
 		}
-		return null;
 	}
 
 	/**
-	 * Retrieves a random question for a given theme from the database.
+	 * Retrieves a random question for a given theme from the database, avoiding
+	 * recently asked questions. Uses improved algorithm to ensure variety in
+	 * question selection within the theme.
 	 *
 	 * @param theme the {@link ThemeDTO} representing the theme
 	 * @return a random {@link QuestionDTO} or null if no questions exist for that
@@ -172,22 +186,29 @@ public class DBManager implements QuizDataInterface {
 		if (themeDao == null) {
 			return null;
 		}
-		String sql = "SELECT id, title, text, theme_id FROM Questions WHERE theme_id = ? ORDER BY RAND() LIMIT 1";
+
+		String sql = "SELECT id, title, text, theme_id FROM Questions WHERE theme_id = ?";
+		java.util.List<QuestionDTO> themeQuestions = new java.util.ArrayList<>();
+
 		try (PreparedStatement ps = connection.prepareStatement(sql)) {
 			ps.setInt(1, themeDao.getId());
 			try (ResultSet rs = ps.executeQuery()) {
-				if (rs.next()) {
+				while (rs.next()) {
 					QuestionDAO_MariaDB dao = new QuestionDAO_MariaDB();
 					dao.fromResultSet(rs);
 					QuestionDTO dto = dao.forTransport();
 					questionDaoMap.put(dto, dao);
-					return dto;
+					themeQuestions.add(dto);
 				}
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Failed to get random question for theme", e);
 		}
-		return null;
+
+		ThemeDTO tempTheme = new ThemeDTO(theme.getId());
+		tempTheme.setQuestions(themeQuestions);
+
+		return questionSessionManager.getRandomQuestionForThemeWithVariety(tempTheme);
 	}
 
 	/**

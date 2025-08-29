@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import constants.ConfigManager;
 import constants.LogicConstants;
 import persistence.QuizDataInterface;
+import quizlogic.QuestionSessionManager;
 import quizlogic.dto.AnswerDTO;
 import quizlogic.dto.QuestionDTO;
 import quizlogic.dto.ThemeDTO;
@@ -51,6 +52,9 @@ public class QuizDataManager implements QuizDataInterface {
 
 	/** Error message template for delete operations */
 	private static final String DELETE_ERROR_MESSAGE = "Error deleting %s: %s";
+
+	/** Question session manager to avoid repetitive questions */
+	private QuestionSessionManager questionSessionManager = new QuestionSessionManager();
 
 	/**
 	 * Constructor - ensures data directory exists.
@@ -177,6 +181,12 @@ public class QuizDataManager implements QuizDataInterface {
 		}
 	}
 
+	/**
+	 * Returns a random question from all themes, avoiding recently asked questions.
+	 * Uses improved algorithm to ensure variety in question selection.
+	 * 
+	 * @return A randomly selected unasked question, or null if no questions exist
+	 */
 	@Override
 	public QuestionDTO getRandomQuestion() {
 		ArrayList<ThemeDTO> themes = getAllThemes();
@@ -193,17 +203,25 @@ public class QuizDataManager implements QuizDataInterface {
 		if (allQuestions.isEmpty())
 			return null;
 
-		int randomIndex = (int) (Math.random() * allQuestions.size());
-		return allQuestions.get(randomIndex);
+		// Use session manager for better question variety
+		return questionSessionManager.getRandomQuestionWithVariety(allQuestions);
 	}
 
+	/**
+	 * Returns a random question from the specified theme, avoiding recently asked questions.
+	 * Uses improved algorithm to ensure variety in question selection within the theme.
+	 * 
+	 * @param theme The theme to select a question from
+	 * @return A randomly selected unasked question from the theme, or null if no questions exist
+	 */
 	@Override
 	public QuestionDTO getRandomQuestionFor(ThemeDTO theme) {
 		if (theme.getQuestions() == null || theme.getQuestions().isEmpty()) {
 			return null;
 		}
-		int randomIndex = (int) (Math.random() * theme.getQuestions().size());
-		return theme.getQuestions().get(randomIndex);
+		
+		// Use session manager for better question variety within the theme
+		return questionSessionManager.getRandomQuestionForThemeWithVariety(theme);
 	}
 
 	@Override
@@ -367,6 +385,7 @@ public class QuizDataManager implements QuizDataInterface {
 			}
 
 			boolean exists = false;
+			@SuppressWarnings("unused")
 			QuestionDTO targetQuestion = null;
 			for (QuestionDTO existingQ : theme.getQuestions()) {
 				if (existingQ.getId() == question.getId()) {

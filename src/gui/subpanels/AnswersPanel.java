@@ -10,10 +10,12 @@ import constants.GUIConstants;
 import quizlogic.dto.AnswerDTO;
 
 /**
- * Panel displaying all possible answers as individual answer rows for quiz questions.
+ * Panel displaying all possible answers as individual answer rows for quiz
+ * questions.
  * <p>
- * This panel manages a collection of {@link AnswerRowPanel} components, each representing
- * a single answer option for a quiz question. It provides functionality for:
+ * This panel manages a collection of {@link AnswerRowPanel} components, each
+ * representing a single answer option for a quiz question. It provides
+ * functionality for:
  * <ul>
  * <li>Dynamic display of answer options based on question data</li>
  * <li>User selection tracking across multiple answer rows</li>
@@ -22,9 +24,9 @@ import quizlogic.dto.AnswerDTO;
  * <li>Integration with question editing and quiz-taking workflows</li>
  * </ul>
  * <p>
- * The panel automatically adjusts the number of displayed answer rows based on the
- * question data provided, ensuring that all available answer options are presented
- * to the user in a consistent and accessible format.
+ * The panel automatically adjusts the number of displayed answer rows based on
+ * the question data provided, ensuring that all available answer options are
+ * presented to the user in a consistent and accessible format.
  * <p>
  * <strong>Key Features:</strong>
  * <ul>
@@ -35,9 +37,9 @@ import quizlogic.dto.AnswerDTO;
  * <li>Responsive layout that adapts to different numbers of answers</li>
  * </ul>
  * <p>
- * The panel works in conjunction with {@link QuestionPanel} to provide a complete
- * question display interface, handling the answer-specific aspects of question
- * presentation and user interaction.
+ * The panel works in conjunction with {@link QuestionPanel} to provide a
+ * complete question display interface, handling the answer-specific aspects of
+ * question presentation and user interaction.
  * 
  * @author Christos Poulios
  * @version 1.0
@@ -54,6 +56,8 @@ public class AnswersPanel extends JPanel implements GUIConstants {
 	public AnswersPanel() {
 		setBackground(BACKGROUND_COLOR);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+		add(javax.swing.Box.createVerticalStrut(VERTICAL_STRUT_VERY_LARGE));
 
 		JPanel headerPanel = new JPanel();
 		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));

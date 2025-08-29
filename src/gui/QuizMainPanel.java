@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import constants.ConfigManager;
 import constants.GUIConstants;
 import constants.LogicConstants;
 import constants.UserStringConstants;
@@ -286,29 +287,29 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			} else {
 
 				if (selectedIndices.contains(i)) {
-					System.out.println("DEBUG: User selected incorrect answer at index " + i);
+					ConfigManager.debugPrint("DEBUG: User selected incorrect answer at index " + i);
 					return false;
 				}
 			}
 		}
 
-		System.out.println("DEBUG: Total correct answers: " + totalCorrectAnswers);
-		System.out.println("DEBUG: User correct answers: " + userCorrectAnswers);
-		System.out.println("DEBUG: Selected indices: " + selectedIndices);
+		ConfigManager.debugPrint("DEBUG: Total correct answers: " + totalCorrectAnswers);
+		ConfigManager.debugPrint("DEBUG: User correct answers: " + userCorrectAnswers);
+		ConfigManager.debugPrint("DEBUG: Selected indices: " + selectedIndices);
 
 		if (totalCorrectAnswers >= 2) {
 			boolean result = userCorrectAnswers == totalCorrectAnswers;
-			System.out.println("DEBUG: Multiple correct answers case - returning: " + result);
+			ConfigManager.debugPrint("DEBUG: Multiple correct answers case - returning: " + result);
 			return result;
 		}
 
 		if (totalCorrectAnswers == 1) {
 			boolean result = userCorrectAnswers == 1;
-			System.out.println("DEBUG: Single correct answer case - returning: " + result);
+			ConfigManager.debugPrint("DEBUG: Single correct answer case - returning: " + result);
 			return result;
 		}
 
-		System.out.println("DEBUG: No correct answers found - returning false");
+		ConfigManager.debugPrint("DEBUG: No correct answers found - returning false");
 		return false;
 	}
 
