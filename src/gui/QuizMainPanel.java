@@ -197,7 +197,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			if (index < answers.size()) {
 				AnswerDTO answer = answers.get(index);
 				UserAnswerDTO userAnswer = new UserAnswerDTO(currentSession.getId(), currentQuestion.getId(),
-						answer.getId(), true, answer.isCorrect());
+						answer.getId(), true, isCorrect);
 
 				currentSession.addUserAnswer(userAnswer);
 			}
@@ -227,17 +227,22 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	/**
 	 * Checks if the user's selected answers are correct.
 	 * 
-	 * @param selectedIndices List of selected answer indices
+	 * For questions with multiple correct answers (2 or more), ALL correct answers
+	 * must be selected and NO incorrect answers must be selected for the question
+	 * to be considered correct. If only some of the correct answers are selected,
+	 * the question is marked as incorrect.
+	 *
+	 * @param selectedIndices List of indices of answers selected by the user
 	 * @param answers         List of all answers for the question
 	 * @return true if all selected answers are correct and no correct answers are
 	 *         missed
 	 */
 	private boolean checkUserAnswers(List<Integer> selectedIndices, List<AnswerDTO> answers) {
 
-		int totalCorrectAnswers = LogicConstants.MIN_VALID_ID;
-		int userCorrectAnswers = LogicConstants.MIN_VALID_ID;
+		int totalCorrectAnswers = 0;
+		int userCorrectAnswers = 0;
 
-		for (int i = LogicConstants.MIN_VALID_ID; i < answers.size(); i++) {
+		for (int i = 0; i < answers.size(); i++) {
 			AnswerDTO answer = answers.get(i);
 			if (answer.isCorrect()) {
 				totalCorrectAnswers++;
@@ -248,12 +253,30 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			} else {
 
 				if (selectedIndices.contains(i)) {
+					System.out.println("DEBUG: User selected incorrect answer at index " + i);
 					return false;
 				}
 			}
 		}
 
-		return userCorrectAnswers == totalCorrectAnswers && userCorrectAnswers > LogicConstants.MIN_VALID_ID;
+		System.out.println("DEBUG: Total correct answers: " + totalCorrectAnswers);
+		System.out.println("DEBUG: User correct answers: " + userCorrectAnswers);
+		System.out.println("DEBUG: Selected indices: " + selectedIndices);
+
+		if (totalCorrectAnswers >= 2) {
+			boolean result = userCorrectAnswers == totalCorrectAnswers;
+			System.out.println("DEBUG: Multiple correct answers case - returning: " + result);
+			return result;
+		}
+
+		if (totalCorrectAnswers == 1) {
+			boolean result = userCorrectAnswers == 1;
+			System.out.println("DEBUG: Single correct answer case - returning: " + result);
+			return result;
+		}
+
+		System.out.println("DEBUG: No correct answers found - returning false");
+		return false;
 	}
 
 	@Override

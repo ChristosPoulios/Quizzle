@@ -218,18 +218,17 @@ public class QuizDataManager implements QuizDataInterface {
 
 	@Override
 	public String saveQuestion(QuestionDTO question) {
-		// Find all themes and try to update the question in the appropriate theme
+
 		try {
 			for (ThemeDTO theme : getAllThemes()) {
 				if (theme.getQuestions() != null) {
 					for (QuestionDTO existingQ : theme.getQuestions()) {
 						if (existingQ.getId() == question.getId()) {
-							// Update existing question
+
 							existingQ.setQuestionTitle(question.getQuestionTitle());
 							existingQ.setQuestionText(question.getQuestionText());
 							existingQ.setAnswers(question.getAnswers());
 
-							// Save the updated theme
 							String saveResult = saveTheme(theme);
 							ConfigManager.debugPrint("DEBUG: Updated question in theme: " + saveResult);
 							return "Question updated successfully";
@@ -238,7 +237,6 @@ public class QuizDataManager implements QuizDataInterface {
 				}
 			}
 
-			// If we get here, the question wasn't found - it might be a new question
 			ConfigManager.debugPrint("DEBUG: Question with ID " + question.getId() + " not found for update");
 			return "Error: Question not found. Use saveQuestion(question, theme) for new questions.";
 
@@ -251,11 +249,11 @@ public class QuizDataManager implements QuizDataInterface {
 	@Override
 	public String deleteQuestion(QuestionDTO question) {
 		try {
-			// Find the theme that contains this question
+
 			for (ThemeDTO theme : getAllThemes()) {
 				if (theme.getQuestions() != null) {
 					boolean questionFound = false;
-					// Remove the question from the theme's question list
+
 					theme.getQuestions().removeIf(q -> {
 						if (q.getId() == question.getId()) {
 							ConfigManager.debugPrint("DEBUG: Found and removing question: " + q.getQuestionTitle());
@@ -264,7 +262,6 @@ public class QuizDataManager implements QuizDataInterface {
 						return false;
 					});
 
-					// Check if question was found and removed
 					for (QuestionDTO q : theme.getQuestions()) {
 						if (q.getId() == question.getId()) {
 							questionFound = false;
@@ -275,7 +272,7 @@ public class QuizDataManager implements QuizDataInterface {
 					}
 
 					if (questionFound || theme.getQuestions().stream().noneMatch(q -> q.getId() == question.getId())) {
-						// Save the updated theme
+
 						String saveResult = saveTheme(theme);
 						ConfigManager.debugPrint("DEBUG: Saved theme after question deletion: " + saveResult);
 						return "Question and all associated answers deleted successfully";
@@ -283,7 +280,6 @@ public class QuizDataManager implements QuizDataInterface {
 				}
 			}
 
-			// If we get here, the question wasn't found in any theme
 			ConfigManager.debugPrint("DEBUG: Question with ID " + question.getId() + " not found in any theme");
 			return "Error: Question not found in any theme";
 
@@ -302,21 +298,20 @@ public class QuizDataManager implements QuizDataInterface {
 	 */
 	public String deleteAnswer(AnswerDTO answer, QuestionDTO question) {
 		try {
-			// Remove the answer from the question's answer list
+
 			if (question.getAnswers() != null) {
 				boolean removed = question.getAnswers().removeIf(a -> a.getId() == answer.getId());
 
 				if (removed) {
 					ConfigManager.debugPrint("DEBUG: Removed answer: " + answer.getAnswerText());
 
-					// Find the theme that contains this question and save it
 					for (ThemeDTO theme : getAllThemes()) {
 						if (theme.getQuestions() != null) {
 							for (QuestionDTO q : theme.getQuestions()) {
 								if (q.getId() == question.getId()) {
-									// Update the question in the theme
+
 									q.setAnswers(question.getAnswers());
-									// Save the updated theme
+
 									String saveResult = saveTheme(theme);
 									ConfigManager.debugPrint("DEBUG: Saved theme after answer deletion: " + saveResult);
 									return "Answer deleted successfully";
@@ -349,16 +344,15 @@ public class QuizDataManager implements QuizDataInterface {
 	 */
 	public String saveQuestion(QuestionDTO question, ThemeDTO theme) {
 		try {
-			// Ensure theme has a questions list
+
 			if (theme.getQuestions() == null) {
 				theme.setQuestions(new ArrayList<>());
 			}
 
-			// Generate IDs for answers if they don't have them
 			if (question.getAnswers() != null) {
 				for (AnswerDTO answer : question.getAnswers()) {
 					if (answer.getId() == LogicConstants.INVALID_ID) {
-						// Generate new ID for answer
+
 						int maxAnswerId = 0;
 						for (AnswerDTO existingAnswer : question.getAnswers()) {
 							if (existingAnswer.getId() > maxAnswerId) {
@@ -366,31 +360,32 @@ public class QuizDataManager implements QuizDataInterface {
 							}
 						}
 						answer.setId(maxAnswerId + 1);
-						ConfigManager.debugPrint("DEBUG: Assigned new answer ID: " + answer.getId() + " for answer: " + answer.getAnswerText());
+						ConfigManager.debugPrint("DEBUG: Assigned new answer ID: " + answer.getId() + " for answer: "
+								+ answer.getAnswerText());
 					}
 				}
 			}
 
-			// Check if question already exists in theme
 			boolean exists = false;
 			QuestionDTO targetQuestion = null;
 			for (QuestionDTO existingQ : theme.getQuestions()) {
 				if (existingQ.getId() == question.getId()) {
-					// Update existing question
+
 					existingQ.setQuestionTitle(question.getQuestionTitle());
 					existingQ.setQuestionText(question.getQuestionText());
-					existingQ.setAnswers(question.getAnswers()); // Include answers directly
+					existingQ.setAnswers(question.getAnswers());
 					targetQuestion = existingQ;
 					exists = true;
-					ConfigManager.debugPrint("DEBUG: Updated existing question with answers: " + question.getQuestionTitle());
+					ConfigManager.debugPrint(
+							"DEBUG: Updated existing question with answers: " + question.getQuestionTitle());
 					break;
 				}
 			}
 
 			if (!exists) {
-				// Add new question
+
 				if (question.getId() == LogicConstants.INVALID_ID) {
-					// Generate new ID for question
+
 					int maxId = 0;
 					for (QuestionDTO q : theme.getQuestions()) {
 						if (q.getId() > maxId) {
@@ -400,15 +395,14 @@ public class QuizDataManager implements QuizDataInterface {
 					question.setId(maxId + 1);
 					ConfigManager.debugPrint("DEBUG: Assigned new question ID: " + question.getId());
 				}
-				
-				// Ensure answers are included when adding new question
+
 				targetQuestion = question;
 				theme.getQuestions().add(question);
-				ConfigManager.debugPrint("DEBUG: Added new question with " + 
-					(question.getAnswers() != null ? question.getAnswers().size() : 0) + " answers: " + question.getQuestionTitle());
+				ConfigManager.debugPrint("DEBUG: Added new question with "
+						+ (question.getAnswers() != null ? question.getAnswers().size() : 0) + " answers: "
+						+ question.getQuestionTitle());
 			}
 
-			// Save the theme with updated questions (including answers)
 			String result = saveTheme(theme);
 			if (result != null && result.contains("successfully")) {
 				ConfigManager.debugPrint("DEBUG: Theme saved successfully with question and answers");
@@ -471,6 +465,7 @@ public class QuizDataManager implements QuizDataInterface {
 		File dataDir = new File(DATA_DIRECTORY);
 
 		if (dataDir.exists()) {
+			@SuppressWarnings("unused")
 			File[] files = dataDir
 					.listFiles((dir, name) -> name.startsWith(SESSION_FILE_PREFIX) && name.endsWith(FILE_EXTENSION));
 
@@ -478,7 +473,7 @@ public class QuizDataManager implements QuizDataInterface {
 				for (File file : files) {
 					try {
 						String filename = file.getName();
-						// Extract ID from filename: session_{id}_{timestamp}.dat
+
 						String withoutPrefix = filename.substring(SESSION_FILE_PREFIX.length());
 						String idPart = withoutPrefix.substring(0, withoutPrefix.indexOf('_'));
 						int id = Integer.parseInt(idPart);
@@ -486,7 +481,7 @@ public class QuizDataManager implements QuizDataInterface {
 							maxId = id;
 						}
 					} catch (Exception e) {
-						// Skip files with invalid naming format
+
 						ConfigManager.debugPrint("DEBUG: Skipping invalid session file: " + file.getName());
 					}
 				}
@@ -503,28 +498,29 @@ public class QuizDataManager implements QuizDataInterface {
 		try {
 			File dataDir = new File(DATA_DIRECTORY);
 			if (!dataDir.exists()) {
-				return sessions; // Return empty list if directory doesn't exist
+				return sessions;
 			}
 
-			File[] files = dataDir.listFiles((dir, name) -> 
-				name.startsWith(SESSION_FILE_PREFIX) && name.endsWith(FILE_EXTENSION));
+			@SuppressWarnings("unused")
+			File[] files = dataDir
+					.listFiles((dir, name) -> name.startsWith(SESSION_FILE_PREFIX) && name.endsWith(FILE_EXTENSION));
 
 			if (files != null) {
 				for (File file : files) {
 					try (FileInputStream fis = new FileInputStream(file);
-						 ObjectInputStream ois = new ObjectInputStream(fis)) {
-						
+							ObjectInputStream ois = new ObjectInputStream(fis)) {
+
 						quizlogic.dto.QuizSessionDTO session = (quizlogic.dto.QuizSessionDTO) ois.readObject();
 						sessions.add(session);
 						ConfigManager.debugPrint("DEBUG: Loaded session from: " + file.getName());
 
 					} catch (Exception e) {
-						ConfigManager.debugPrint("DEBUG: Error loading session from " + file.getName() + ": " + e.getMessage());
+						ConfigManager.debugPrint(
+								"DEBUG: Error loading session from " + file.getName() + ": " + e.getMessage());
 					}
 				}
 			}
 
-			// Sort sessions by timestamp (most recent first)
 			sessions.sort((s1, s2) -> s2.getTimestamp().compareTo(s1.getTimestamp()));
 
 		} catch (Exception e) {
@@ -537,8 +533,7 @@ public class QuizDataManager implements QuizDataInterface {
 	@Override
 	public ArrayList<quizlogic.dto.QuizSessionDTO> getRecentQuizSessions(int limit) {
 		ArrayList<quizlogic.dto.QuizSessionDTO> allSessions = getAllQuizSessions();
-		
-		// Return only the requested number of most recent sessions
+
 		if (allSessions.size() <= limit) {
 			return allSessions;
 		} else {
