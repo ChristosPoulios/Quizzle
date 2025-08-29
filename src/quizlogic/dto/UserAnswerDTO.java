@@ -38,7 +38,6 @@ public class UserAnswerDTO extends DataTransportObject {
 		this.isCorrect = isCorrect;
 	}
 
-	// Getters and setters
 	public int getQuizSessionId() {
 		return quizSessionId;
 	}
@@ -111,5 +110,14 @@ public class UserAnswerDTO extends DataTransportObject {
 		if (answerId <= 0) {
 			throw new IllegalArgumentException("Valid answer ID is required");
 		}
+	}
+
+	public int getSelectedAnswerId() {
+		return answerId;
+	}
+
+	public void setSelectedAnswerId(int selectedAnswerId) {
+		this.answerId = selectedAnswerId;
+		this.isSelected = true;
 	}
 }

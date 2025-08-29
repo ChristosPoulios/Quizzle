@@ -782,4 +782,197 @@ public class DBManager implements QuizDataInterface {
 		}
 		return null;
 	}
+
+	@Override
+	public String saveQuizSession(quizlogic.dto.QuizSessionDTO session) {
+		try {
+			if (session == null || session.getUserAnswers() == null || session.getUserAnswers().isEmpty()) {
+				return "Cannot save empty session";
+			}
+
+			connect();
+
+			boolean isUpdate = session.getId() != constants.LogicConstants.INVALID_ID && sessionExists(session.getId());
+
+			if (isUpdate) {
+
+				String updateSQL = "UPDATE QuizSession SET timestamp = ?, user_id = ? WHERE id = ?";
+				try (PreparedStatement ps = connection.prepareStatement(updateSQL)) {
+					ps.setTimestamp(1, new java.sql.Timestamp(session.getTimestamp().getTime()));
+					ps.setInt(2, session.getUserId());
+					ps.setInt(3, session.getId());
+					ps.executeUpdate();
+				}
+
+				deleteUserAnswersForSession(session.getId());
+			} else {
+
+				String insertSQL = "INSERT INTO QuizSession (timestamp, user_id) VALUES (?, ?)";
+				try (PreparedStatement ps = connection.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
+					ps.setTimestamp(1, new java.sql.Timestamp(session.getTimestamp().getTime()));
+					ps.setInt(2, session.getUserId());
+
+					int rowsAffected = ps.executeUpdate();
+					if (rowsAffected > 0) {
+						try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+							if (generatedKeys.next()) {
+								int newId = generatedKeys.getInt(1);
+								session.setId(newId);
+							}
+						}
+					}
+				}
+			}
+
+			String answerSQL = "INSERT INTO UserAnswer (quizsession_id, question_id, answer_id, isSelected, isCorrect) VALUES (?, ?, ?, ?, ?)";
+			try (PreparedStatement ps = connection.prepareStatement(answerSQL)) {
+				for (quizlogic.dto.UserAnswerDTO userAnswer : session.getUserAnswers()) {
+					ps.setInt(1, session.getId());
+					ps.setInt(2, userAnswer.getQuestionId());
+					ps.setInt(3, userAnswer.getSelectedAnswerId());
+					ps.setBoolean(4, true);
+					ps.setBoolean(5, userAnswer.isCorrect());
+					ps.addBatch();
+				}
+				ps.executeBatch();
+			}
+
+			connection.commit();
+			ConfigManager.debugPrint("DEBUG: Quiz session saved to database with ID: " + session.getId());
+			return null;
+
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackEx) {
+
+			}
+			ConfigManager.debugPrint("DEBUG: Error saving quiz session to database: " + e.getMessage());
+			return "Error saving quiz session: " + e.getMessage();
+		} catch (Exception e) {
+			ConfigManager.debugPrint("DEBUG: General error saving quiz session: " + e.getMessage());
+			return "Error saving quiz session: " + e.getMessage();
+		}
+	}
+
+	@Override
+	public ArrayList<quizlogic.dto.QuizSessionDTO> getAllQuizSessions() {
+		ArrayList<quizlogic.dto.QuizSessionDTO> sessions = new ArrayList<>();
+
+		try {
+			connect();
+
+			String sql = "SELECT * FROM QuizSession ORDER BY timestamp DESC";
+			try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+				while (rs.next()) {
+					quizlogic.dto.QuizSessionDTO session = new quizlogic.dto.QuizSessionDTO();
+					session.setId(rs.getInt("id"));
+					session.setTimestamp(new java.util.Date(rs.getTimestamp("timestamp").getTime()));
+					session.setUserId(rs.getInt("user_id"));
+
+					loadUserAnswersForSession(session);
+
+					sessions.add(session);
+				}
+			}
+
+		} catch (SQLException e) {
+			ConfigManager.debugPrint("DEBUG: Error loading quiz sessions from database: " + e.getMessage());
+		}
+
+		return sessions;
+	}
+
+	@Override
+	public ArrayList<quizlogic.dto.QuizSessionDTO> getRecentQuizSessions(int limit) {
+		ArrayList<quizlogic.dto.QuizSessionDTO> sessions = new ArrayList<>();
+
+		try {
+			connect();
+
+			String sql = "SELECT * FROM QuizSession ORDER BY timestamp DESC LIMIT ?";
+			try (PreparedStatement ps = connection.prepareStatement(sql)) {
+				ps.setInt(1, limit);
+
+				try (ResultSet rs = ps.executeQuery()) {
+					while (rs.next()) {
+						quizlogic.dto.QuizSessionDTO session = new quizlogic.dto.QuizSessionDTO();
+						session.setId(rs.getInt("id"));
+						session.setTimestamp(new java.util.Date(rs.getTimestamp("timestamp").getTime()));
+						session.setUserId(rs.getInt("user_id"));
+
+						loadUserAnswersForSession(session);
+
+						sessions.add(session);
+					}
+				}
+			}
+
+		} catch (SQLException e) {
+			ConfigManager.debugPrint("DEBUG: Error loading recent quiz sessions from database: " + e.getMessage());
+		}
+
+		return sessions;
+	}
+
+	/**
+	 * Checks if a quiz session with the given ID exists in the database.
+	 * 
+	 * @param sessionId the session ID to check
+	 * @return true if session exists, false otherwise
+	 * @throws SQLException if a database error occurs
+	 */
+	private boolean sessionExists(int sessionId) throws SQLException {
+		String sql = "SELECT COUNT(*) FROM QuizSession WHERE id = ?";
+		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+			ps.setInt(1, sessionId);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					return rs.getInt(1) > 0;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Deletes all user answers for a specific session.
+	 * 
+	 * @param sessionId the session ID
+	 * @throws SQLException if a database error occurs
+	 */
+	private void deleteUserAnswersForSession(int sessionId) throws SQLException {
+		String sql = "DELETE FROM UserAnswer WHERE quizsession_id = ?";
+		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+			ps.setInt(1, sessionId);
+			ps.executeUpdate();
+		}
+	}
+
+	/**
+	 * Loads all user answers for a specific session.
+	 * 
+	 * @param session the session to load answers for
+	 * @throws SQLException if a database error occurs
+	 */
+	private void loadUserAnswersForSession(quizlogic.dto.QuizSessionDTO session) throws SQLException {
+		String sql = "SELECT * FROM UserAnswer WHERE quizsession_id = ?";
+		try (PreparedStatement ps = connection.prepareStatement(sql)) {
+			ps.setInt(1, session.getId());
+			try (ResultSet rs = ps.executeQuery()) {
+				ArrayList<quizlogic.dto.UserAnswerDTO> userAnswers = new ArrayList<>();
+
+				while (rs.next()) {
+					quizlogic.dto.UserAnswerDTO userAnswer = new quizlogic.dto.UserAnswerDTO();
+					userAnswer.setQuestionId(rs.getInt("question_id"));
+					userAnswer.setSelectedAnswerId(rs.getInt("answer_id"));
+					userAnswer.setCorrect(rs.getBoolean("isCorrect"));
+					userAnswers.add(userAnswer);
+				}
+
+				session.setUserAnswers(userAnswers);
+			}
+		}
+	}
 }

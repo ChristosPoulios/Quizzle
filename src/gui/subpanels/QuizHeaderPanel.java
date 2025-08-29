@@ -50,7 +50,8 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 	/**
 	 * Constructs the header panel with data manager integration.
 	 * 
-	 * @param dataManager The data manager for theme data access (database or file-based)
+	 * @param dataManager The data manager for theme data access (database or
+	 *                    file-based)
 	 */
 	public QuizHeaderPanel(QuizDataInterface dataManager) {
 		this.dataManager = dataManager;
@@ -133,9 +134,9 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 	}
 
 	/**
-	 * Populates the theme combo box with sorted themes.
-	 * Themes without descriptions are marked with "*" and listed first,
-	 * then themes with descriptions, both groups sorted alphabetically.
+	 * Populates the theme combo box with sorted themes. Themes without descriptions
+	 * are marked with "*" and listed first, then themes with descriptions, both
+	 * groups sorted alphabetically.
 	 * 
 	 * @param themes The list of theme DTOs to populate the combo box
 	 */
@@ -143,7 +144,7 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 		// Separate themes with and without descriptions
 		ArrayList<ThemeDTO> themesWithoutDescription = new ArrayList<>();
 		ArrayList<ThemeDTO> themesWithDescription = new ArrayList<>();
-		
+
 		for (ThemeDTO theme : themes) {
 			if (theme.getThemeDescription() == null || theme.getThemeDescription().trim().isEmpty()) {
 				themesWithoutDescription.add(theme);
@@ -151,18 +152,15 @@ public class QuizHeaderPanel extends JPanel implements GUIConstants {
 				themesWithDescription.add(theme);
 			}
 		}
-		
-		// Sort both lists alphabetically by title
+
 		Comparator<ThemeDTO> titleComparator = Comparator.comparing(ThemeDTO::getThemeTitle);
 		themesWithoutDescription.sort(titleComparator);
 		themesWithDescription.sort(titleComparator);
-		
-		// Add themes without description first (marked with *)
+
 		for (ThemeDTO theme : themesWithoutDescription) {
 			themeComboBox.addItem("* " + theme.getThemeTitle());
 		}
-		
-		// Add themes with description
+
 		for (ThemeDTO theme : themesWithDescription) {
 			themeComboBox.addItem(theme.getThemeTitle());
 		}

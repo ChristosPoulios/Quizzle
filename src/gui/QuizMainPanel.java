@@ -38,6 +38,9 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	private QuizSessionDTO currentSession;
 	private QuestionDTO currentQuestion;
 
+	/** Reference to parent frame for statistics updates */
+	private QFrame parentFrame;
+
 	public QuizMainPanel(QuizDataInterface dataManager) {
 		this.dataManager = dataManager;
 		setBackground(BACKGROUND_COLOR);
@@ -136,7 +139,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 			}
 			String correctAnswerText = String.join(", ", correctAnswers);
 			quizInfoViewPanel.setAnswerText(correctAnswerText);
-			
+
 			String feedbackMsg;
 			if (correctAnswers.size() == 1) {
 				feedbackMsg = String.format(UserStringConstants.QUIZ_INFO_FEEDBACK_SHOW_SINGLE_CORRECT,
@@ -145,7 +148,7 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 				feedbackMsg = String.format(UserStringConstants.QUIZ_INFO_FEEDBACK_SHOW_MULTIPLE_CORRECT,
 						correctAnswerText);
 			}
-			
+
 			buttonPanel.setMessage(feedbackMsg);
 			quizInfoViewPanel.showAnswerFeedback(true, feedbackMsg);
 
@@ -167,7 +170,24 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		List<Integer> selectedIndices = questionPanel.getAnswersPanel().getSelectedAnswerIndices();
 
 		if (selectedIndices.isEmpty()) {
-			buttonPanel.setMessage("Bitte wählen Sie mindestens eine Antwort aus.");
+
+			if (!answers.isEmpty()) {
+				AnswerDTO firstAnswer = answers.get(0);
+				UserAnswerDTO userAnswer = new UserAnswerDTO(currentSession.getId(), currentQuestion.getId(),
+						firstAnswer.getId(), false, false);
+				currentSession.addUserAnswer(userAnswer);
+			}
+
+			buttonPanel.setMessage("✗ Keine Antwort gegeben - als falsch bewertet.");
+			quizInfoViewPanel.showAnswerFeedback(false, "Keine Antwort gegeben. Die Frage wird als falsch bewertet.");
+
+			buttonPanel.getButton1().setEnabled(true);
+			buttonPanel.getButton2().setEnabled(false);
+			buttonPanel.getButton3().setEnabled(true);
+
+			if (parentFrame != null) {
+				parentFrame.updateStatistics();
+			}
 			return;
 		}
 
@@ -186,9 +206,21 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		if (isCorrect) {
 			buttonPanel.setMessage("✓ Richtig! Ihre Antwort ist korrekt.");
 			quizInfoViewPanel.showAnswerFeedback(true, "Ihre Antwort ist richtig.");
+
+			buttonPanel.getButton1().setEnabled(false);
+			buttonPanel.getButton2().setEnabled(false);
 		} else {
 			buttonPanel.setMessage("✗ Falsch! Ihre Antwort ist nicht korrekt.");
 			quizInfoViewPanel.showAnswerFeedback(false, "Leider falsch. Versuchen Sie es erneut.");
+
+			buttonPanel.getButton1().setEnabled(true);
+			buttonPanel.getButton2().setEnabled(false);
+		}
+
+		buttonPanel.getButton3().setEnabled(true);
+
+		if (parentFrame != null) {
+			parentFrame.updateStatistics();
 		}
 	}
 
@@ -246,8 +278,10 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 		if (UserStringConstants.ALL_THEMES_OPTION.equals(themeTitle)) {
 			setSelectedTheme(null);
 		} else {
-			// Strip the "*" prefix if present for themes without descriptions
-			String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
+
+			String actualThemeTitle = themeTitle.startsWith("* ")
+					? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH)
+					: themeTitle;
 
 			if (dataManager != null) {
 				List<ThemeDTO> themes = dataManager.getAllThemes();
@@ -262,8 +296,8 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 	}
 
 	/**
-	 * Refreshes the theme combo box in the quiz info view panel.
-	 * This should be called when new themes are created or questions are added.
+	 * Refreshes the theme combo box in the quiz info view panel. This should be
+	 * called when new themes are created or questions are added.
 	 */
 	public void refreshThemeComboBox() {
 		if (quizInfoViewPanel != null) {
@@ -277,5 +311,14 @@ public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDele
 
 	public ThemeDTO getSelectedTheme() {
 		return selectedTheme;
+	}
+
+	/**
+	 * Sets the parent frame reference for statistics updates.
+	 * 
+	 * @param parentFrame the parent QFrame instance
+	 */
+	public void setParentFrame(QFrame parentFrame) {
+		this.parentFrame = parentFrame;
 	}
 }

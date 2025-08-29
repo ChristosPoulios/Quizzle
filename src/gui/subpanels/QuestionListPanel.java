@@ -51,7 +51,8 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 	/**
 	 * Constructs the question list panel with data manager integration.
 	 * 
-	 * @param dataManager Data manager for retrieving questions (database or file-based)
+	 * @param dataManager Data manager for retrieving questions (database or
+	 *                    file-based)
 	 */
 	public QuestionListPanel(QuizDataInterface dataManager) {
 		this.dataManager = dataManager;
@@ -234,12 +235,11 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 		showingThemes = !showingThemes;
 
 		if (showingThemes) {
-			// Switch to theme info view
+
 			headerPanel.setSwitchButtonText(UserStringConstants.BTN_SHOW_QUESTIONS);
 			remove(scrollPane);
 			add(themeInfoView, BorderLayout.CENTER);
 
-			// Show info for currently selected theme
 			String selectedTheme = headerPanel.getSelectedTheme();
 			if (selectedTheme != null) {
 				themeInfoView.showThemeInfo(selectedTheme);
@@ -247,12 +247,11 @@ public class QuestionListPanel extends JPanel implements GUIConstants {
 				themeInfoView.showWelcomeMessage();
 			}
 		} else {
-			// Switch back to questions list
+
 			headerPanel.setSwitchButtonText(UserStringConstants.BTN_SHOW_THEMES);
 			remove(themeInfoView);
 			add(scrollPane, BorderLayout.CENTER);
 
-			// Update question list for current theme
 			String selectedTheme = headerPanel.getSelectedTheme();
 			if (selectedTheme != null) {
 				updateQuestionList(selectedTheme);

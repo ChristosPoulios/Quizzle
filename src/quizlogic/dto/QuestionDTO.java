@@ -214,8 +214,10 @@ public class QuestionDTO extends DataTransportObject {
 	 * Validates the question content.
 	 * <ul>
 	 * <li>Question text must not be null or empty</li>
-	 * <li>Question text must not exceed {@value ValidationConstants#QUESTION_TEXT_MAX_LENGTH} characters</li>
-	 * <li>Question title, if present, must not exceed {@value ValidationConstants#QUESTION_TITLE_MAX_LENGTH} characters</li>
+	 * <li>Question text must not exceed
+	 * {@value ValidationConstants#QUESTION_TEXT_MAX_LENGTH} characters</li>
+	 * <li>Question title, if present, must not exceed
+	 * {@value ValidationConstants#QUESTION_TITLE_MAX_LENGTH} characters</li>
 	 * </ul>
 	 *
 	 * @throws IllegalArgumentException if validation fails
@@ -226,10 +228,12 @@ public class QuestionDTO extends DataTransportObject {
 			throw new IllegalArgumentException(UserStringConstants.ERROR_QUESTION_TEXT_NULL_OR_EMPTY);
 		}
 		if (questionText.length() > ValidationConstants.QUESTION_TEXT_MAX_LENGTH) {
-			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_QUESTION_TEXT_TOO_LONG, ValidationConstants.QUESTION_TEXT_MAX_LENGTH));
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_QUESTION_TEXT_TOO_LONG,
+					ValidationConstants.QUESTION_TEXT_MAX_LENGTH));
 		}
 		if (questionTitle != null && questionTitle.length() > ValidationConstants.QUESTION_TITLE_MAX_LENGTH) {
-			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_QUESTION_TITLE_TOO_LONG, ValidationConstants.QUESTION_TITLE_MAX_LENGTH));
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_QUESTION_TITLE_TOO_LONG,
+					ValidationConstants.QUESTION_TITLE_MAX_LENGTH));
 		}
 	}
 }

@@ -183,7 +183,8 @@ public class AnswerDTO extends DataTransportObject {
 	 * Validates that the answer has valid data.
 	 * <ul>
 	 * <li>Answer text must not be null or empty</li>
-	 * <li>Answer text must not exceed {@value ValidationConstants#ANSWER_TEXT_MAX_LENGTH} characters</li>
+	 * <li>Answer text must not exceed
+	 * {@value ValidationConstants#ANSWER_TEXT_MAX_LENGTH} characters</li>
 	 * </ul>
 	 *
 	 * @throws IllegalArgumentException if validation fails
@@ -194,7 +195,8 @@ public class AnswerDTO extends DataTransportObject {
 			throw new IllegalArgumentException(UserStringConstants.ERROR_ANSWER_TEXT_NULL_OR_EMPTY);
 		}
 		if (answerText.length() > ValidationConstants.ANSWER_TEXT_MAX_LENGTH) {
-			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_ANSWER_TEXT_TOO_LONG, ValidationConstants.ANSWER_TEXT_MAX_LENGTH));
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_ANSWER_TEXT_TOO_LONG,
+					ValidationConstants.ANSWER_TEXT_MAX_LENGTH));
 		}
 	}
 }

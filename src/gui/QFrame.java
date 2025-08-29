@@ -1,7 +1,6 @@
 package gui;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import constants.GUIConstants;
 import constants.ThemeManager;
@@ -14,13 +13,13 @@ import persistence.DataManager;
  * the quiz application.
  * <p>
  * Manages the lifecycle of data storage with automatic fallback from MariaDB
- * database to file-based serialization if database connection fails.
- * The main window includes tabs for managing quiz themes, quiz questions,
- * playing the quiz, and viewing statistics.
+ * database to file-based serialization if database connection fails. The main
+ * window includes tabs for managing quiz themes, quiz questions, playing the
+ * quiz, and viewing statistics.
  * </p>
  * <p>
- * This frame handles UI initialization, data storage connectivity with fallback,
- * and global event dispatching for theme changes.
+ * This frame handles UI initialization, data storage connectivity with
+ * fallback, and global event dispatching for theme changes.
  * </p>
  *
  * @author Christos Poulios
@@ -43,12 +42,15 @@ public class QFrame extends JFrame implements GUIConstants {
 	/** Panel managing quiz gameplay */
 	private QuizMainPanel quizMainPanel;
 
+	/** Panel managing quiz statistics */
+	private QuizStatisticsMainPanel statisticsMainPanel;
+
 	/**
 	 * Constructs the main application window.
 	 * <p>
 	 * Initializes window properties, attempts to connect to the MariaDB database,
-	 * and automatically falls back to file-based storage if database connection fails.
-	 * Sets up tabbed subpanels for themes, questions, quiz, and statistics.
+	 * and automatically falls back to file-based storage if database connection
+	 * fails. Sets up tabbed subpanels for themes, questions, quiz, and statistics.
 	 * </p>
 	 */
 	public QFrame() {
@@ -63,42 +65,43 @@ public class QFrame extends JFrame implements GUIConstants {
 		System.out.println("Using storage method: " + storageMethod);
 
 		if (!dataManager.isUsingDatabase()) {
-			System.err.println("Database connection failed. The application will continue but database functionality will not work.");
+			System.err.println(
+					"Database connection failed. The application will continue but database functionality will not work.");
 			System.err.println("Please ensure:");
 			System.err.println("1. MariaDB server is running");
 			System.err.println("2. Database 'quizzle_db' exists");
 			System.err.println("3. Check your database settings in config.properties");
 
-			javax.swing.JOptionPane.showMessageDialog(null,
-					"Datenbankverbindung fehlgeschlagen!\n\n" +
-					"Die Anwendung verwendet jetzt dateibasierte Speicherung.\n" +
-					"Bitte überprüfen Sie:\n\n" +
-					"1. MariaDB Server läuft\n" +
-					"2. Datenbank 'quizzle_db' existiert\n" +
-					"3. Datenbankeinstellungen in config.properties\n\n" +
-					"Alle Funktionen bleiben verfügbar.",
-					"Datenbankverbindung - Fallback zu Dateispeicherung", 
-					javax.swing.JOptionPane.WARNING_MESSAGE);
+			javax.swing.JOptionPane.showMessageDialog(null, "Datenbankverbindung fehlgeschlagen!\n\n"
+					+ "Die Anwendung verwendet jetzt dateibasierte Speicherung.\n" + "Bitte überprüfen Sie:\n\n"
+					+ "1. MariaDB Server läuft\n" + "2. Datenbank 'quizzle_db' existiert\n"
+					+ "3. Datenbankeinstellungen in config.properties\n\n" + "Alle Funktionen bleiben verfügbar.",
+					"Datenbankverbindung - Fallback zu Dateispeicherung", javax.swing.JOptionPane.WARNING_MESSAGE);
 		}
-
 
 		themeMainPanel = new QuizThemeMainPanel(dataManager);
 		questionMainPanel = new QuizQuestionMainPanel(dataManager);
 		quizMainPanel = new QuizMainPanel(dataManager);
+		statisticsMainPanel = new QuizStatisticsMainPanel(dataManager);
 
 		questionMainPanel.setParentFrame(this);
 
 		themeMainPanel.setThemeChangeListener(this::onThemeChanged);
 
+		quizMainPanel.setParentFrame(this);
+
 		TabPane tabPane = new TabPane();
 		tabPane.addTab(UserStringConstants.TAB_QUIZ_THEMES, themeMainPanel);
 		tabPane.addTab(UserStringConstants.TAB_QUIZ_QUESTIONS, questionMainPanel);
 		tabPane.addTab(UserStringConstants.TAB_QUIZ, quizMainPanel);
-		tabPane.addTab(UserStringConstants.TAB_STATISTICS, new JPanel());
+		tabPane.addTab(UserStringConstants.TAB_STATISTICS, statisticsMainPanel);
 
 		add(tabPane);
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+
+			saveCurrentSessionOnExit();
+
 			if (dataManager != null) {
 				dataManager.close();
 				System.out.println("Data storage connections closed");
@@ -122,12 +125,48 @@ public class QFrame extends JFrame implements GUIConstants {
 	}
 
 	/**
-	 * Handles question save notifications by refreshing the quiz panel's theme combobox.
-	 * This ensures that themes without descriptions appear in the combobox after questions are added.
+	 * Handles question save notifications by refreshing the quiz panel's theme
+	 * combobox. This ensures that themes without descriptions appear in the
+	 * combobox after questions are added.
 	 */
 	public void onQuestionSaved() {
 		if (quizMainPanel != null) {
 			quizMainPanel.refreshThemeComboBox();
+		}
+	}
+
+	/**
+	 * Updates the statistics panel with the current quiz session. This should be
+	 * called whenever the quiz session changes.
+	 */
+	public void updateStatistics() {
+		if (statisticsMainPanel != null && quizMainPanel != null) {
+			statisticsMainPanel.updateSession(quizMainPanel.getCurrentSession());
+		}
+	}
+
+	/**
+	 * Saves the current quiz session when the application is closing. This ensures
+	 * that any progress made during the current session is preserved.
+	 */
+	private void saveCurrentSessionOnExit() {
+		try {
+			if (quizMainPanel != null && dataManager != null) {
+				quizlogic.dto.QuizSessionDTO currentSession = quizMainPanel.getCurrentSession();
+
+				if (currentSession != null && currentSession.getUserAnswers() != null
+						&& !currentSession.getUserAnswers().isEmpty()) {
+
+					String result = dataManager.saveQuizSession(currentSession);
+					if (result == null) {
+						System.out.println("Current quiz session saved successfully on exit.");
+					} else {
+						System.err.println("Failed to save current session: " + result);
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Error saving current session on exit: " + e.getMessage());
 		}
 	}
 
@@ -143,7 +182,8 @@ public class QFrame extends JFrame implements GUIConstants {
 	/**
 	 * Attempts to reconnect to the database if currently using file storage.
 	 *
-	 * @return true if successfully connected to database, false if still using files
+	 * @return true if successfully connected to database, false if still using
+	 *         files
 	 */
 	public boolean tryReconnectToDatabase() {
 		return dataManager.tryReconnectToDatabase();

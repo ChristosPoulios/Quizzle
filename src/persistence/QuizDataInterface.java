@@ -110,7 +110,7 @@ public interface QuizDataInterface {
 	 * Saves a question and associates it with a theme (extended method).
 	 * 
 	 * @param question the {@link QuestionDTO} to save
-	 * @param theme the {@link ThemeDTO} to associate with
+	 * @param theme    the {@link ThemeDTO} to associate with
 	 * @return a status/result message
 	 */
 	default String saveQuestion(QuestionDTO question, ThemeDTO theme) {
@@ -121,12 +121,46 @@ public interface QuizDataInterface {
 	/**
 	 * Saves an answer and associates it with a question (extended method).
 	 * 
-	 * @param answer the {@link AnswerDTO} to save
+	 * @param answer   the {@link AnswerDTO} to save
 	 * @param question the {@link QuestionDTO} to associate with
 	 * @return a status/result message
 	 */
 	default String saveAnswer(AnswerDTO answer, QuestionDTO question) {
-		// Default implementation - may need to be overridden in implementations
+
 		return "Answer saved successfully";
+	}
+
+	/**
+	 * Saves a completed quiz session to persistent storage.
+	 * 
+	 * @param session the {@link quizlogic.dto.QuizSessionDTO} to save
+	 * @return a status/result message, or null if successful without message
+	 */
+	default String saveQuizSession(quizlogic.dto.QuizSessionDTO session) {
+
+		return "Session persistence not implemented";
+	}
+
+	/**
+	 * Retrieves all saved quiz sessions from storage.
+	 * 
+	 * @return an {@link ArrayList} of {@link quizlogic.dto.QuizSessionDTO}
+	 *         containing all historical sessions
+	 */
+	default ArrayList<quizlogic.dto.QuizSessionDTO> getAllQuizSessions() {
+		// Default implementation - returns empty list
+		return new ArrayList<>();
+	}
+
+	/**
+	 * Retrieves the most recent quiz sessions from storage.
+	 * 
+	 * @param limit maximum number of sessions to retrieve
+	 * @return an {@link ArrayList} of {@link quizlogic.dto.QuizSessionDTO}
+	 *         containing recent sessions
+	 */
+	default ArrayList<quizlogic.dto.QuizSessionDTO> getRecentQuizSessions(int limit) {
+
+		return new ArrayList<>();
 	}
 }

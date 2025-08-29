@@ -36,7 +36,8 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 	/**
 	 * Constructs the theme info view panel with data manager integration.
 	 * 
-	 * @param dataManager The data manager for retrieving theme information (database or file-based)
+	 * @param dataManager The data manager for retrieving theme information
+	 *                    (database or file-based)
 	 */
 	public QuizThemeInfoView(QuizDataInterface dataManager) {
 		this.dataManager = dataManager;
@@ -79,8 +80,8 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 			return;
 		}
 
-		// Strip the "*" prefix if present for themes without descriptions
-		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
+		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH)
+				: themeTitle;
 
 		ThemeDTO selectedTheme = null;
 		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
@@ -97,12 +98,11 @@ public class QuizThemeInfoView extends JPanel implements GUIConstants {
 
 			html.append("<div style='background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;'>");
 			html.append("<h3 style='margin-top: 0; font-size: 16px; font-weight: bold;'>Themeninformation:</h3>");
-			
-			// Check if theme has a description - if not, leave the field empty but still show the section
+
 			String description = selectedTheme.getThemeDescription();
 			if (description != null && !description.trim().isEmpty()) {
-				html.append("<p style='font-size: 14px; line-height: 1.6; color: #000000;'>")
-						.append(description).append("</p>");
+				html.append("<p style='font-size: 14px; line-height: 1.6; color: #000000;'>").append(description)
+						.append("</p>");
 			} else {
 				html.append("<p style='font-size: 14px; line-height: 1.6; color: #888888; font-style: italic;'>")
 						.append("Keine Beschreibung verfügbar.").append("</p>");

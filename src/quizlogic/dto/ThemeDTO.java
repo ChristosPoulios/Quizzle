@@ -206,8 +206,10 @@ public class ThemeDTO extends DataTransportObject {
 	 * Validates theme data.
 	 * <ul>
 	 * <li>Theme title must not be null or empty</li>
-	 * <li>Theme title length must not exceed {@value ValidationConstants#THEME_TITLE_MAX_LENGTH} characters</li>
-	 * <li>Theme description, if present, must not exceed {@value ValidationConstants#THEME_DESCRIPTION_MAX_LENGTH} characters</li>
+	 * <li>Theme title length must not exceed
+	 * {@value ValidationConstants#THEME_TITLE_MAX_LENGTH} characters</li>
+	 * <li>Theme description, if present, must not exceed
+	 * {@value ValidationConstants#THEME_DESCRIPTION_MAX_LENGTH} characters</li>
 	 * </ul>
 	 *
 	 * @throws IllegalArgumentException if validation fails
@@ -218,10 +220,12 @@ public class ThemeDTO extends DataTransportObject {
 			throw new IllegalArgumentException(UserStringConstants.ERROR_THEME_TITLE_NULL_OR_EMPTY);
 		}
 		if (themeTitle.length() > ValidationConstants.THEME_TITLE_MAX_LENGTH) {
-			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_THEME_TITLE_TOO_LONG, ValidationConstants.THEME_TITLE_MAX_LENGTH));
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_THEME_TITLE_TOO_LONG,
+					ValidationConstants.THEME_TITLE_MAX_LENGTH));
 		}
 		if (themeDescription != null && themeDescription.length() > ValidationConstants.THEME_DESCRIPTION_MAX_LENGTH) {
-			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_THEME_DESCRIPTION_TOO_LONG, ValidationConstants.THEME_DESCRIPTION_MAX_LENGTH));
+			throw new IllegalArgumentException(String.format(UserStringConstants.ERROR_THEME_DESCRIPTION_TOO_LONG,
+					ValidationConstants.THEME_DESCRIPTION_MAX_LENGTH));
 		}
 	}
 }

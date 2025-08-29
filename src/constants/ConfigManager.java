@@ -104,8 +104,7 @@ public class ConfigManager {
 		properties.setProperty(WINDOW_WIDTH, "850");
 		properties.setProperty(WINDOW_HEIGHT, "650");
 		properties.setProperty(WINDOW_MAXIMIZED, "false");
-		
-		// Debug mode disabled by default
+
 		properties.setProperty(DEBUG_MODE, "false");
 	}
 

@@ -23,10 +23,10 @@ public interface GUIConstants extends UserStringConstants {
 	int FRAME_Y = 100;
 
 	/** Width of the main application window in pixels */
-	int FRAME_WIDTH = 850;
+	int FRAME_WIDTH = 1024;
 
 	/** Height of the main application window in pixels */
-	int FRAME_HEIGHT = 650;
+	int FRAME_HEIGHT = 768;
 
 	/**
 	 * Configuration keys for window settings - should match ConfigManager constants
@@ -148,7 +148,7 @@ public interface GUIConstants extends UserStringConstants {
 	int THEME_LIST_WIDTH = 300;
 
 	/** Height of theme lists in pixels */
-	int THEME_LIST_HEIGHT = 387;
+	int THEME_LIST_HEIGHT = 497;
 
 	/** Width of the ComboBoxes in pixels */
 	int COMBOBOX_WIDTH = 250;

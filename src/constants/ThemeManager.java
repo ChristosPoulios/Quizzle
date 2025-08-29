@@ -62,7 +62,6 @@ public class ThemeManager {
 			}
 		} catch (Exception e) {
 			System.err.println("Failed to apply theme '" + themeName + "': " + e.getMessage());
-			// Fallback to system default
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				System.out.println("Applied system default Look and Feel as fallback.");

@@ -104,6 +104,8 @@ public interface UserStringConstants {
 	/** Button text for switching to question list view */
 	String BTN_SHOW_QUESTIONS = "Fragenliste";
 
+
+
 	// ========================================
 	// Validation Error Messages
 	// ========================================
@@ -376,6 +378,51 @@ public interface UserStringConstants {
 
 	/** Tab label for statistics */
 	String TAB_STATISTICS = "Statistik";
+
+	// ========================================
+	// Statistics Labels
+	// ========================================
+	/** Label for statistics header */
+	String STATISTICS_HEADER = "Quiz-Statistiken";
+	
+	/** Label for correct answers count */
+	String STATISTICS_CORRECT_ANSWERS = "Richtige Antworten";
+	
+	/** Label for wrong answers count */
+	String STATISTICS_WRONG_ANSWERS = "Falsche Antworten";
+	
+	/** Label for success rate */
+	String STATISTICS_SUCCESS_RATE = "Erfolgsquote";
+	
+	/** Label for total questions answered */
+	String STATISTICS_TOTAL_QUESTIONS = "Beantwortete Fragen";
+	
+	/** Reset statistics button text */
+	String BTN_RESET_STATISTICS = "Statistiken zurücksetzen";
+	
+	/** No statistics message */
+	String STATISTICS_NO_DATA = "Noch keine Quiz-Daten vorhanden. Starte ein Quiz, um Statistiken zu sammeln.";
+
+	/** Label for historical statistics section */
+	String STATISTICS_HISTORICAL_HEADER = "Historische Statistiken";
+	
+	/** Label for total sessions */
+	String STATISTICS_TOTAL_SESSIONS = "Gesamt Sessions";
+	
+	/** Label for overall success rate */
+	String STATISTICS_OVERALL_SUCCESS_RATE = "Gesamt Erfolgsquote";
+	
+	/** Label for recent sessions */
+	String STATISTICS_RECENT_SESSIONS = "Letzte Sessions";
+	
+	/** Label for total correct answers across all sessions */
+	String STATISTICS_TOTAL_CORRECT_ANSWERS = "Gesamt richtige Antworten";
+	
+	/** Label for total wrong answers across all sessions */
+	String STATISTICS_TOTAL_WRONG_ANSWERS = "Gesamt falsche Antworten";
+	
+	/** Label for total questions across all sessions */
+	String STATISTICS_TOTAL_QUESTIONS_OVERALL = "Gesamt beantwortete Fragen";
 
 	// ========================================
 	// HTML Content

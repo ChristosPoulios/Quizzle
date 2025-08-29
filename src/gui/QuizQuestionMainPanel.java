@@ -114,7 +114,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 */
 	@Override
 	public void onThemeSelected(String themeTitle) {
-		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
+		String actualThemeTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH)
+				: themeTitle;
 
 		questionListPanel.updateQuestionList(actualThemeTitle);
 		clearQuestionSelection();
@@ -223,6 +224,9 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 				ConfigManager.debugPrint("DEBUG: Answer validation failed - not saving question");
 				return;
 			}
+
+			question.setAnswers(answers);
+			ConfigManager.debugPrint("DEBUG: Attached " + answers.size() + " answers to question before saving");
 
 			String result = dataManager.saveQuestion(question, targetTheme);
 			ConfigManager.debugPrint("DEBUG: Save question result: " + result);
@@ -383,7 +387,8 @@ public class QuizQuestionMainPanel extends JPanel implements GUIConstants, QuizQ
 	 */
 	private ThemeDTO findTheme(String themeTitle) {
 		// Remove * prefix if present to get the actual theme title
-		String actualTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : themeTitle;
+		String actualTitle = themeTitle.startsWith("* ") ? themeTitle.substring(LogicConstants.THEME_PREFIX_LENGTH)
+				: themeTitle;
 
 		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {

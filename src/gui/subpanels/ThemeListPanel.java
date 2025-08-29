@@ -57,7 +57,8 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	/**
 	 * Constructs the theme list panel with data manager integration.
 	 * 
-	 * @param dataManager Data manager for retrieving themes (database or file-based)
+	 * @param dataManager Data manager for retrieving themes (database or
+	 *                    file-based)
 	 */
 	public ThemeListPanel(QuizDataInterface dataManager) {
 		this.dataManager = dataManager;
@@ -130,7 +131,8 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	 */
 	private ThemeDTO findThemeByTitle(String displayTitle) {
 		// Remove * prefix if present
-		String actualTitle = displayTitle.startsWith("* ") ? displayTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : displayTitle;
+		String actualTitle = displayTitle.startsWith("* ") ? displayTitle.substring(LogicConstants.THEME_PREFIX_LENGTH)
+				: displayTitle;
 
 		ArrayList<ThemeDTO> themes = dataManager.getAllThemes();
 		for (ThemeDTO theme : themes) {
@@ -213,8 +215,9 @@ public class ThemeListPanel extends JPanel implements GUIConstants {
 	public String getSelectedThemeTitle() {
 		String selectedTitle = themeList.getSelectedValue();
 		if (selectedTitle != null) {
-			// Remove * prefix if present to get the actual theme title
-			return selectedTitle.startsWith("* ") ? selectedTitle.substring(LogicConstants.THEME_PREFIX_LENGTH) : selectedTitle;
+
+			return selectedTitle.startsWith("* ") ? selectedTitle.substring(LogicConstants.THEME_PREFIX_LENGTH)
+					: selectedTitle;
 		}
 		return null;
 	}
