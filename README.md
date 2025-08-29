@@ -1,26 +1,52 @@
 # Quizzle
 
-## Programm starten
+Quizzle ist eine Java-basierte Quizanwendung mit persistenter Speicherung in einer MariaDB-Datenbank und als Fallback für die persistente Speicherung
+eine Datei-basierte Speicherung,
 
-### Voraussetzungen
+## Features
 
-1. **Java Development Kit (JDK)** installiert (mindestens Java 8)
-2. **MariaDB Server** installiert und gestartet
-3. Eine Datenbank namens `quizzle_db` auf dem MariaDB Server
+- Erstellen, Verwalten und Durchführen von Quizzen  
+- Speicherung aller Daten in einer MariaDB-Datenbank  
+- Zentrale Konfiguration per properties-Datei  
+- Verwendung des MariaDB JDBC-Treibers (liegt im Ordner `lib/`)  
 
-### Datenbank einrichten
+## Voraussetzungen
 
-1. MariaDB Server starten
-2. Eine Datenbank mit dem Namen `quizzle_db` erstellen
-2. quizzle.sql ausführen (im Ordner src/persistence/mariadb/)
-3. Sicherstellen, dass die Verbindungsdaten in `config.properties` korrekt sind:
-   - Host: localhost:3306
-   - Datenbank: quizzle_db
-   - Benutzer: root
-   - Passwort: (wie in config.properties konfiguriert)
+- Java Development Kit (JDK) 8 oder neuer  
+- MariaDB-Server (installiert und gestartet)  
 
-### Hinweise
+## Setup und Installation
 
-- Das Programm benötigt eine aktive Verbindung zur MariaDB-Datenbank
-- Die MariaDB JDBC-Treiber sind bereits in `lib/mariadb-java-client-3.5.5.jar` enthalten
-- Bei Problemen die Datenbankverbindung in `config.properties` überprüfen
+1. MariaDB-Server starten  
+2. Das SQL-Skript `quizzle.sql` im Ordner `src/persistence/mariadb/` ausführen  
+3. Datei `config.properties` mit passenden Einstellungen anlegen (siehe Beispiel unten)  
+4. Projekt mit Java-IDE oder über Konsole kompilieren und starten  
+
+## Beispiel: config.properties
+
+application.title=Quizzle
+application.version=1.0
+database.driver=org.mariadb.jdbc.Driver
+database.password=password
+database.url=url_to_database
+database.user=user
+theme.default=System
+window.height=768
+window.maximized=false
+window.width=1024
+
+Passen Sie insbesondere folgende Einträge auf die lokale Umgebung an:  
+- `database.url` (z. B. `jdbc:mariadb://localhost:3306/quizzle_db`)  
+- `database.user` und `database.password` entsprechend Ihren Datenbankdaten  
+
+## Verzeichnisstruktur
+
+- `src/` – Der gesamte Quellcode  
+- `lib/` – Externe Bibliotheken, z. B. den mariadb-java-client  
+- `config.properties` – Zentrale Konfigurationsdatei  
+- `src/persistence/mariadb/quizzle.sql` – SQL-Setupskript zur Datenbankinitialisierung  
+
+## Lizenz
+
+Dieses Projekt steht unter der MIT-Lizenz.
+
