@@ -10,9 +10,41 @@ import constants.GUIConstants;
 import quizlogic.dto.AnswerDTO;
 
 /**
- * Panel displaying all possible answers as individual answer rows. Contains
- * multiple AnswerRowPanel components and updates them according to the current
- * question.
+ * Panel displaying all possible answers as individual answer rows for quiz questions.
+ * <p>
+ * This panel manages a collection of {@link AnswerRowPanel} components, each representing
+ * a single answer option for a quiz question. It provides functionality for:
+ * <ul>
+ * <li>Dynamic display of answer options based on question data</li>
+ * <li>User selection tracking across multiple answer rows</li>
+ * <li>Quiz mode and edit mode switching for different interaction patterns</li>
+ * <li>Answer validation and selection state management</li>
+ * <li>Integration with question editing and quiz-taking workflows</li>
+ * </ul>
+ * <p>
+ * The panel automatically adjusts the number of displayed answer rows based on the
+ * question data provided, ensuring that all available answer options are presented
+ * to the user in a consistent and accessible format.
+ * <p>
+ * <strong>Key Features:</strong>
+ * <ul>
+ * <li>Dynamic answer row generation based on question content</li>
+ * <li>Support for multiple selection modes (single/multiple choice)</li>
+ * <li>Visual feedback for selected and correct answers</li>
+ * <li>Integration with quiz gameplay and question editing interfaces</li>
+ * <li>Responsive layout that adapts to different numbers of answers</li>
+ * </ul>
+ * <p>
+ * The panel works in conjunction with {@link QuestionPanel} to provide a complete
+ * question display interface, handling the answer-specific aspects of question
+ * presentation and user interaction.
+ * 
+ * @author Christos Poulios
+ * @version 1.0
+ * @since 1.0
+ * @see AnswerRowPanel
+ * @see QuestionPanel
+ * @see quizlogic.dto.AnswerDTO
  */
 public class AnswersPanel extends JPanel implements GUIConstants {
 	private static final long serialVersionUID = 1L;

@@ -23,6 +23,39 @@ import quizlogic.dto.UserAnswerDTO;
 /**
  * Main panel for the quiz tab providing quiz gameplay interface with session
  * tracking and automatic fallback data storage support.
+ * <p>
+ * This panel coordinates the entire quiz-taking experience, including:
+ * <ul>
+ * <li>Question display and navigation</li>
+ * <li>Answer selection and validation</li>
+ * <li>Quiz session tracking and statistics</li>
+ * <li>Theme-based and random question selection</li>
+ * <li>User progress monitoring</li>
+ * </ul>
+ * <p>
+ * The panel integrates with the configured data storage backend (MariaDB database
+ * or file-based serialization with automatic fallback) to provide seamless
+ * quiz functionality regardless of the underlying persistence mechanism.
+ * <p>
+ * <strong>Key Features:</strong>
+ * <ul>
+ * <li>Real-time session tracking with user answer recording</li>
+ * <li>Support for both theme-specific and random quiz modes</li>
+ * <li>Automatic question progression and scoring</li>
+ * <li>Integration with statistics and performance tracking</li>
+ * <li>Responsive UI updates based on user interactions</li>
+ * </ul>
+ * <p>
+ * This panel implements the {@link QuizPanelDelegator} interface to handle
+ * quiz-specific UI events and coordinate between different quiz components.
+ * 
+ * @author Christos Poulios
+ * @version 1.0
+ * @since 1.0
+ * @see QuizPanelDelegator
+ * @see QuestionPanel
+ * @see QuizButtonPanel
+ * @see QuizInfoViewPanel
  */
 public class QuizMainPanel extends JPanel implements GUIConstants, QuizPanelDelegator {
 	private static final long serialVersionUID = 1L;

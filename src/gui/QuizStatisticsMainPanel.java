@@ -23,8 +23,49 @@ import quizlogic.dto.QuizSessionDTO;
 import quizlogic.dto.UserAnswerDTO;
 
 /**
- * Main panel for displaying quiz statistics. Shows current session statistics
- * including correct answers, wrong answers, and success rate.
+ * Main panel for displaying quiz statistics and performance analytics.
+ * <p>
+ * This panel provides comprehensive statistical analysis of quiz performance, including:
+ * <ul>
+ * <li>Current session statistics (correct/incorrect answers, success rate)</li>
+ * <li>Historical quiz session data and trends</li>
+ * <li>Visual charts and graphs for performance tracking</li>
+ * <li>Detailed breakdowns of user answer patterns</li>
+ * <li>Performance metrics over time</li>
+ * </ul>
+ * <p>
+ * The panel integrates with the configured data storage backend (MariaDB database
+ * or file-based serialization with automatic fallback) to retrieve and analyze
+ * quiz session data from any available storage mechanism.
+ * <p>
+ * <strong>Key Components:</strong>
+ * <ul>
+ * <li>{@link StatisticsBarChart} - Visual representation of performance metrics</li>
+ * <li>{@link SessionsTrendChart} - Trend analysis of quiz sessions over time</li>
+ * <li>Current session summary with real-time updates</li>
+ * <li>Historical data analysis and comparison tools</li>
+ * </ul>
+ * <p>
+ * <strong>Statistical Metrics Provided:</strong>
+ * <ul>
+ * <li>Total questions answered in current session</li>
+ * <li>Number of correct and incorrect answers</li>
+ * <li>Success rate percentage calculations</li>
+ * <li>Session duration and timing information</li>
+ * <li>Performance trends across multiple sessions</li>
+ * </ul>
+ * <p>
+ * The panel automatically refreshes statistics when quiz sessions are updated
+ * and provides both numerical and visual representations of performance data
+ * to help users track their learning progress.
+ * 
+ * @author Christos Poulios
+ * @version 1.0
+ * @since 1.0
+ * @see StatisticsBarChart
+ * @see SessionsTrendChart
+ * @see QuizSessionDTO
+ * @see UserAnswerDTO
  */
 public class QuizStatisticsMainPanel extends JPanel implements GUIConstants {
 	private static final long serialVersionUID = 1L;
