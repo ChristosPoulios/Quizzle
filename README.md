@@ -24,6 +24,7 @@ eine Datei-basierte Speicherung,
 
 ## Beispiel: config.properties
 
+```
 application.title=Quizzle
 application.version=1.0
 database.driver=org.mariadb.jdbc.Driver
@@ -34,6 +35,7 @@ theme.default=System
 window.height=768
 window.maximized=false
 window.width=1024
+```
 
 Passen Sie insbesondere folgende Einträge auf die lokale Umgebung an:  
 - `database.url` (z. B. `jdbc:mariadb://localhost:3306/quizzle_db`)  
