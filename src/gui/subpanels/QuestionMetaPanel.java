@@ -67,8 +67,8 @@ public class QuestionMetaPanel extends JPanel implements GUIConstants {
 		questionTextArea.setWrapStyleWord(true);
 		questionTextArea.setEditable(false);
 		JScrollPane scrollPane = new JScrollPane(questionTextArea);
-		scrollPane.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 80, 120));
-		scrollPane.setMaximumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 80, 120));
+		scrollPane.setPreferredSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 80, 180));
+		scrollPane.setMaximumSize(new java.awt.Dimension(LEFT_PANEL_WIDTH - 80, 180));
 		scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(scrollPane);
 

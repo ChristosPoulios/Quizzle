@@ -1,5 +1,6 @@
 package quizlogic.dto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,10 +27,13 @@ import quizlogic.DataTransportObject;
  * @version 1.0
  * @since 1.0
  */
-public class ThemeDTO extends DataTransportObject {
+public class ThemeDTO extends DataTransportObject implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	/** Unique identifier for the theme */
+	private int id;
+	
 	/** The title of the theme */
 	private String themeTitle;
 
@@ -38,6 +42,7 @@ public class ThemeDTO extends DataTransportObject {
 
 	/** The list of quiz questions associated with this theme */
 	private List<QuestionDTO> questions;
+
 
 	/**
 	 * Default constructor for creating a new ThemeDTO. Initializes an empty
@@ -123,6 +128,24 @@ public class ThemeDTO extends DataTransportObject {
 	 */
 	public void setQuestions(List<QuestionDTO> questions) {
 		this.questions = questions != null ? questions : new ArrayList<>();
+	}
+
+	/**
+	 * Gets the unique identifier for this theme.
+	 * 
+	 * @return the theme ID
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * Sets the unique identifier for this theme.
+	 * 
+	 * @param id the theme ID
+	 */
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	/**
