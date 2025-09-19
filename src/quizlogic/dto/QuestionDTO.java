@@ -175,6 +175,7 @@ public class QuestionDTO extends DataTransportObject {
 	 * Compares the main content of this question to another for equality.
 	 * <p>
 	 * Used for comparing new entities without an assigned ID.
+	 * Also used to identify questions by title even if IDs differ.
 	 *
 	 * @param other DTO to compare against
 	 * @return true if question text and title match
@@ -186,6 +187,55 @@ public class QuestionDTO extends DataTransportObject {
 		QuestionDTO that = (QuestionDTO) other;
 		return Objects.equals(this.questionText, that.questionText)
 				&& Objects.equals(this.questionTitle, that.questionTitle);
+	}
+
+	/**
+	 * Enhanced equals method that also considers title matching for database mapping.
+	 * This ensures that questions with the same title are treated as the same entity
+	 * even if one has an ID and the other doesn't.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		DataTransportObject that = (DataTransportObject) obj;
+		
+		// Standard DTO comparison from parent class
+		if (!this.isNew() && !that.isNew()) {
+			return this.getId() == that.getId();
+		}
+		if (this.isNew() && that.isNew()) {
+			return this.contentEquals(that);
+		}
+		
+		// Enhanced comparison: if one is new and other is persisted,
+		// compare by title if both are QuestionDTOs
+		if (obj instanceof QuestionDTO) {
+			QuestionDTO otherQuestion = (QuestionDTO) obj;
+			// If titles match and are not null/empty, consider them the same question
+			if (this.questionTitle != null && otherQuestion.questionTitle != null 
+				&& !this.questionTitle.trim().isEmpty() && !otherQuestion.questionTitle.trim().isEmpty()) {
+				return Objects.equals(this.questionTitle, otherQuestion.questionTitle);
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Enhanced hashCode that prioritizes title over ID for database mapping consistency.
+	 */
+	@Override
+	public int hashCode() {
+		// If we have a meaningful title, use it for hashing to ensure consistency
+		if (questionTitle != null && !questionTitle.trim().isEmpty()) {
+			return Objects.hash(questionTitle);
+		}
+		// Fallback to parent implementation
+		return isNew() ? contentHashCode() : Objects.hash(getId());
 	}
 
 	/**

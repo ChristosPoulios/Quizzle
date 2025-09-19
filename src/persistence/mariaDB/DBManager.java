@@ -448,19 +448,51 @@ public class DBManager implements QuizDataInterface {
 		if (themeDao == null) {
 			return UserStringConstants.DB_ERROR_THEME_NOT_FOUND;
 		}
+		
 		try {
+			// Starte explizit eine neue Transaction falls noch keine läuft
+			if (connection.getAutoCommit()) {
+				connection.setAutoCommit(false);
+			}
+			
 			QuestionDAO_MariaDB dao = questionDaoMap.get(question);
 			if (dao == null) {
-				dao = QuestionDAO_MariaDB.fromTransport(question, themeDao.getId());
-				questionDaoMap.put(question, dao);
+				// Suche nach bestehender Frage anhand der globalen ID in der Datenbank (wie im Original)
+				if (question.getId() > 0) {
+					// Lade alle Fragen für das Thema und suche nach der ID
+					ArrayList<QuestionDTO> questionsForTheme = getQuestionsFor(theme);
+					for (QuestionDTO dbQuestion : questionsForTheme) {
+						if (dbQuestion.getId() == question.getId()) {
+							// Verwende die Frage aus der Datenbank und deren DAO
+							dao = questionDaoMap.get(dbQuestion);
+							if (dao != null) {
+								// Aktualisiere die Daten der bestehenden DAO
+								dao.setTitle(question.getQuestionTitle());
+								dao.setQuestionText(question.getQuestionText());
+								dao.setThemeId(themeDao.getId());
+								questionDaoMap.put(question, dao); // Neue Referenz im Cache
+							}
+							break;
+						}
+					}
+				}
+				
+				if (dao == null) {
+					// Erstelle neue DAO für neue Frage
+					dao = QuestionDAO_MariaDB.fromTransport(question, themeDao.getId());
+					questionDaoMap.put(question, dao);
+				}
 			} else {
+				// Aktualisiere bestehende DAO
 				dao.setTitle(question.getQuestionTitle());
 				dao.setQuestionText(question.getQuestionText());
 				dao.setThemeId(themeDao.getId());
 			}
+			
 			try {
 				dao.performValidation();
 			} catch (IllegalArgumentException ex) {
+				connection.rollback();
 				return String.format(UserStringConstants.DB_ERROR_VALIDATION_FAILED, ex.getMessage());
 			}
 
@@ -512,22 +544,24 @@ public class DBManager implements QuizDataInterface {
 
 			if (questionResult != null) {
 				connection.commit();
+				return questionResult;
+			} else {
+				connection.rollback();
+				return UserStringConstants.DB_ERROR_QUESTION_SAVE_FAILED;
 			}
-
-			return questionResult != null ? questionResult : UserStringConstants.DB_ERROR_QUESTION_SAVE_FAILED;
 
 		} catch (SQLException e) {
 			try {
 				connection.rollback();
 			} catch (SQLException rollbackEx) {
-
+				// Log rollback error but don't throw
 			}
 			return String.format(UserStringConstants.DB_ERROR_DATABASE, e.getMessage());
 		} catch (Exception e) {
 			try {
 				connection.rollback();
 			} catch (SQLException rollbackEx) {
-
+				// Log rollback error but don't throw
 			}
 			return String.format(UserStringConstants.DB_ERROR_GENERAL, e.getMessage());
 		}
@@ -678,7 +712,7 @@ public class DBManager implements QuizDataInterface {
 	 * @throws SQLException if a database error occurs
 	 */
 	public void deleteAnswersForQuestion(int questionId) throws SQLException {
-		String deleteSQL = "DELETE FROM answers WHERE question_id = ?";
+		String deleteSQL = "DELETE FROM Answers WHERE question_id = ?";
 		try (PreparedStatement ps = connection.prepareStatement(deleteSQL)) {
 			ps.setInt(1, questionId);
 			ps.executeUpdate();
